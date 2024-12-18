@@ -78,14 +78,19 @@ print(missing_summary)
 p_d.append_to_markdown(missing_summary) 
 ```
 ----
-### Missade data för TEMPERATUR             ## Missade data för LUFTFUKTIGHET
-|                    |   0 |                |                    |   0 |
-|:-------------------|----:|                |:-------------------|----:|
-| Halmstad flygplats |   0 |                | Halmstad flygplats |   0 |
-| Umeå Flygplats     |   0 |                | Umeå Flygplats     |   0 |
-| Uppsala Flygplats  |   0 |                | Uppsala Flygplats  |   0 |
+### Missade data för TEMPERATUR            
+|                    |   0 |                
+|:-------------------|----:|                
+| Halmstad flygplats |   0 |                
+| Umeå Flygplats     |   0 |               
+| Uppsala Flygplats  |   0 |               
 
-
+ ## Missade data för LUFTFUKTIGHET
+|                    |   0 |
+|:-------------------|----:|
+| Halmstad flygplats |   0 |
+| Umeå Flygplats     |   0 |
+| Uppsala Flygplats  |   0 |
 Det verkar att inga data missade för detta tids interval.
 Dessa tabeller är skapade med samma fil som första två:
 
