@@ -177,6 +177,33 @@ närmare normafördelning än data från Umeå Flugplats
 Dessa plottar visar tydligt att temperatur spridning är inte normal färdelad, desuttom normalfordelningstest 
 visar väldignt litet sannolikhet för normalfördelning
 
-![Luftfuktighet frekvenser](img/frekvenser/LUFTFUKKIGHET_combined.png)
+![Luftfuktighet frekvenser](img/frekvenser/LUFTFUKTIGHET_combined.png)
 
 Samma resultat visas gällande lurftfuktighet
+
+Det finns en annad sät att visualisera avvikelse från normalfördelning, n-mligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Varje axel visar fördelningen av en dataset. I detta fall jämför jag dataset från olika stationer mot den teoretiska normalfördelningen. På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
+### Tabel 3a
+![Kvanti_kventil ploter för TEMPERATUR](img/distribution/TEMPERATUR_combined_qq_plots.png)
+
+### Tabel 3b
+![Kvanti_kventil ploter för RELATIVT LUFTFUKTIGHET](img/distribution/LUFTFUKTIGHET_combined_qq_plots.png)
+
+Närmast till normalfördelningen är data från station Halmstad flygplats, för både temperatur och relativt lyftfuktighet.
+
+Jag kör samma test för tremånaders datamängd för att säkerställa om det ändå närmar sig normalfördelning
+REtultater visas i Tabel 4 (Tabel 4[a](### Tabel 4a)[b][### Tabel 4b])
+### Tabel 4a
+![Kvanti_kventil ploter för TEMPERATUR](img/distribution/TEMPERATUR_combined_1000h_qq_plots.png)
+
+### Tabel 4b
+![Kvanti_kventil ploter för RELATIVT LUFTFUKTIGHET](img/distribution/LUFTFUKTIGHET_combined_1000h_qq_plots.png)
+
+Dessa data avviker ännu mera från normalfördelning, därför är det svard att anvädna tester som är gjört för normalfördelning.
+
+Eftersom data är inte normalfördelade försöker jag transformera de fär att hitta sätt att använda olika statistiska tester.
+
+# Uppgift 4: Linjär regression 
+Utför en linjärregression av minst en av variablerna och ett tillhörande 95% konfidensintervall. 
+Rapportera variablerna 𝑎  och 𝑏  i sambandet 𝑦 = 𝑎 + 𝑏 ∙ 𝑥  samt punktskattningens 
+konfidensintervall av dessa. Visualisera detta i en graf med den linjära modellen, konfidensintervallet 
+och originaldata i samma figur.  

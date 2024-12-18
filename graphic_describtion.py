@@ -1,13 +1,13 @@
 """
 this file preperes all for uppgift 1-2
 """
-import os
 import scipy.stats as sci
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
+
 import get_dynam_data.prepere_data as p_d
 # Skapa en egen färgskala
 CUSTOM_CMAP = LinearSegmentedColormap.from_list(
@@ -23,21 +23,12 @@ data = {
  }
 """
 
-
-def missing_data(df):
-    #get missing data:
-    missing_data = df.isna()
-    #summary of missing data: 
-    missing_summary_temp = df.isna().sum()
-
-    print(missing_summary_temp)
-    p_d.append_to_markdown(missing_summary_temp)
-    data_fukt = p_d.data_from_file(param=6)
-    three_days = p_d.extract_for_statistics(data=data_fukt)
+def missing_data(df, param):
+    #get data
+    new_data = p_d.data_from_file(param=param)
+    three_days = p_d.extract_for_statistics(data=new_data)
     df, stats = p_d.data_describe(three_days)
 
-    # #get missing data:
-    # missing_data = df.isna()
     #summary of missing data: 
     missing_summary_fukt = df.isna().sum()
     print(missing_summary_fukt)
@@ -72,20 +63,46 @@ def stat_norm_distribution(df: pd.DataFrame):
         result[key] = [stat, p_value]
     return result
 
-def plot_qq_plots(df: pd.DataFrame):
+def plot_qq_plots(df: pd.DataFrame, param: str, unit="°C"):
     """
     Plots Q-Q plots for each column in the dataframe to check normality visually.
+    All Q-Q plots are displayed in a single figure with multiple subplots.
     """
-    for key in df.columns:  # Loop through each column name
+    # Determine the number of columns (stations)
+    num_columns = len(df.columns)
+    
+    # Create a single figure with multiple subplots (one for each column)
+    fig, axes = plt.subplots(1, num_columns, figsize=(4 * num_columns, 4), squeeze=False)  # Subplots as a 2D array
+    
+    # Flatten axes for easy iteration
+    axes = axes.flatten()
+
+    # Loop through each column in the DataFrame
+    for ax, key in zip(axes, df.columns):
         values = df[key]  # Extract the column values
         
-        plt.figure(figsize=(6, 6))
-        sci.probplot(values, dist="norm", plot=plt)  # Q-Q plot
-        plt.title(f"Q-Q Plot for {key}")  # Title for the plot
-        plt.xlabel("Theoretical Quantiles")
-        plt.ylabel("Ordered Data Quantiles")
-        plt.grid()
-        plt.show()
+        # Generate Q-Q plot for each station/column
+        sci.probplot(values, dist="norm", plot=ax)
+        
+        # Title and labels for the plot
+        ax.set_title(f"Q-Q Plot för {key}", fontsize=10)  # Title for the plot
+        ax.set_xlabel("Teoretiska kvantiler", fontsize=10)
+        ax.set_ylabel(f"Ordnade {param} kvantiler, {unit}", fontsize=10)
+        ax.grid()
+
+    # Adjust spacing between subplots
+    plt.tight_layout(pad=2.0, w_pad=1.5, h_pad=1.5) 
+
+    # # Adjust the spacing between the subplots (increase space between them)
+    # plt.subplots_adjust(wspace=0.3, hspace=0.3)  # Adjust the width and height spacing between plots
+    # Save the combined plot
+    path = f'img/distribution/{param}_combined_qq_plots.png'
+    plt.savefig(path)
+    print(f"Combined Q-Q Plot saved to {path}")
+    
+    # Show the combined plot
+    plt.show()
+    
 
 # # Call the function
 # plot_qq_plots(df=df)
@@ -96,7 +113,7 @@ def plot_param_distribution(df: pd.DataFrame, param="TEMPERATUR"):
     The x-axis represents the temperature values, and the y-axis represents the frequency.
     """
     norm_distr = stat_norm_distribution(df)
-    print(norm_distr)
+    # print(norm_distr)
     # Define Seaborn style
     sns.set_theme(style="whitegrid")
     
@@ -437,8 +454,8 @@ def plot_param_distribution(df: pd.DataFrame, param="TEMPERATUR"):
 # plt.show()
 
 if __name__=="__main__":
-    param = [6, "LUFTFUGKIGHET"]
+    param = [1, "TEMPERATUR", "°C"]
     data_temp = p_d.data_from_file(param=param[0])
     three_days = p_d.extract_for_statistics(data=data_temp)
     df, stats = p_d.data_describe(three_days)
-    # plot_param_distribution(df, param[1])
+    plot_qq_plots(df, param[1], param[2])
