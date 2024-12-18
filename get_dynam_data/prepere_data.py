@@ -8,7 +8,7 @@ import pytz
 get data dinamicaly
 """
 
-STATIONS = {'Halmstad flygplats': 62410, 'Umeå Flygplats': 140480, 'Uppsala Flygplats': 97530}
+STATIONS = {'Halmstad flygplats': 62410, 'Uppsala Flygplats': 97530, 'Umeå Flygplats': 140480}
 DIR = 'smhi_data_temp_fukt'
 PARAMS_NAME = {1:"Temperatur", 6:"Luftfuktighet"}
 
@@ -54,7 +54,7 @@ def extract_for_statistics(data=data_from_file(param=1)):
     Args:
         data (_dict_): dictionary containing name_of_station: data from station
     Returns:
-        _dict_: dictionary containing name_of_station:{ dictionary{timestamp:temp}}
+        _dict_: dictionary containing name_of_station:{ dictionary{timestamp:parameter}}
     """
     new_data = {}
     for key, value in data.items():
@@ -70,7 +70,7 @@ def data_describe(data=extract_for_statistics()):
     Args:
         data (_dict_): dictionary containing name_of_station:{ dictionary{timestamp:temp}}
         Defaults to extract_for_statistics().
-
+        units (_str_): string that represents units
     Returns:
     tuple: (pandas.core.frame.DataFrame, pandas.core.frame.DataFrame)
         - First DataFrame: Contains the cleaned and preprocessed data ready for further analysis.
@@ -78,7 +78,7 @@ def data_describe(data=extract_for_statistics()):
     """
     # Convert the dictionary into a pandas DataFrame
     df = pd.DataFrame.from_dict(data, orient='columns')
-        
+    
     # Convert all values to numeric
     df = df.apply(pd.to_numeric)
     # Convert the index (timestamp) to a readable datetime format
@@ -86,14 +86,14 @@ def data_describe(data=extract_for_statistics()):
 
     # Format the index as a readable string (optional)
     df.index = df.index.strftime('%Y-%m-%d %H:%M:%S')
-
+    
     # Generate statistics for each location
-    stats = df.describe()
+    stats = df.describe().round(2)
 
     # Return the data and the statistics
     return df, stats
 
-def append_to_markdown(df: pd.DataFrame, filename: str = 'project/RAPPORT.md'):
+def append_to_markdown(df: pd.DataFrame, filename: str = 'RAPPORT.md', units="°C"):
     """
     Append the DataFrame as a Markdown table to an existing Markdown file.
     
@@ -102,6 +102,17 @@ def append_to_markdown(df: pd.DataFrame, filename: str = 'project/RAPPORT.md'):
         filename (str): The name of the existing Markdown file.
     NO returns
     """
+    # rename columns: add units
+    df.rename(columns={
+        'Halmstad flygplats': f'Halmstad flygplats({units})',
+        'Umeå Flygplats': f'Umeå Flygplats({units})',
+        'Uppsala Flygplats': f'Uppsala Flygplats({units})'
+    }, inplace=True)
+    
+    # Apply center alignment
+    df_styled = df.style.set_properties(**{'text-align': 'center'})
+    df_styled.set_table_styles([dict(selector='th', props=[('text-align', 'center')])])
+    
     # Convert DataFrame to Markdown format
     markdown_table = df.to_markdown()
 
@@ -118,12 +129,13 @@ def append_to_markdown(df: pd.DataFrame, filename: str = 'project/RAPPORT.md'):
     
 if __name__ == "__main__":
     data = data_from_file(param=1)
+   
     three_days = extract_for_statistics(data=data)
-    df, stats = data_describe(three_days)
-    print(stats)
-    append_to_markdown(df=stats)
+    df, stats = data_describe(data=three_days)
+    append_to_markdown(df=df, units="°C")
     data = data_from_file(param=6)
+    print(data)
     three_days = extract_for_statistics(data=data)
-    df, stats = data_describe(three_days)
+    df, stats = data_describe(data=three_days)
     print(stats)
-    append_to_markdown(df=stats)
+    append_to_markdown(df=df, units="%")

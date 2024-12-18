@@ -9,34 +9,45 @@ etc. Obs! Glöm inte att ange enheter på axlarna!
 ### RESULTAT
 Dessa tabeller skapas med filen `get_dynam_data/prepere_data.py`
 ## TEMPERATUR per timme under sista tre dagar från tre stationer:
-|    time             |   Halmstad flygplats |   Umeå Flygplats |   Uppsala Flygplats |
-|:--------------------|---------------------:|-----------------:|--------------------:|
-| 2024-12-14 15:00:00 |                  5.3 |             -2.7 |                 1.6 |
-| 2024-12-14 16:00:00 |                  5.1 |             -2.9 |                 1.6 |
-| 2024-12-14 17:00:00 |                  4.6 |             -3.1 |                 1.6 |
-| 2024-12-14 18:00:00 |                  4.2 |             -3.2 |                 1.2 |
-| 2024-12-14 19:00:00 |                  4   |             -3.3 |                 0.9 |
-...........
-| 2024-12-17 10:00:00 |                  7.1 |             -5.2 |                 2.6 |
-| 2024-12-17 11:00:00 |                  7   |             -5.7 |                 2.8 |
-| 2024-12-17 12:00:00 |                  7   |             -8.4 |                 2.9 |
+## Data Table
+|                     |   Halmstad flygplats(°C) |   Uppsala Flygplats(°C) |   Umeå Flygplats(°C) |
+|:--------------------|-------------------------:|------------------------:|---------------------:|
+| 2024-12-15 08:00:00 |                      3   |                    -1.7 |                -11.1 |
+| 2024-12-15 09:00:00 |                      4.6 |                    -1.7 |                -12.4 |
+| 2024-12-15 10:00:00 |                      5.3 |                    -1.8 |                -14.6 |
+| 2024-12-15 11:00:00 |                      5.3 |                    -2   |                -13.2 |
+.......
+| 2024-12-17 06:00:00 |                      6.3 |                     2.3 |                 -4.7 |
+| 2024-12-17 07:00:00 |                      6.3 |                     2.2 |                 -4.8 |
+| 2024-12-17 08:00:00 |                      5.9 |                     2.1 |                 -5   |
+| 2024-12-17 09:00:00 |                      6.5 |                     2.3 |                 -5.4 |
+| 2024-12-17 10:00:00 |                      7.1 |                     2.6 |                 -5.2 |
+| 2024-12-17 11:00:00 |                      7   |                     2.8 |                 -5.7 |
+| 2024-12-17 12:00:00 |                      7   |                     2.9 |                 -8.4 |
 
 
 ## LUFTFUKTIGHET per timme från tre stationer
 
-|                     |   Halmstad flygplats |   Umeå Flygplats |   Uppsala Flygplats |
-|:--------------------|---------------------:|-----------------:|--------------------:|
-| 2024-12-14 15:00:00 |                   88 |               94 |                  99 |
-| 2024-12-14 16:00:00 |                   87 |               93 |                  99 |
-| 2024-12-14 17:00:00 |                   82 |               93 |                  96 |
-| 2024-12-14 18:00:00 |                   82 |               93 |                  91 |
-| 2024-12-14 19:00:00 |                   82 |               93 |                  90 |
-| 2024-12-14 20:00:00 |                   84 |               91 |                  88 |
-| 2024-12-14 21:00:00 |                   83 |               91 |                  86 |
-......
-| 2024-12-17 10:00:00 |                   90 |               85 |                  59 |
-| 2024-12-17 11:00:00 |                   89 |               85 |                  58 |
-| 2024-12-17 12:00:00 |                   91 |               87 |                  57 |
+## Data Table
+|                     |   Halmstad flygplats(%) |   Uppsala Flygplats(%) |   Umeå Flygplats(%) |
+|:--------------------|------------------------:|-----------------------:|--------------------:|
+| 2024-12-15 08:00:00 |                      89 |                     84 |                  89 |
+| 2024-12-15 09:00:00 |                      88 |                     84 |                  88 |
+| 2024-12-15 10:00:00 |                      86 |                     84 |                  85 |
+| 2024-12-15 11:00:00 |                      86 |                     82 |                  88 |
+| 2024-12-15 12:00:00 |                      90 |                     81 |                  86 |
+| 2024-12-15 13:00:00 |                      96 |                     82 |                  88 |
+| 2024-12-15 14:00:00 |                      97 |                     85 |                  86 |
+| 2024-12-15 15:00:00 |                      98 |                     84 |                  87 |
+| 2024-12-15 16:00:00 |                      98 |                     86 |                  88 |
+| 2024-12-15 17:00:00 |                      98 |                     99 |                  90 |
+| 2024-12-15 18:00:00 |                      95 |                    100 |                  92 |
+.......
+| 2024-12-17 08:00:00 |                      92 |                     62 |                  90 |
+| 2024-12-17 09:00:00 |                      90 |                     61 |                  89 |
+| 2024-12-17 10:00:00 |                      90 |                     59 |                  85 |
+| 2024-12-17 11:00:00 |                      89 |                     58 |                  85 |
+| 2024-12-17 12:00:00 |                      91 |                     57 |                  87 |
 
 
 Jag tittar om det finns missade data:
@@ -64,51 +75,49 @@ missing_data = df.isna()
 #summary of missing data: 
 missing_summary = df.isna().sum()
 print(missing_summary)
-p_d.append_to_markdown(missing_summary) ```
+p_d.append_to_markdown(missing_summary) 
+```
 ----
-### Missade data för TEMPERATUR
-|                    |   0 |
-|:-------------------|----:|
-| Halmstad flygplats |   0 |
-| Umeå Flygplats     |   0 |
-| Uppsala Flygplats  |   0 |
+### Missade data för TEMPERATUR             ## Missade data för LUFTFUKTIGHET
+|                    |   0 |                |                    |   0 |
+|:-------------------|----:|                |:-------------------|----:|
+| Halmstad flygplats |   0 |                | Halmstad flygplats |   0 |
+| Umeå Flygplats     |   0 |                | Umeå Flygplats     |   0 |
+| Uppsala Flygplats  |   0 |                | Uppsala Flygplats  |   0 |
 
-## Missade data för LUFTFUKTIGHET
-|                    |   0 |
-|:-------------------|----:|
-| Halmstad flygplats |   0 |
-| Umeå Flygplats     |   0 |
-| Uppsala Flygplats  |   0 |
 
 Det verkar att inga data missade för detta tids interval.
 Dessa tabeller är skapade med samma fil som första två:
 
 ## Beskrivande statistik TEMPERATUR
-|       |   Halmstad flygplats |   Umeå Flygplats |   Uppsala Flygplats |
-|:------|---------------------:|-----------------:|--------------------:|
-| count |             70       |         70       |            70       |
-| mean  |              6.24714 |         -8.24857 |             1.30429 |
-| std   |              1.67676 |          4.47164 |             2.22212 |
-| min   |              2.7     |        -17.2     |            -2.5     |
-| 25%   |              4.95    |        -12.15    |            -0.95    |
-| 50%   |              6.9     |         -6.7     |             1.6     |
-| 75%   |              7.475   |         -4.725   |             2.675   |
-| max   |              8.9     |         -1.3     |             6.6     |
+    mäts varje timme 
+|       |   Halmstad flygplats(°C) |   Uppsala Flygplats(°C) |   Umeå Flygplats(°C) |
+|:------|-------------------------:|------------------------:|---------------------:|
+| count |                    53    |                   53    |                53    |
+| mean  |                     6.99 |                    1.71 |                -9.07 |
+| std   |                     1.14 |                    2.33 |                 4.58 |
+| min   |                     3    |                   -2.5  |               -17.2  |
+| 25%   |                     6.5  |                    1.2  |               -13.9  |
+| 50%   |                     7.2  |                    2.3  |                -8.4  |
+| 75%   |                     7.6  |                    2.9  |                -5.2  |
+| max   |                     8.9  |                    6.6  |                -1.3  |
 
 Medelvärde i stationer Halmstad Flugplats och Upsala Flugplats är närmare medianen, som säger att de ssa data 
 närmare normafördelning än data från Umeå Flugplats
 
-## Beskrivande statistik LUFTFUGTIGHET
-|       |   Halmstad flygplats |   Umeå Flygplats |   Uppsala Flygplats |
-|:------|---------------------:|-----------------:|--------------------:|
-| count |             70       |         70       |             70      |
-| mean  |             88.1571  |         88.2429  |             79.9429 |
-| std   |              5.79264 |          4.76532 |             12.5269 |
-| min   |             75       |         72       |             57      |
-| 25%   |             83       |         86       |             74      |
-| 50%   |             89       |         88.5     |             82      |
-| 75%   |             92       |         91.75    |             86      |
-| max   |             98       |         96       |            100      |
+## Beskrivande statistik RELATIVT LUFTFUKTIGHET
+    mäts varje timme 
+|       |   Halmstad flygplats(%) |   Uppsala Flygplats(%) |   Umeå Flygplats(%) |
+|:------|------------------------:|-----------------------:|--------------------:|
+| count |                   53    |                  53    |               53    |
+| mean  |                   89.32 |                  78.49 |               89.19 |
+| std   |                    5.95 |                  13.36 |                3.16 |
+| min   |                   75    |                  57    |               84    |
+| 25%   |                   86    |                  66    |               87    |
+| 50%   |                   91    |                  81    |               89    |
+| 75%   |                   93    |                  85    |               91    |
+| max   |                   98    |                 100    |               96    |
+
 
 ![Temperatur frekvenser](img/frekvenser/TEMPERATUR_combined.png)
 
