@@ -23,15 +23,10 @@ data = {
  }
 """
 
-def missing_data(df, param):
-    #get data
-    new_data = p_d.data_from_file(param=param)
-    three_days = p_d.extract_for_statistics(data=new_data)
-    df, stats = p_d.data_describe(three_days)
-
+def missing_data(df):
     #summary of missing data: 
-    missing_summary_fukt = df.isna().sum()
-    print(missing_summary_fukt)
+    missing_summary = df.isna().sum()
+    p_d.append_to_markdown(missing_summary)
 
 #p_d.append_to_markdown(missing_summary_fukt)
 
@@ -454,8 +449,12 @@ def plot_param_distribution(df: pd.DataFrame, param="TEMPERATUR"):
 # plt.show()
 
 if __name__=="__main__":
-    param = [1, "TEMPERATUR", "°C"]
-    data_temp = p_d.data_from_file(param=param[0])
-    three_days = p_d.extract_for_statistics(data=data_temp)
-    df, stats = p_d.data_describe(three_days)
-    plot_qq_plots(df, param[1], param[2])
+    param = [[1, "TEMPERATUR", "°C"], [6, "LUFTFUKTIGHET", "%"]]
+    for p in param:
+        # hämta sparade data 
+        data_temp = p_d.data_from_file(param=p[0])
+        # ta fram sista 3 dagara
+        three_days = p_d.extract_for_statistics(data=data_temp)
+        df, stats = p_d.data_describe(three_days)
+
+        missing_data(df)

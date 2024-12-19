@@ -14,33 +14,34 @@ PARAMS_NAME = {1:"Temperatur", 6:"Luftfuktighet"}
 
 def data_from_file(stations=STATIONS,
                    dir: str=DIR,
-                   param: int =1,
-                   hours: int = 73):
+                   param: int=1,
+                   points: int=72):
     """
-    Get data form fails return dictionary with name : data
+    Get the last N data points from files and return a dictionary with station name: data.
+    
     Args:
-        data (dictionary): name:id of stations
+        stations (dict): Dictionary of station names and IDs.
+        dir (str): Directory where the data files are stored.
+        param (int): Parameter to fetch data for.
+        points (int): Number of data points to retrieve.
 
     Returns:
-        _dictionary_: name: data of stations
+        dict: Dictionary with station name as key and last N data points as value.
     """
-    current_time = datetime.now(pytz.timezone("Europe/Stockholm"))
-    rounded_time = current_time.replace(minute=0, second=0, microsecond=0)
-    print(rounded_time)
-    cutoff_time = rounded_time - timedelta(hours=hours)
-
     station_data = {}
     try:
         for name, station_id in stations.items():
             file_path = os.path.join(dir, f"{station_id}_{param}.json")
             with open(file_path, 'r') as file:
                 data = json.load(file)
-                # Filter and extract the last N hours data for the specific parameter
-                filtered_data = [
-                    entry for entry in data.get("value", [])
-                    if datetime.fromtimestamp(entry["date"] / 1000, tz=pytz.timezone("Europe/Stockholm")) >= cutoff_time
-                ]
-            station_data[name] = filtered_data
+                # Extract the "value" list and sort it by timestamp
+                sorted_data = sorted(
+                    data.get("value", []),
+                    key=lambda x: datetime.fromtimestamp(x["date"] / 1000, tz=pytz.timezone("Europe/Stockholm"))
+                )
+                # Get the last N points
+                last_points = sorted_data[-points:]
+            station_data[name] = last_points
     except FileNotFoundError:
         print(f"File '{file_path}' not found.")
     except json.JSONDecodeError:
@@ -93,7 +94,7 @@ def data_describe(data=extract_for_statistics()):
     # Return the data and the statistics
     return df, stats
 
-def append_to_markdown(df: pd.DataFrame, filename: str = 'RAPPORT.md', units="°C"):
+def change_to_markdown(df: pd.DataFrame, units="°C"):
     """
     Append the DataFrame as a Markdown table to an existing Markdown file.
     
@@ -115,7 +116,9 @@ def append_to_markdown(df: pd.DataFrame, filename: str = 'RAPPORT.md', units="°
     
     # Convert DataFrame to Markdown format
     markdown_table = df.to_markdown()
+    return markdown_table
 
+def append_to_markdown(markdown_table, filename: str = 'RAPPORT.md'):
     # Read the existing contents of the Markdown file
     try:
         with open(filename, 'a', encoding='utf-8') as file:  # Open in append mode
@@ -131,11 +134,13 @@ if __name__ == "__main__":
     data = data_from_file(param=1)
    
     three_days = extract_for_statistics(data=data)
+    print (three_days)
     df, stats = data_describe(data=three_days)
-    append_to_markdown(df=df, units="°C")
-    data = data_from_file(param=6)
-    print(data)
-    three_days = extract_for_statistics(data=data)
-    df, stats = data_describe(data=three_days)
-    print(stats)
-    append_to_markdown(df=df, units="%")
+    #append_to_markdown(df=df, units="°C")
+    #print(stats)
+    # data = data_from_file(param=6)
+   
+    # three_days = extract_for_statistics(data=data)
+    # df, stats = data_describe(data=three_days)
+    # print(stats)
+    # append_to_markdown(df=df, units="%")

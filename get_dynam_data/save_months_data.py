@@ -1,4 +1,3 @@
-import requests
 import json
 import os
 import requests
@@ -56,7 +55,7 @@ def get_data(param="1", time="latest-months"):
                 # URL for fetching the latest-day data for the selected station
                 id = station["id"]
                 data_url = f"https://opendata-download-metobs.smhi.se/api/version/1.0/parameter/{param}/station/{id}/period/{time}/data.json"
-                save_path = f"{OUTPUT_DIR}/{id}_{param}.json"
+                save_path = f"{OUTPUT_DIR}/{id}_{param}_new.json"
                 name = download_smhi_data(data_url, save_path)
                 if name:
                     existed_stations[station["name"]] = id

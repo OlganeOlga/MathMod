@@ -5,7 +5,7 @@
 
 I projektet förväntas vi att plocka data från en open API och berbeta de med statistiska metoder.
 
-## Uppgift 1. Databeskrivning
+## Uppgift 1-3. Databeskrivning och beskrivande diagrammer
 *Uppgift 1: Beskriv data 
 Introducera den data som valts och beskriv vad den visar och varifrån den kommer. Cirka 250 ord 
 (halv A4). Var tydliga med vad de olika variablerna beskriver och i vilken enhet de är i. Det kan vara 
@@ -21,118 +21,50 @@ Koden till funktioner för att hämta data finns i [GitHub](https://github.com/O
 
 Dessa tabeller skapas med filen `get_dynam_data/prepere_data.py`
 ### Tabel 1a. TEMPERATUR per timme under sista tre dagar från tre stationer:
-
+(exampel)
 |                     |   Halmstad flygplats(°C) |   Uppsala Flygplats(°C) |   Umeå Flygplats(°C) |
 |:--------------------|-------------------------:|------------------------:|---------------------:|
-| 2024-12-15 08:00:00 |                      3   |                    -1.7 |                -11.1 |
-| 2024-12-15 09:00:00 |                      4.6 |                    -1.7 |                -12.4 |
-| 2024-12-15 10:00:00 |                      5.3 |                    -1.8 |                -14.6 |
-| 2024-12-15 11:00:00 |                      5.3 |                    -2   |                -13.2 |
+| 2024-12-15 17:00:00 |                      7.8 |                    -2.3 |                 -6.8 |
+| 2024-12-15 18:00:00 |                      8.1 |                    -1.8 |                 -4.4 |
+| 2024-12-15 19:00:00 |                      8.2 |                    -1.1 |                 -3.1 |
+| 2024-12-15 20:00:00 |                      8.4 |                     0.4 |                 -1.3 |
+| 2024-12-15 21:00:00 |                      8.2 |                     1.2 |                 -2.3 |
 .......
-| 2024-12-17 06:00:00 |                      6.3 |                     2.3 |                 -4.7 |
-| 2024-12-17 07:00:00 |                      6.3 |                     2.2 |                 -4.8 |
-| 2024-12-17 08:00:00 |                      5.9 |                     2.1 |                 -5   |
-| 2024-12-17 09:00:00 |                      6.5 |                     2.3 |                 -5.4 |
-| 2024-12-17 10:00:00 |                      7.1 |                     2.6 |                 -5.2 |
-| 2024-12-17 11:00:00 |                      7   |                     2.8 |                 -5.7 |
-| 2024-12-17 12:00:00 |                      7   |                     2.9 |                 -8.4 |
-
-
+| 2024-12-18 12:00:00 |                      6.1 |                     0.5 |                 -7.9 |
+| 2024-12-18 13:00:00 |                      6   |                     1.6 |                 -6.8 |
+| 2024-12-18 14:00:00 |                      6.5 |                     2.3 |                 -4.1 |
+| 2024-12-18 15:00:00 |                      7   |                     2.7 |                 -3.4 |
+| 2024-12-18 16:00:00 |                      7.4 |                     3.4 |                 -3.1 |
+ 
 ### Tabel 1b. LUFTFUKTIGHET per timme från tre stationer
+(exampel)
 |                     |   Halmstad flygplats(%) |   Uppsala Flygplats(%) |   Umeå Flygplats(%) |
 |:--------------------|------------------------:|-----------------------:|--------------------:|
-| 2024-12-15 08:00:00 |                      89 |                     84 |                  89 |
-| 2024-12-15 09:00:00 |                      88 |                     84 |                  88 |
-| 2024-12-15 10:00:00 |                      86 |                     84 |                  85 |
-| 2024-12-15 11:00:00 |                      86 |                     82 |                  88 |
-| 2024-12-15 12:00:00 |                      90 |                     81 |                  86 |
-| 2024-12-15 13:00:00 |                      96 |                     82 |                  88 |
-| 2024-12-15 14:00:00 |                      97 |                     85 |                  86 |
-| 2024-12-15 15:00:00 |                      98 |                     84 |                  87 |
-| 2024-12-15 16:00:00 |                      98 |                     86 |                  88 |
 | 2024-12-15 17:00:00 |                      98 |                     99 |                  90 |
 | 2024-12-15 18:00:00 |                      95 |                    100 |                  92 |
-.......
-| 2024-12-17 08:00:00 |                      92 |                     62 |                  90 |
-| 2024-12-17 09:00:00 |                      90 |                     61 |                  89 |
-| 2024-12-17 10:00:00 |                      90 |                     59 |                  85 |
-| 2024-12-17 11:00:00 |                      89 |                     58 |                  85 |
-| 2024-12-17 12:00:00 |                      91 |                     57 |                  87 |
+| 2024-12-15 19:00:00 |                      94 |                    100 |                  93 |
+| 2024-12-15 20:00:00 |                      94 |                    100 |                  96 |
+| 2024-12-15 21:00:00 |                      93 |                    100 |                  95 |
+.........
+| 2024-12-18 11:00:00 |                      96 |                     95 |                  90 |
+| 2024-12-18 12:00:00 |                      96 |                    100 |                  92 |
+| 2024-12-18 13:00:00 |                      98 |                    100 |                  93 |
+| 2024-12-18 14:00:00 |                      97 |                    100 |                  95 |
+| 2024-12-18 15:00:00 |                      96 |                    100 |                  95 |
+| 2024-12-18 16:00:00 |                      96 |                    100 |                  96 |
 
-Det finns möjlighet att hämta data på en dag eller på sista tre månader. För statstisk bearbetning användde jag data på de seanste tre dagar. Catof skafas med hjälp av följande funktion
-```
-def data_from_file(stations=STATIONS,
-                   dir: str=DIR,
-                   param: int =1,
-                   hours: int = 73):
-    """
-    Get data form fails return dictionary with name : data
-    Args:
-        data (dictionary): name:id of stations
+Det finns möjlighet att hämta data på en dag eller på sista tre månader. För statstisk bearbetning användde jag data på de seanste tre dagar. Catof skafas med hjälp av följande funktion [`data_from_file()`](https://github.com/OlganeOlga/MathMod/blob/master/get_dynam_data/prepere_data.py)
 
-    Returns:
-        _dictionary_: name: data of stations
-    """
-    current_time = datetime.now(pytz.timezone("Europe/Stockholm"))
-    rounded_time = current_time.replace(minute=0, second=0, microsecond=0)
-    print(rounded_time)
-    cutoff_time = rounded_time - timedelta(hours=hours)
+Jag tittar om det finns missade data för [temperatur](### Tabel 2a.) och för [relativt luftfuktighet](### Tabel 2b.)
 
-    station_data = {}
-    try:
-        for name, station_id in stations.items():
-            file_path = os.path.join(dir, f"{station_id}_{param}.json")
-            with open(file_path, 'r') as file:
-                data = json.load(file)
-                # Filter and extract the last N hours data for the specific parameter
-                filtered_data = [
-                    entry for entry in data.get("value", [])
-                    if datetime.fromtimestamp(entry["date"] / 1000, tz=pytz.timezone("Europe/Stockholm")) >= cutoff_time
-                ]
-            station_data[name] = filtered_data
-    except FileNotFoundError:
-        print(f"File '{file_path}' not found.")
-    except json.JSONDecodeError:
-        print("Error decoding JSON.")
-    return station_data
-```
-
-
-Jag tittar om det finns missade data för [temperatur](### Tabel 2a. Missade data för TEMPERATUR) och för [relativt luftfuktighet](### Tabel 2b. Missade data för RELATIVT LUFTFUKTIGHET):
-
-```
-import pandas as pd
-import get_dynam_data.prepere_data as p_d
-
-# hämta data för TEMPERATUR
-data = p_d.data_from_file(param=1)
-three_days = p_d.extract_for_statistics(data=data)
-df, stats = p_d.data_describe(three_days)
-
-
-# sumanfattning för missade data: 
-missing_summary = df.isna().sum()
-p_d.append_to_markdown(missing_summary) 
-
-
-# hämta data för RELATIVT LUFTFUKTIGHET
-p_d.append_to_markdown(missing_summary)
-data = p_d.data_from_file(param=6)
-three_days = p_d.extract_for_statistics(data=data)
-df, stats = p_d.data_describe(three_days)
-# sumanfattning 
-missing_summary = df.isna().sum()
-p_d.append_to_markdown(missing_summary) 
-```
-----
-### Tabel 2a. Missade data för TEMPERATUR            
+### Tabel 2a. [Missade data för TEMPERATUR](statistics/TEMPERATUR_mis_summ)           
 |                    |   0 |                
 |:-------------------|----:|                
 | Halmstad flygplats |   0 |                
 | Umeå Flygplats     |   0 |               
 | Uppsala Flygplats  |   0 |               
 
-### Tabel 2b. Missade data för RELATIVT LUFTFUKTIGHET
+### Tabel 2b. [Missade data för RELATIVT LUFTFUKTIGHET](statistics/LUFTFUKTIGHET_mis_summ) 
 |                    |   0 |
 |:-------------------|----:|
 | Halmstad flygplats |   0 |
@@ -142,61 +74,41 @@ Det verkar att inga tidspunkter var missad under dessa tre dagar.
 
 Jag vill teasta om datamängd är normalfördelad. För detta skull använder jag Shapiro-Wilk test för normalitets sprigning.
 
-### Tabel 3a. Beskrivande statistik TEMPERATUR
-    mäts varje timme 
-|       |   Halmstad flygplats(°C) |   Uppsala Flygplats(°C) |   Umeå Flygplats(°C) |
-|:------|-------------------------:|------------------------:|---------------------:|
-| count |                    53    |                   53    |                53    |
-| mean  |                     6.99 |                    1.71 |                -9.07 |
-| std   |                     1.14 |                    2.33 |                 4.58 |
-| min   |                     3    |                   -2.5  |               -17.2  |
-| 25%   |                     6.5  |                    1.2  |               -13.9  |
-| 50%   |                     7.2  |                    2.3  |                -8.4  |
-| 75%   |                     7.6  |                    2.9  |                -5.2  |
-| max   |                     8.9  |                    6.6  |                -1.3  |
+### Tabel 3a. [Beskrivande statistik TEMPERATUR](statistics/TEMPERATUR_describe_stat.md)
+
 
 Medelvärde i stationer Halmstad Flugplats och Upsala Flugplats är närmare medianen, som säger att de ssa data 
 närmare normafördelning än data från Umeå Flugplats
 
-### Tabel 3b. Beskrivande statistik RELATIVT LUFTFUKTIGHET
-    mäts varje timme 
-|       |   Halmstad flygplats(%) |   Uppsala Flygplats(%) |   Umeå Flygplats(%) |
-|:------|------------------------:|-----------------------:|--------------------:|
-| count |                   53    |                  53    |               53    |
-| mean  |                   89.32 |                  78.49 |               89.19 |
-| std   |                    5.95 |                  13.36 |                3.16 |
-| min   |                   75    |                  57    |               84    |
-| 25%   |                   86    |                  66    |               87    |
-| 50%   |                   91    |                  81    |               89    |
-| 75%   |                   93    |                  85    |               91    |
-| max   |                   98    |                 100    |               96    |
+### Tabel 3b. [Beskrivande statistik RELATIVT LUFTFUKTIGHET](statistics/LUFTFUKTIGHET_describe_stat.md)
 
 
 ![Temperatur frekvenser](img/frekvenser/TEMPERATUR_combined.png)
 
-Dessa plottar visar tydligt att temperatur spridning är inte normal färdelad, desuttom normalfordelningstest 
-visar väldignt litet sannolikhet för normalfördelning
+*Med dessa plottar och Shapiro-Wilk test testar jag nulhypotes: att data är noirmalfördelad.*
+Både plottar och Shapiro-Wilk test för normality tillåtar förkasta nulhypotes om att temperatur spridning är normal fördelad. Sannolikheten att nulhypotes stämmer är 3.78% för Halmstad flygplats, som är mindre än 5% och därmed är sannolikhet för typ II fel är ganska liten.
+För andra två platser respectivt sannolikhheten för att nulhypotes stämmer är 0.29% och 0.02% och därmed är möjlighet för att felförkasta nulhypotes (fel typ II) är ännu mindre.
 
 ![Luftfuktighet frekvenser](img/frekvenser/LUFTFUKTIGHET_combined.png)
 
-Samma resultat visas gällande lurftfuktighet
-
-Det finns en annad sät att visualisera avvikelse från normalfördelning, n-mligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Varje axel visar fördelningen av en dataset. I detta fall jämför jag dataset från olika stationer mot den teoretiska normalfördelningen. På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
+Om jag gör samma test för relativt lurftfuktighet visas det att luftfuktighet i Umeå Flugplats kan vara normalfördelad eftersom p_värde är 6.95% och större än 5%, dvs nulhypotes om att data är normalfördelade kan inta förkastas. Det är ppga stor sannoliket för fel typ II.
+### Q_Q plottar
+Det finns ett annat sät att visualisera avvikelse från normalfördelning, n-mligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Varje axel visar fördelningen av en dataset. I detta fall jämför jag dataset från olika stationer mot den teoretiska normalfördelningen. På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
 ### Tabel 3a
-![Kvanti_kventil ploter för TEMPERATUR](img/distribution/TEMPERATUR_combined_qq_plots.png)
+![Kvanti_kventil ploter för TEMPERATUR](img/q_q_plot/TEMPERATUR_combined_qq_plots.png)
 
 ### Tabel 3b
-![Kvanti_kventil ploter för RELATIVT LUFTFUKTIGHET](img/distribution/LUFTFUKTIGHET_combined_qq_plots.png)
+![Kvanti_kventil ploter för RELATIVT LUFTFUKTIGHET](img/q_q_plot/LUFTFUKTIGHET_combined_qq_plots.png)
 
-Närmast till normalfördelningen är data från station Halmstad flygplats, för både temperatur och relativt lyftfuktighet.
+Dess plottar visa samma: aärmast till normalfördelningen är data från station Halmstad flygplats, för både temperatur och relativt lyftfuktighet.
 
 Jag kör samma test för tremånaders datamängd för att säkerställa om det ändå närmar sig normalfördelning
 REtultater visas i Tabel 4 (Tabel 4[a](### Tabel 4a)[b][### Tabel 4b])
 ### Tabel 4a
-![Kvanti_kventil ploter för TEMPERATUR](img/distribution/TEMPERATUR_combined_1000h_qq_plots.png)
+![Kvanti_kventil ploter för TEMPERATUR](img/q_q_plot/TEMPERATUR_combined_1000h_qq_plots.png)
 
 ### Tabel 4b
-![Kvanti_kventil ploter för RELATIVT LUFTFUKTIGHET](img/distribution/LUFTFUKTIGHET_combined_1000h_qq_plots.png)
+![Kvanti_kventil ploter för RELATIVT LUFTFUKTIGHET](img/q_q_plot/LUFTFUKTIGHET_combined_1000h_qq_plots.png)
 
 Dessa data avviker ännu mera från normalfördelning, därför är det svard att anvädna tester som är gjört för normalfördelning.
 

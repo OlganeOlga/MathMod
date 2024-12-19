@@ -1,5 +1,5 @@
 {
-    "updated": 1734480000000,
+    "updated": 1734566400000,
     "parameter": {
         "key": "6",
         "name": "Relativ Luftfuktighet",
@@ -16,8 +16,8 @@
     },
     "period": {
         "key": "latest-months",
-        "from": 1723248001000,
-        "to": 1734537600000,
+        "from": 1723334401000,
+        "to": 1734598800000,
         "summary": "Data från senaste fyra månaderna",
         "sampling": "Ej angivet"
     },
@@ -38,7 +38,7 @@
         },
         {
             "from": 368150400000,
-            "to": 1734538813000,
+            "to": 1734600013000,
             "height": 7.31,
             "latitude": 63.7931,
             "longitude": 20.28
@@ -77,126 +77,6 @@
         }
     ],
     "value": [
-        {
-            "date": 1723251600000,
-            "value": "87",
-            "quality": "Y"
-        },
-        {
-            "date": 1723255200000,
-            "value": "90",
-            "quality": "Y"
-        },
-        {
-            "date": 1723258800000,
-            "value": "88",
-            "quality": "Y"
-        },
-        {
-            "date": 1723262400000,
-            "value": "92",
-            "quality": "Y"
-        },
-        {
-            "date": 1723266000000,
-            "value": "94",
-            "quality": "Y"
-        },
-        {
-            "date": 1723269600000,
-            "value": "93",
-            "quality": "Y"
-        },
-        {
-            "date": 1723273200000,
-            "value": "93",
-            "quality": "Y"
-        },
-        {
-            "date": 1723276800000,
-            "value": "93",
-            "quality": "Y"
-        },
-        {
-            "date": 1723280400000,
-            "value": "93",
-            "quality": "Y"
-        },
-        {
-            "date": 1723284000000,
-            "value": "87",
-            "quality": "Y"
-        },
-        {
-            "date": 1723287600000,
-            "value": "79",
-            "quality": "Y"
-        },
-        {
-            "date": 1723291200000,
-            "value": "80",
-            "quality": "Y"
-        },
-        {
-            "date": 1723294800000,
-            "value": "76",
-            "quality": "Y"
-        },
-        {
-            "date": 1723298400000,
-            "value": "74",
-            "quality": "Y"
-        },
-        {
-            "date": 1723302000000,
-            "value": "68",
-            "quality": "Y"
-        },
-        {
-            "date": 1723305600000,
-            "value": "62",
-            "quality": "Y"
-        },
-        {
-            "date": 1723309200000,
-            "value": "60",
-            "quality": "Y"
-        },
-        {
-            "date": 1723312800000,
-            "value": "67",
-            "quality": "Y"
-        },
-        {
-            "date": 1723316400000,
-            "value": "80",
-            "quality": "Y"
-        },
-        {
-            "date": 1723320000000,
-            "value": "79",
-            "quality": "Y"
-        },
-        {
-            "date": 1723323600000,
-            "value": "82",
-            "quality": "Y"
-        },
-        {
-            "date": 1723327200000,
-            "value": "84",
-            "quality": "Y"
-        },
-        {
-            "date": 1723330800000,
-            "value": "87",
-            "quality": "Y"
-        },
-        {
-            "date": 1723334400000,
-            "value": "84",
-            "quality": "Y"
-        },
         {
             "date": 1723338000000,
             "value": "90",
@@ -15730,6 +15610,91 @@
         {
             "date": 1734537600000,
             "value": "96",
+            "quality": "Y"
+        },
+        {
+            "date": 1734541200000,
+            "value": "95",
+            "quality": "Y"
+        },
+        {
+            "date": 1734544800000,
+            "value": "93",
+            "quality": "Y"
+        },
+        {
+            "date": 1734548400000,
+            "value": "94",
+            "quality": "Y"
+        },
+        {
+            "date": 1734552000000,
+            "value": "94",
+            "quality": "Y"
+        },
+        {
+            "date": 1734555600000,
+            "value": "95",
+            "quality": "Y"
+        },
+        {
+            "date": 1734559200000,
+            "value": "95",
+            "quality": "Y"
+        },
+        {
+            "date": 1734562800000,
+            "value": "94",
+            "quality": "Y"
+        },
+        {
+            "date": 1734566400000,
+            "value": "95",
+            "quality": "Y"
+        },
+        {
+            "date": 1734570000000,
+            "value": "95",
+            "quality": "Y"
+        },
+        {
+            "date": 1734573600000,
+            "value": "96",
+            "quality": "Y"
+        },
+        {
+            "date": 1734577200000,
+            "value": "96",
+            "quality": "Y"
+        },
+        {
+            "date": 1734580800000,
+            "value": "96",
+            "quality": "Y"
+        },
+        {
+            "date": 1734584400000,
+            "value": "98",
+            "quality": "Y"
+        },
+        {
+            "date": 1734588000000,
+            "value": "97",
+            "quality": "Y"
+        },
+        {
+            "date": 1734591600000,
+            "value": "98",
+            "quality": "Y"
+        },
+        {
+            "date": 1734595200000,
+            "value": "96",
+            "quality": "Y"
+        },
+        {
+            "date": 1734598800000,
+            "value": "97",
             "quality": "Y"
         }
     ]

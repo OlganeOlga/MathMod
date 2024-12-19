@@ -1,5 +1,5 @@
 {
-    "updated": 1734393600000,
+    "updated": 1734480000000,
     "parameter": {
         "key": "6",
         "name": "Relativ Luftfuktighet",
@@ -16,8 +16,8 @@
     },
     "period": {
         "key": "latest-months",
-        "from": 1723161601000,
-        "to": 1734436800000,
+        "from": 1723248001000,
+        "to": 1734537600000,
         "summary": "Data från senaste fyra månaderna",
         "sampling": "Ej angivet"
     },
@@ -45,7 +45,7 @@
         },
         {
             "from": 1617235200000,
-            "to": 1734438012000,
+            "to": 1734538813000,
             "height": 31.0,
             "latitude": 56.6833,
             "longitude": 12.8167
@@ -84,126 +84,6 @@
         }
     ],
     "value": [
-        {
-            "date": 1723165200000,
-            "value": "91",
-            "quality": "Y"
-        },
-        {
-            "date": 1723168800000,
-            "value": "92",
-            "quality": "Y"
-        },
-        {
-            "date": 1723172400000,
-            "value": "92",
-            "quality": "Y"
-        },
-        {
-            "date": 1723176000000,
-            "value": "92",
-            "quality": "Y"
-        },
-        {
-            "date": 1723179600000,
-            "value": "83",
-            "quality": "Y"
-        },
-        {
-            "date": 1723183200000,
-            "value": "83",
-            "quality": "Y"
-        },
-        {
-            "date": 1723186800000,
-            "value": "81",
-            "quality": "Y"
-        },
-        {
-            "date": 1723190400000,
-            "value": "86",
-            "quality": "Y"
-        },
-        {
-            "date": 1723194000000,
-            "value": "90",
-            "quality": "Y"
-        },
-        {
-            "date": 1723197600000,
-            "value": "90",
-            "quality": "Y"
-        },
-        {
-            "date": 1723201200000,
-            "value": "94",
-            "quality": "Y"
-        },
-        {
-            "date": 1723204800000,
-            "value": "95",
-            "quality": "Y"
-        },
-        {
-            "date": 1723208400000,
-            "value": "95",
-            "quality": "Y"
-        },
-        {
-            "date": 1723212000000,
-            "value": "96",
-            "quality": "Y"
-        },
-        {
-            "date": 1723215600000,
-            "value": "90",
-            "quality": "Y"
-        },
-        {
-            "date": 1723219200000,
-            "value": "85",
-            "quality": "Y"
-        },
-        {
-            "date": 1723222800000,
-            "value": "84",
-            "quality": "Y"
-        },
-        {
-            "date": 1723226400000,
-            "value": "81",
-            "quality": "Y"
-        },
-        {
-            "date": 1723230000000,
-            "value": "73",
-            "quality": "Y"
-        },
-        {
-            "date": 1723233600000,
-            "value": "76",
-            "quality": "Y"
-        },
-        {
-            "date": 1723237200000,
-            "value": "75",
-            "quality": "Y"
-        },
-        {
-            "date": 1723240800000,
-            "value": "75",
-            "quality": "Y"
-        },
-        {
-            "date": 1723244400000,
-            "value": "79",
-            "quality": "Y"
-        },
-        {
-            "date": 1723248000000,
-            "value": "77",
-            "quality": "Y"
-        },
         {
             "date": 1723251600000,
             "value": "76",
@@ -14372,6 +14252,146 @@
         {
             "date": 1734436800000,
             "value": "91",
+            "quality": "Y"
+        },
+        {
+            "date": 1734440400000,
+            "value": "90",
+            "quality": "Y"
+        },
+        {
+            "date": 1734444000000,
+            "value": "91",
+            "quality": "Y"
+        },
+        {
+            "date": 1734447600000,
+            "value": "94",
+            "quality": "Y"
+        },
+        {
+            "date": 1734451200000,
+            "value": "95",
+            "quality": "Y"
+        },
+        {
+            "date": 1734454800000,
+            "value": "97",
+            "quality": "Y"
+        },
+        {
+            "date": 1734458400000,
+            "value": "98",
+            "quality": "Y"
+        },
+        {
+            "date": 1734462000000,
+            "value": "98",
+            "quality": "Y"
+        },
+        {
+            "date": 1734465600000,
+            "value": "97",
+            "quality": "Y"
+        },
+        {
+            "date": 1734469200000,
+            "value": "97",
+            "quality": "Y"
+        },
+        {
+            "date": 1734472800000,
+            "value": "97",
+            "quality": "Y"
+        },
+        {
+            "date": 1734476400000,
+            "value": "99",
+            "quality": "Y"
+        },
+        {
+            "date": 1734480000000,
+            "value": "99",
+            "quality": "Y"
+        },
+        {
+            "date": 1734483600000,
+            "value": "99",
+            "quality": "Y"
+        },
+        {
+            "date": 1734487200000,
+            "value": "98",
+            "quality": "Y"
+        },
+        {
+            "date": 1734490800000,
+            "value": "97",
+            "quality": "Y"
+        },
+        {
+            "date": 1734494400000,
+            "value": "96",
+            "quality": "Y"
+        },
+        {
+            "date": 1734498000000,
+            "value": "93",
+            "quality": "Y"
+        },
+        {
+            "date": 1734501600000,
+            "value": "93",
+            "quality": "Y"
+        },
+        {
+            "date": 1734505200000,
+            "value": "92",
+            "quality": "Y"
+        },
+        {
+            "date": 1734508800000,
+            "value": "92",
+            "quality": "Y"
+        },
+        {
+            "date": 1734512400000,
+            "value": "94",
+            "quality": "Y"
+        },
+        {
+            "date": 1734516000000,
+            "value": "95",
+            "quality": "Y"
+        },
+        {
+            "date": 1734519600000,
+            "value": "96",
+            "quality": "Y"
+        },
+        {
+            "date": 1734523200000,
+            "value": "96",
+            "quality": "Y"
+        },
+        {
+            "date": 1734526800000,
+            "value": "98",
+            "quality": "Y"
+        },
+        {
+            "date": 1734530400000,
+            "value": "97",
+            "quality": "Y"
+        },
+        {
+            "date": 1734534000000,
+            "value": "96",
+            "quality": "Y"
+        },
+        {
+            "date": 1734537600000,
+            "value": "96",
             "quality": "Y"
         }
     ]
