@@ -80,6 +80,8 @@ Jag vill teasta om datamängd är normalfördelad. För detta skull använder ja
 Medelvärde i stationer Halmstad Flugplats och Upsala Flugplats är närmare medianen, som säger att de ssa data 
 närmare normafördelning än data från Umeå Flugplats
 
+[Ladogrammar för TEMPERATUR](img/box_plot/TEMPERATUR_combined_box_plots.png)
+
 ### Tabel 3b. [Beskrivande statistik RELATIVT LUFTFUKTIGHET](statistics/LUFTFUKTIGHET_describe_stat.md)
 
 
@@ -90,6 +92,7 @@ Både plottar och Shapiro-Wilk test för normality tillåtar förkasta nulhypote
 För andra två platser respectivt sannolikhheten för att nulhypotes stämmer är 0.29% och 0.02% och därmed är möjlighet för att felförkasta nulhypotes (fel typ II) är ännu mindre.
 
 ![Luftfuktighet frekvenser](img/frekvenser/LUFTFUKTIGHET_combined.png)
+[Ladogrammar för relativt LUFTFUKTIGHET](img/box_plot/LUFTFUKTIGHET_combined_box_plots.png)
 
 Om jag gör samma test för relativt lurftfuktighet visas det att luftfuktighet i Umeå Flugplats kan vara normalfördelad eftersom p_värde är 6.95% och större än 5%, dvs nulhypotes om att data är normalfördelade kan inta förkastas. Det är ppga stor sannoliket för fel typ II.
 ### Q_Q plottar

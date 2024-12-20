@@ -19,10 +19,13 @@ import seaborn as sns
 import utils
 # variables
 STATIONS = {'Halmstad flygplats': 62410, 'Uppsala Flygplats': 97530, 'Umeå Flygplats': 140480}
+COLORS = ["red"]
+# number of columns each dataframe
+NUM_COLUMNS = len(STATIONS)
 # Directory to save the data files and statistics
 OUTPUT_DIR = {"data":"smhi_data_temp_fukt", "img":"img", "statistics":"statistics"}
 #os.makedirs(OUTPUT_DIR["data"], exist_ok=True)
-
+COLORS = ["orange", "yellow", "green"]
 # parameters to download (parameter_id:parameter_name)
 PARAMS = {1:["TEMPERATUR", "°C"], 6:["LUFTFUKTIGHET", "%"]}
 # period to request. Available periods: latest-hour, latest-day, latest-months or corrected-archive
@@ -43,17 +46,17 @@ for key in PARAMS.keys():
 
 # Extract requaired period (tree days) from downloaded data
 mesured_points = 72 # how mach n will be in the data
-all_data = {}
+#all_data = {}
 three_days = {}
 
 for param_id, parameter in PARAMS.items():
-    station_data = {}
+    #station_data = {}
     three_d_station = {}
     for name, station_id in STATIONS.items():
         file_path = OUTPUT_DIR["data"] + '/' + f'{station_id}_{param_id}.json'
         with open(file_path, 'r') as file:
             data = json.load(file)
-            station_data[name] = data
+            #station_data[name] = data
             # Extract the "value" list and sort it by timestamp
             sorted_data = sorted(
                 data.get("value", []),
@@ -70,11 +73,11 @@ for param_id, parameter in PARAMS.items():
             stat_set[item['date']] = new_value  # Add date-value pair to value_set
     
         three_d_station[name] = stat_set
-    all_data[param_id] = station_data
+    #all_data[param_id] = station_data
     three_days[param_id] = three_d_station
 # chage dataset for each parameter into pandas DateFrame
+
 for key in three_days.keys():
-    
     df = pd.DataFrame.from_dict(three_days[key], orient='columns')
     # convert time index from timestamp to date-time format
     df.index = pd.to_datetime(df.index, unit='ms')
@@ -86,10 +89,45 @@ for key in three_days.keys():
     md_tabel = utils.change_to_markdown(missing_summary, None)
     utils.save_to_mdfile(md_tabel, f'{PARAMS[key][0]}_mis_summ.md', OUTPUT_DIR['statistics'])
     # Generate statistics for each location
-    stats = df.describe().round(2)
-    md_tabel = utils.change_to_markdown(stats, None)
+    stats = df.describe()
+    md_tabel = utils.change_to_markdown(stats.round(2), None)
+    utils.save_to_mdfile(md_tabel, f'{PARAMS[key][0]}_describe_stat.md', OUTPUT_DIR['statistics'])    
+    # Flatten axes for easy iteration
+
+    # Generate box plots for each column
+    NUM_COLUMNS = len(df.columns)
+    fig, axes = plt.subplots(1, NUM_COLUMNS, figsize=(4 * NUM_COLUMNS, 4), squeeze=False)
+    axes = axes.flatten()  # Flatten axes for easier iteration
+    for ax, column, color in zip(axes, df.columns, COLORS):
+        values = df[column].dropna()  # Exclude NaN values for boxplot
+        box = ax.boxplot(
+            values,
+            patch_artist=True,  # Enable custom coloring
+            boxprops=dict(facecolor=color, color="black"),  # Box fill and edge color
+            whiskerprops=dict(color="black"),  # Whisker color
+            capprops=dict(color="black"),  # Cap color
+            medianprops=dict(color="black"),  # Median line color
+        )
+        ax.set_title('') # no title
+        ax.set_xlabel(f"{column}", fontsize=10)
+        ax.set_ylabel(f"{PARAMS[key][0].lower()}, {PARAMS[key][1]}", fontsize=10)
+        ax.grid(False)
+        ax.set_xticks([])
+
+    # Adjust subplot spacing
+    plt.subplots_adjust(wspace=0.4)
     
-    utils.save_to_mdfile(md_tabel, f'{PARAMS[key][0]}_describe_stat.md', OUTPUT_DIR['statistics'])
+    # Add a title for the figure
+    fig.suptitle(f"Box plots for {PARAMS[key][0]}, {PARAMS[key][1]}", fontsize=15)
+    
+    # Save the plot
+    output_path = f"img/box_plot/{PARAMS[key][0]}_combined_box_plots.png"
+    plt.savefig(output_path)
+    print(f"Combined Box Plot saved to {output_path}")
+    
+    # Show the plot
+    plt.show()
+    plt.close()
    
 """
 Distributions plottar för enskilda parametrar
@@ -103,8 +141,8 @@ for param_id in three_days.keys():
     sns.set_theme(style="whitegrid")
     
     # Create a single figure with multiple subplots (one for each station)
-    num_columns = len(df.columns)  # Number of stations
-    fig, axes = plt.subplots(1, num_columns, figsize=(3 * num_columns, 4), squeeze=False)  # Subplots as a 2D array
+
+    fig, axes = plt.subplots(1, NUM_COLUMNS, figsize=(3 * NUM_COLUMNS, 4), squeeze=False)  # Subplots as a 2D array
     
     # Flatten axes for easy iteration
     axes = axes.flatten()
@@ -131,20 +169,27 @@ for param_id in three_days.keys():
     """
     df = pd.DataFrame.from_dict(three_days[param_id], orient='columns')
     norm_distr = utils.stat_norm_distribution(df)
-    # Determine the number of columns (stations)
-    num_columns = len(df.columns)
+
     # Define Seaborn style
     sns.set_theme(style="whitegrid")
     
     # Create a single figure with multiple subplots (one for each column)
-    fig, axes = plt.subplots(1, num_columns, figsize=(4 * num_columns, 4), squeeze=False)  # Subplots as a 2D array
+    fig, axes = plt.subplots(1, NUM_COLUMNS, figsize=(4 * NUM_COLUMNS, 4), squeeze=False)  # Subplots as a 2D array
     
     # Flatten axes for easy iteration
     axes = axes.flatten()
     # Loop through each column in the DataFrame
     for ax, key in zip(axes, df.columns):
         values = df[key]  # Extract the column values
-        
+        # add color for boxes
+        box = ax.boxplot(
+            values,
+            patch_artist=True,  # Enable custom coloring
+            boxprops=dict(facecolor=color, color=color),  # Box fill and edge color
+            whiskerprops=dict(color=color),  # Whisker color
+            capprops=dict(color=color),  # Cap color
+            medianprops=dict(color="black"),  # Median line color
+        )
         # Generate Q-Q plot for each station/column
         sci.probplot(values, dist="norm", plot=ax)
         
@@ -168,48 +213,4 @@ for param_id in three_days.keys():
     #plt.show()
     plt.close()
     
-# # distribution for all month set data
-# for param_id in all_data.keys():    
-    
-#     """
-#     Plots Q-Q plots for each column in the dataframe to check normality visually.
-#     All Q-Q plots are displayed in a single figure with multiple subplots.
-#     """
-#     df = pd.DataFrame.from_dict(all_data[param_id], orient='columns')
-#     norm_distr = utils.stat_norm_distribution(df)
-#     # Determine the number of columns (stations)
-#     num_columns = len(df.columns)
-#     # Define Seaborn style
-#     sns.set_theme(style="whitegrid")
-    
-#     # Create a single figure with multiple subplots (one for each column)
-#     fig, axes = plt.subplots(1, num_columns, figsize=(4 * num_columns, 4), squeeze=False)  # Subplots as a 2D array
-    
-#     # Flatten axes for easy iteration
-#     axes = axes.flatten()
-#     # Loop through each column in the DataFrame
-#     for ax, key in zip(axes, df.columns):
-#         values = df[key]  # Extract the column values
-        
-#         # Generate Q-Q plot for each station/column
-#         sci.probplot(values, dist="norm", plot=ax)
-        
-#         # Title and labels for the plot
-#         ax.set_title(f"Q-Q Plot för 1000 timmar data of {key}", fontsize=10)  # Title for the plot
-#         ax.set_xlabel("Teoretiska kvantiler", fontsize=10)
-#         ax.set_ylabel(f"Ordnade {PARAMS[param_id][0]} kvantiler, {PARAMS[param_id][1]}", fontsize=10)
-#         ax.grid()
-
-#     # Adjust spacing between subplots
-#     plt.tight_layout(pad=2.0, w_pad=1.5, h_pad=1.5) 
-
-#     # # Adjust the spacing between the subplots (increase space between them)
-#     # plt.subplots_adjust(wspace=0.3, hspace=0.3)  # Adjust the width and height spacing between plots
-#     # Save the combined plot
-#     path = f'img/q_q_plot/{PARAMS[param_id][0]}_combined_1000h_qq_plots.png'
-#     plt.savefig(path)
-#     print(f"Combined Q-Q Plot saved to {path}")
-    
-#     # Show the combined plot
-#     #plt.show()
-#     plt.close()
+# box plots
