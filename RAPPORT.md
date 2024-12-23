@@ -11,92 +11,92 @@ Jag hämtar data från [SMHI Open Data API Docs - Meteorological Observations](h
 
 Kod som jag använder för att plocka data:
 
-"""python
-import json
-import request
+"""
+    import json
+    import request
 
-# variables 
-STATIONS = {'Halmstad flygplats': 62410, 'Uppsala Flygplats': 97530, 'Umeå Flygplats': 140480}
-COLORS = ["red"]
-# number of columns each dataframe
-NUM_COLUMNS = len(STATIONS)
-# Directory to save the data files and statistics
-OUTPUT_DIR = {"data":"smhi_data_temp_fukt", "img":"img", "statistics":"statistics"}
-#os.makedirs(OUTPUT_DIR["data"], exist_ok=True)
-COLORS = ["orange", "yellow", "green"]
-CUSTOM_CMAP = LinearSegmentedColormap.from_list(
-    "CustomCmap", COLORS, N=256
-)
-# parameters to download (parameter_id:parameter_name)
-PARAMS = {1:["TEMPERATUR", "°C"], 6:["LUFTFUKTIGHET", "%"]}
-# period to request. Available periods: latest-hour, latest-day, latest-months or corrected-archive
-PERIOD = "latest-months"
+    # variables 
+    STATIONS = {'Halmstad flygplats': 62410, 'Uppsala Flygplats': 97530, 'Umeå Flygplats': 140480}
+    COLORS = ["red"]
+    # number of columns each dataframe
+    NUM_COLUMNS = len(STATIONS)
+    # Directory to save the data files and statistics
+    OUTPUT_DIR = {"data":"smhi_data_temp_fukt", "img":"img", "statistics":"statistics"}
+    #os.makedirs(OUTPUT_DIR["data"], exist_ok=True)
+    COLORS = ["orange", "yellow", "green"]
+    CUSTOM_CMAP = LinearSegmentedColormap.from_list(
+        "CustomCmap", COLORS, N=256
+    )
+    # parameters to download (parameter_id:parameter_name)
+    PARAMS = {1:["TEMPERATUR", "°C"], 6:["LUFTFUKTIGHET", "%"]}
+    # period to request. Available periods: latest-hour, latest-day, latest-months or corrected-archive
+    PERIOD = "latest-months"
 
-# This part i inactivated becouse i work with downloaded data
-# Dowloads data from tree station and for two parameters
-for key in PARAMS.keys():
-    for station, id in STATIONS.items():
-        data_url = f'https://opendata-download-metobs.smhi.se/api/version/1.0/parameter/{key}/station/{id}/period/{PERIOD}/data.json'
-        response = requests.get(data_url)
-        response.raise_for_status()  # Check if the request succeeded
-        
-        result = json.loads(response.content)
-        save_path = f'{OUTPUT_DIR["data"]}/{id}_{key}.json'
-        with open(save_path, "w", encoding="utf-8") as file:
-            json.dump(result, file, indent=4, ensure_ascii=False)
+    # This part i inactivated becouse i work with downloaded data
+    # Dowloads data from tree station and for two parameters
+    for key in PARAMS.keys():
+        for station, id in STATIONS.items():
+            data_url = f'https://opendata-download-metobs.smhi.se/api/version/1.0/parameter/{key}/station/{id}/period/{PERIOD}/data.json'
+            response = requests.get(data_url)
+            response.raise_for_status()  # Check if the request succeeded
+            
+            result = json.loads(response.content)
+            save_path = f'{OUTPUT_DIR["data"]}/{id}_{key}.json'
+            with open(save_path, "w", encoding="utf-8") as file:
+                json.dump(result, file, indent=4, ensure_ascii=False)
 """
 
 Data sparas data i filer, egen fil skaffas för varje station och variabel. För statistisk bearbetning hämtas data med hjälp av förljande kod:
 
-"""python
-import datetime
+"""
+    import datetime
 
-# Extract requaired period (tree days) from downloaded data
-mesured_points = 72 # how mach n will be in the data
-#all_data = {}
-three_days = {}
+    # Extract requaired period (tree days) from downloaded data
+    mesured_points = 72 # how mach n will be in the data
+    #all_data = {}
+    three_days = {}
 
-data_rows = []
+    data_rows = []
 
-# Create dictionary for three days data form each station in accending order
-for param_id, parameter in PARAMS.items():
-    #station_data = {}
-    three_d_station = {}
-    for name, station_id in STATIONS.items():
-        file_path = OUTPUT_DIR["data"] + '/' + f'{station_id}_{param_id}.json'
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            #station_data[name] = data
-            # Extract the "value" list and sort it by timestamp
-            sorted_data = sorted(
-                data.get("value", []),
-                key=lambda x: datetime.fromtimestamp(x["date"] / 1000, tz=pytz.timezone("Europe/Stockholm"))
-            )
-            # Get the last N points
-            last_points = sorted_data[-mesured_points:]
+    # Create dictionary for three days data form each station in accending order
+    for param_id, parameter in PARAMS.items():
+        #station_data = {}
+        three_d_station = {}
+        for name, station_id in STATIONS.items():
+            file_path = OUTPUT_DIR["data"] + '/' + f'{station_id}_{param_id}.json'
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+                #station_data[name] = data
+                # Extract the "value" list and sort it by timestamp
+                sorted_data = sorted(
+                    data.get("value", []),
+                    key=lambda x: datetime.fromtimestamp(x["date"] / 1000, tz=pytz.timezone("Europe/Stockholm"))
+                )
+                # Get the last N points
+                last_points = sorted_data[-mesured_points:]
+                """
+                change it to pivot tabel
+                """
+            """the arrays' item are dict with keys: date, value and quality. 
+            I want remove quality but replace value to nympy.nan if quality is not G or Y
             """
-            change it to pivot tabel
-            """
-        """the arrays' item are dict with keys: date, value and quality. 
-        I want remove quality but replace value to nympy.nan if quality is not G or Y
-        """
-        stat_set = {}
-        for item in last_points:
-            new_value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
-            stat_set[item['date']] = new_value  # Add date-value pair to value_set
-            time = datetime.fromtimestamp(item['date'] / 1000, tz=pytz.timezone("Europe/Stockholm"))
-            value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
+            stat_set = {}
+            for item in last_points:
+                new_value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
+                stat_set[item['date']] = new_value  # Add date-value pair to value_set
+                time = datetime.fromtimestamp(item['date'] / 1000, tz=pytz.timezone("Europe/Stockholm"))
+                value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
 
-            # Append each row with the timestamp, station, parameter_id, and value
-            data_rows.append({
-                'time': time,
-                'station_name': name,
-                'parameter': PARAMS[param_id][0],
-                'value': value
-            })
-        three_d_station[name] = stat_set
-        
-        three_days[param_id] = three_d_station
+                # Append each row with the timestamp, station, parameter_id, and value
+                data_rows.append({
+                    'time': time,
+                    'station_name': name,
+                    'parameter': PARAMS[param_id][0],
+                    'value': value
+                })
+            three_d_station[name] = stat_set
+            
+            three_days[param_id] = three_d_station
 """
 
  Dataurval presenterades i [Tabel 1a](### Tabel 1a. TEMPERATUR per timme under sista tre dagar från tre stationer:) och [Tabel 1b](### Tabel 1b. LUFTFUKTIGHET per timme från tre stationer).
