@@ -159,7 +159,7 @@ def comment_avay():
     parameters = df_three['parameter'].unique()
 
     # Set up the figure
-    fig, axes = plt.subplots(2, 3, figsize=(12, 4 * 2)) # 2 rows 3 columns
+    fig, axes = plt.subplots(2, 3, figsize=(12, 4 * 2))  # 2 rows, 3 columns
 
     results = []
     # Loop over stations and parameters
@@ -169,16 +169,17 @@ def comment_avay():
             data_filtered = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
             stat, p_value = sci.shapiro(data_filtered['value'])
             results.append({
-            'Station': station,
-            'Parameter': parameter,
-            'Shapiro-Wilk Statistic': round(stat, 5),
-            'P-value': round(p_value, 5),
-            'Normal Distribution (p > 0.05)': 'Yes' if p_value > 0.05 else 'No'
-        })
+                'Station': station,
+                'Parameter': parameter,
+                'Shapiro-Wilk Statistic': round(stat, 5),
+                'P-value': round(p_value, 5),
+                'Normal Distribution (p > 0.05)': 'Yes' if p_value > 0.05 else 'No'
+            })
+            
             # Select the current axis
             ax = axes[i, j]
             
-            # Create a boxplot
+            # Plot the boxplot
             sns.boxplot(
                 ax=ax,
                 data=data_filtered,
@@ -189,18 +190,16 @@ def comment_avay():
                 width=0.3,
                 dodge=False
             )
-            
-            # Rotate x-axis labels
-            ax.tick_params(axis='x')
-            
+
             # Add title and labels
-            ax.set_title(f"{station} - {parameter}", fontsize=12)
-            ax.set_xlabel("Station Name", fontsize=10)
-            ax.set_ylabel("Value", fontsize=10)
+            ax.set_title(f"{station} - {parameter}", fontsize=8)
+            #ax.set_xlabel("Station Name", fontsize=10)
+            ax.set_ylabel(f"{'°C' if parameter == 'TEMPERATUR' else '%'}", fontsize=8)
+
             # Annotate p-value on the plot
             ax.text(
                 0.9, 0.8,  # Position: center-top of the plot
-                f"p={p_value:.3f}",
+                f"p={p_value:.5f}",
                 transform=ax.transAxes,
                 fontsize=10,
                 ha='center',
@@ -212,13 +211,37 @@ def comment_avay():
 
     # Show the figure
     plt.savefig('img/box_plot/all.png')
-
+    plt.show()
+    plt.close()
     # Save the results of Shapiro-Wilk test
     results_df = pd.DataFrame(results)
     utils.save_to_mdfile(results_df, "shapiro_wilk.md", "statistics")
-    
 
-     
+""""
+Q_Q plottar
+"""
+fig, axes = plt.subplots(2, 3, figsize=(10, 3 * 2))
+
+
+# Loopa igenom alla stationer och parametrar
+for i, station in enumerate(stations):
+    for j, parameter in enumerate(parameters):
+        # Filtrera data för station och parameter
+        data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+        numeric_data = data['value'].dropna()
+        # Skapa Q-Q diagram för att jämföra med normalfördelning
+        ax = axes[j, i]
+        
+        sci.probplot(numeric_data, dist="norm", plot=ax)
+        ax.set_ylabel(f"{'temperatur, °C' if parameter == 'TEMPERATUR' else 'humidity, %'}", fontsize=8)
+        # Lägg till titel
+        ax.set_title(f"Q-Q plot: {station} - {parameter}", fontsize=8)
+        ax.get_lines()[1].set_color('red')  # Gör linjen för teoretiska kvantiler röd
+        
+# Justera layouten
+plt.tight_layout()
+plt.savefig('img/q_q_plot/all.png')
+plt.close()
 exit()
 """
 CORRELATION MATRIX FOR 6 PARAMETERS

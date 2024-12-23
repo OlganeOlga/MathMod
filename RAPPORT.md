@@ -311,7 +311,11 @@ Följande kode skaffar ladogrammer för varje station ohc parameter, samt gör S
 '''
 
 
-![Ladogrammar ](img/box_plot/all.png)
+### Figur 2
+[Ladogrammar ](img/box_plot/all.png)
+#### Förklaring till Figur 2.
+Figuren visar boxplottar för olika stationer och parametrar. Varje delplott representerar en specifik kombination av station och parameter. De parametrar som visas är temperatur och luftfuktighet, och motsvarande enheter anges i diagrammets etiketter. Boxplottarna visar fördelningen av värden för varje station, där den centrala linjen representerar medianen, boxarna visar det interkvartila intervallet (IQR) och morrhåren sträcker sig till minimi- och maximivärdena inom 1,5 * IQR. Små sirklar visar avvikande värde.
+För varje boxplott anges ett resultat från Shapiro-Wilk-testetm, den hjälper att bedöma om data följer en normalfördelning. Ett p-värde under 0,05 indikerar att data inte följer en normalfördelning, och detta markeras med rött i diagrammet. 
 
 ### Tabell 4. Shapiro-Wilk test
 
@@ -325,28 +329,42 @@ Följande kode skaffar ladogrammer för varje station ohc parameter, samt gör S
 | Uppsala Flygplats  | TEMPERATUR    |                    0.944 |     0.003 | No                               |
 
 *Med dessa plottar och Shapiro-Wilk test testar jag nulhypotes: att data är noirmalfördelad.*
-Både plottar och Shapiro-Wilk test för normality tillåtar förkasta nulhypotes om att temperatur spridning är normal fördelad. Sannolikheten att nulhypotes stämmer är 3.78% för Halmstad flygplats, som är mindre än 5% och därmed är sannolikhet för typ II fel är ganska liten.
-För andra två platser respectivt sannolikhheten för att nulhypotes stämmer är 0.29% och 0.02% och därmed är möjlighet för att felförkasta nulhypotes (fel typ II) är ännu mindre.
+Ldogrammar och Shapiro-Wilk test för normality tillåtar förkasta nulhypotes om att temperatur spridning är normal fördelad. Sannolikheten att nulhypotes stämmer är mindre än 5% och därmed för alla tre platsar och därmed är sannolikhet för typ II fel (att felaktigt förkasta null hupotes) är ganska liten.
+Samma påstående stämmer för relativt lyft fuktighet med undantag för relativt luftfuktighet i Umeå flygplats, där sannolikhet att null hypotes stämmer är mera än 5%, nämlgen 7%.
+
 ### Q_Q plottar
 Det finns ett annat sät att visualisera avvikelse från normalfördelning, n-mligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Varje axel visar fördelningen av en dataset. I detta fall jämför jag dataset från olika stationer mot den teoretiska normalfördelningen. På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
-### Fig 4a
-![Kvanti_kventil ploter för TEMPERATUR](img/q_q_plot/TEMPERATUR_combined_qq_plots.png)
+### Fig 4
+![Kvanti_kventil plottar ](img/q_q_plot/all.png)
+## Förklaring av Q-Q Plottar
 
-### Tabel 3b. [Beskrivande statistik RELATIVT LUFTFUKTIGHET](statistics/LUFTFUKTIGHET_describe_stat.md)
-Om jag gör samma test för relativt lurftfuktighet visas det att luftfuktighet i Umeå Flugplats kan vara normalfördelad eftersom p_värde är 6.95% och större än 5%, dvs nulhypotes om att data är normalfördelade kan inta förkastas. Det är ppga stor sannoliket för fel typ II.
+Den här figuren visar **Q-Q plottar** för data från olika stationer och parametrar. En Q-Q plot (Quantile-Quantile plot) jämför de empiriska kvantilerna från den faktiska datan med de teoretiska kvantilerna från en normalfördelning. Syftet med denna figur är att visuellt bedöma hur väl datan följer en normalfördelning.
 
-![Ladogrammar för relativt LUFTFUKTIGHET](img/box_plot/LUFTFUKTIGHET_combined_box_plots.png)
+Vad visar figuren?
+- **X-axeln**: De teoretiska kvantilerna från en normalfördelning.
+- **Y-axeln**: De empiriska kvantilerna från vår data, som representerar de observerade värdena.
+- **Punkterna**: Varje punkt representerar ett par kvantiler – ett från den empiriska fördelningen (vår data) och ett från den teoretiska fördelningen (normalfördelning). Om punkterna ligger på en rak linje, indikerar detta att datan följer en normalfördelning.
 
-![Luftfuktighet frekvenser](img/frekvenser/LUFTFUKTIGHET_combined.png)
+Tolkning av figuren:
+- **Om punkterna ligger nära en rak linje**: Detta tyder på att datan är nära en normalfördelning.
+- **Om punkterna avviker från linjen**:
+  - **Om punkterna böjer sig uppåt vid svansarna**: Detta kan indikera att datan har för mycket extrema värden, vilket tyder på en tyngre svans än normalfördelningen (t.ex. en t-fördelning).
+  - **Om punkterna böjer sig nedåt vid svansarna**: Detta kan tyda på att datan har för få extrema värden och inte har lika många extremvärden som en normalfördelning.
+  - **Om punkterna är ojämnt fördelade eller böjer sig i mitten**: Detta kan indikera en snedvridning (skewness) i datan, vilket innebär att den inte är symmetrisk.
+För varje plot
+- Varje subplot representerar en **station** och en **parameter**.
+- De röda linjerna representerar den teoretiska normalfördelningen som används för att jämföra den empiriska datan.
+- Om data följer en normalfördelning bör punkterna vara nära den röda linjen, särskilt i mitten och vid svansarna.
 
-### Tabel 4b
-![Kvanti_kventil ploter för RELATIVT LUFTFUKTIGHET](img/q_q_plot/LUFTFUKTIGHET_combined_qq_plots.png)
+Denna typ av figur används för att snabbt bedöma om datan följer en normalfördelning, vilket kan vara användbart i statistiska tester eller när du ska välja lämpliga modeller för analysen.
 
-Dess plottar visa samma: aärmast till normalfördelningen är data från station Halmstad flygplats, för både temperatur och relativt lyftfuktighet.
+Dessa plottar visa samma: närmast till normalfördelningen är data från relativt luftfuktighet i Umeå flygplats.
 
-# Uppgift 4: Linjär regression
-jag ser hur korrelerar olika variabler med varandra
-![Korrelation matrix](img/correlations/all_correlations.png)
+
+## Uppgift 4: Linjär regression
+
+För att ser med vilka data ska jag arbeta vill jag först titta på hur data korrelerrar med varandra. Däerför skaffar jag korrelation matris.
+![Korrelation matris](img/correlations/all_correlations.png)
 
 Matrix visar att den bästa correlation är mellan temperatur och relativt luftfuktighet i Umeå.
 Därför välde jag att använda dessa variabler för liniar regression
