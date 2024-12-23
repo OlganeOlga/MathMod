@@ -139,7 +139,9 @@ Koden till funktioner för att hämta data finns i [GitHub](https://github.com/O
 | 2024-12-18 16:00:00 |                      96 |                    100 |                  96 |
 
 Jag använder pivottabel:
-|       |   Halmstad flygplats LUFTFUKTIGHET |   Halmstad flygplats TEMPERATUR |   Ume� Flygplats LUFTFUKTIGHET |   Ume� Flygplats TEMPERATUR |   Uppsala Flygplats LUFTFUKTIGHET |   Uppsala Flygplats TEMPERATUR |
+
+<div style="font-size: 8px;">
+|       |   Halmstad flygplats LUFTFUKTIGHET |   Halmstad flygplats TEMPERATUR |   Umeå Flygplats LUFTFUKTIGHET |   Umeå Flygplats TEMPERATUR |   Uppsala Flygplats LUFTFUKTIGHET |   Uppsala Flygplats TEMPERATUR |
 |:------|-----------------------------------:|--------------------------------:|-------------------------------:|----------------------------:|----------------------------------:|-------------------------------:|
 | count |                              72    |                           72    |                          72    |                       72    |                             72    |                          72    |
 | mean  |                              91.47 |                            6.91 |                          88.38 |                      -10.61 |                             78.01 |                           1.27 |
@@ -149,7 +151,7 @@ Jag använder pivottabel:
 | 50%   |                              93    |                            7    |                          88    |                      -10.05 |                             77.5  |                           1.9  |
 | 75%   |                              96    |                            7.43 |                          91.25 |                       -5.38 |                             87.25 |                           2.72 |
 | max   |                              99    |                            8.9  |                          96    |                       -1.3  |                            100    |                           6.6  |
-
+</div>
 Jag tittar om det finns missade data för [temperatur](### Tabel 2a.) och för [relativt luftfuktighet](### Tabel 2b.)
 
 ### Tabel 2a. [Missade data för TEMPERATUR](statistics/TEMPERATUR_mis_summ.md)           
