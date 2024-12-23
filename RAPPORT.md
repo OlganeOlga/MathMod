@@ -28,13 +28,13 @@ Kod som jag använder för att plocka data:
     CUSTOM_CMAP = LinearSegmentedColormap.from_list(
         "CustomCmap", COLORS, N=256
     )
-    # parameters to download (parameter_id:parameter_name)
+    # parameters to download (parameter_id:[name, unit])
     PARAMS = {1:["TEMPERATUR", "°C"], 6:["LUFTFUKTIGHET", "%"]}
     # period to request. Available periods: latest-hour, latest-day, latest-months or corrected-archive
     PERIOD = "latest-months"
 
     # This part i inactivated becouse i work with downloaded data
-    # Dowloads data from tree station and for two parameters
+    # Dowloads data from three stations and for two parameters
     for key in PARAMS.keys():
         for station, id in STATIONS.items():
             data_url = f'https://opendata-download-metobs.smhi.se/api/version/1.0/parameter/{key}/station/{id}/period/{PERIOD}/data.json'
@@ -79,8 +79,8 @@ Data sparas data i filer, egen fil skaffas för varje station och variabel. För
                 """
                 change it to pivot tabel
                 """
-            """the arrays' item are dict with keys: date, value and quality. 
-            I want remove quality but replace value to nympy.nan if quality is not G or Y
+            """the arrays' item are dictionary {key: {date, value and quality}}. 
+            I want to remove quality but replace value to nympy.nan if quality is not G or Y
             """
             stat_set = {}
             for item in last_points:
@@ -101,7 +101,9 @@ Data sparas data i filer, egen fil skaffas för varje station och variabel. För
             three_days[param_id] = three_d_station
 """
 
- Dataurval presenterades i [Tabel 1a](### Tabel 1a. TEMPERATUR per timme under sista tre dagar från tre stationer:) och [Tabel 1b](### Tabel 1b. LUFTFUKTIGHET per timme från tre stationer).
+Som resultat far jag nästlad diktionary: {Paramere_id: {plats:{timestamp:value}}}. Detta datatyp förändet jag till pandas <DataFrame> objekt. Ibbland anvädner jag separata objekt som innehåller bara en parameter. För de sista uppgifter använder jag objekt som innehåler båda parameter.
+
+Dataurval presenterades i [Tabel 1a](### Tabel 1a. TEMPERATUR per timme under sista tre dagar från tre stationer:) och [Tabel 1b](### Tabel 1b. LUFTFUKTIGHET per timme från tre stationer).
 Koden till funktioner för att hämta data finns i [GitHub](https://github.com/OlganeOlga/MathMod/tree/master/get_dynam_data).
 
 Alla tabeller och figurer skapas med filen [ALL_CODE.py](ALL_CODE.py)

@@ -10,6 +10,7 @@ import json
 from datetime import datetime
 import pytz
 ## statisticks and figures
+import requests
 import scipy.stats as sci
 import numpy as np
 import pandas as pd
@@ -40,7 +41,7 @@ PARAMS = {1:["TEMPERATUR", "°C"], 6:["LUFTFUKTIGHET", "%"]}
 PERIOD = "latest-months"
 
 # This part i inactivated becouse i work with downloaded data
-"""# Dowloads data from tree station and for two parameters
+"""# Dowloads data from three stations and for two parameters
 for key in PARAMS.keys():
     for station, id in STATIONS.items():
         data_url = f'https://opendata-download-metobs.smhi.se/api/version/1.0/parameter/{key}/station/{id}/period/{PERIOD}/data.json'
@@ -96,6 +97,8 @@ for param_id, parameter in PARAMS.items():
                 'value': value
             })
         three_d_station[name] = stat_set
+        print(three_d_station)
+        exit()
         
         three_days[param_id] = three_d_station
 # chage dataset for each parameter into pandas DateFrame
