@@ -156,16 +156,16 @@ För att lättare operera med data jag skaffar också kombinerad <DataFrame> obj
 |----:|:--------------------------|:-------------------|:--------------|--------:|
 |   0 | 2024-12-15 18:00:00+01:00 | Halmstad flygplats | TEMPERATUR    |     7.8 |
 |   1 | 2024-12-15 19:00:00+01:00 | Halmstad flygplats | TEMPERATUR    |     8.1 |
---------
+.............
 | 132 | 2024-12-18 06:00:00+01:00 | Uppsala Flygplats  | TEMPERATUR    |    -3.7 |
 | 133 | 2024-12-18 07:00:00+01:00 | Uppsala Flygplats  | TEMPERATUR    |    -3.2 |
 | 134 | 2024-12-18 08:00:00+01:00 | Uppsala Flygplats  | TEMPERATUR    |    -2.7 |
--------
+...............
 | 214 | 2024-12-18 16:00:00+01:00 | Umeå Flygplats     | TEMPERATUR    |    -3.4 |
 | 215 | 2024-12-18 17:00:00+01:00 | Umeå Flygplats     | TEMPERATUR    |    -3.1 |
 | 216 | 2024-12-15 18:00:00+01:00 | Halmstad flygplats | LUFTFUKTIGHET |    98   |
 | 217 | 2024-12-15 19:00:00+01:00 | Halmstad flygplats | LUFTFUKTIGHET |    95   |
---------
+...............
 | 429 | 2024-12-18 15:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    95   |
 | 430 | 2024-12-18 16:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    95   |
 | 431 | 2024-12-18 17:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    96   |
@@ -174,41 +174,87 @@ Det är intressant att veta om vissa tidpunkter saknar någon av m'ätningar på
 Följande kode skaffar detta satistik:
 
 '''
+# Count NaN values per station_name and parameter
+nan_counts = df_three.groupby(['station_name', 'parameter'])['value'].apply(lambda x: x.isna().sum()).reset_index()
+
+# Give name for columns
+nan_counts.columns = ['station_name', 'parameter', 'Missing values']
+utils.save_to_mdfile(nan_counts, "nan_counts.md", "statistics")
 
 '''
 
-Det verkar att inga mätningar är missade data för båda parameters:
+Det verkar att inga mätningar är missade data för båda parameters under välde tiden:
 
-### Tabel 2. [Missade data för alla parameter: ](statistics/ALLA_mis_summ.md)
-|        station och parameter            |N missad|
-|:----------------------------------------|-------:|
-| ('Halmstad flygplats', 'LUFTFUKTIGHET') |   0    |
-| ('Halmstad flygplats', 'TEMPERATUR')    |   0    |
-| ('Umeå Flygplats', 'LUFTFUKTIGHET')     |   0    |
-| ('Umeå Flygplats', 'TEMPERATUR')        |   0    |
-| ('Uppsala Flygplats', 'LUFTFUKTIGHET')  |   0    |
-| ('Uppsala Flygplats', 'TEMPERATUR')     |   0    |
+### Tabel 2. [Missade data för alla parameter: ](statistics/nan_count.md)
+|    | station_name       | parameter     |   Missing values |
+|---:|:-------------------|:--------------|-----------------:|
+|  0 | Halmstad flygplats | LUFTFUKTIGHET |                0 |
+|  1 | Halmstad flygplats | TEMPERATUR    |                0 |
+|  2 | Umeå Flygplats     | LUFTFUKTIGHET |                0 |
+|  3 | Umeå Flygplats     | TEMPERATUR    |                0 |
+|  4 | Uppsala Flygplats  | LUFTFUKTIGHET |                0 |
+|  5 | Uppsala Flygplats  | TEMPERATUR    |                0 |
 
-Det verkar att inga tidspunkter var missad under dessa tre dagar. Sedan 
+## Uppgift 2. Beskrivande statistik 
 
-Jag vill teasta om datamängd är normalfördelad. För detta skull använder jag Shapiro-Wilk test för normalitets sprigning.
+För att snabbt räkna ut statistiska egenskaper jag använder [describe()](https://www.bing.com/search?q=pandas+dataframe+describe&qs=SC&pq=pundas+dataframe+des&sc=8-20&cvid=5A1CCA0286C94253B1CE2447970B9A78&FORM=QBRE&sp=1&ghc=1&lq=0) metod fär pandas <DateFrame> objekt.
+Jag urvalet anvädnes förljande kod:
 
-Datamängder har förljande karakteristiker:
+'''
+    descriptive_stats = df_three.groupby(['station_name', 'parameter'])['value'].describe()
+'''
 
+Resultat presenterad i följande tabellen:
+### Tabell 3. Beskrivande statistik för alla stationer och 
 <div style="font-size: 8px;">
 
-|       |   Halmstad flygplats LUFTFUKTIGHET |   Halmstad flygplats TEMPERATUR |   Umeå Flygplats LUFTFUKTIGHET |   Umeå Flygplats TEMPERATUR |   Uppsala Flygplats LUFTFUKTIGHET |   Uppsala Flygplats TEMPERATUR |
-|:------|-----------------------------------:|--------------------------------:|-------------------------------:|----------------------------:|----------------------------------:|-------------------------------:|
-| count |                              72    |                           72    |                          72    |                       72    |                             72    |                          72    |
-| mean  |                              91.47 |                            6.91 |                          88.38 |                      -10.61 |                             78.01 |                           1.27 |
-| std   |                               5.98 |                            0.93 |                           4.1  |                        5.68 |                             14.14 |                           2.48 |
-| min   |                              75    |                            4.4  |                          81    |                      -20.4  |                             57    |                          -4.7  |
-| 25%   |                              90    |                            6.38 |                          85    |                      -15.82 |                             64    |                           0.18 |
-| 50%   |                              93    |                            7    |                          88    |                      -10.05 |                             77.5  |                           1.9  |
-| 75%   |                              96    |                            7.43 |                          91.25 |                       -5.38 |                             87.25 |                           2.72 |
-| max   |                              99    |                            8.9  |                          96    |                       -1.3  |                            100    |                           6.6  |
+|      staion, parameter, enheter       |   count |   mean |   std |   min |    25% |    50% |   75% |   max |
+|:--------------------------------------|--------:|-------:|------:|------:|-------:|-------:|------:|------:|
+| Halmstad flygplats, LUFTFUKTIGHET, %  |      72 |  91.47 |  5.98 |  75   |  90    |  93    | 96    |  99   |
+| Halmstad flygplats, TEMPERATUR °C     |      72 |   6.91 |  0.93 |   4.4 |   6.38 |   7    |  7.43 |   8.9 |
+| Umeå Flygplats, LUFTFUKTIGHET, %      |      72 |  88.38 |  4.1  |  81   |  85    |  88    | 91.25 |  96   |
+| Umeå Flygplats, TEMPERATUR, °C        |      72 | -10.61 |  5.68 | -20.4 | -15.82 | -10.05 | -5.38 |  -1.3 |
+| Uppsala Flygplats, LUFTFUKTIGHET, %   |      72 |  78.01 | 14.14 |  57   |  64    |  77.5  | 87.25 | 100   |
+| Uppsala Flygplats, TEMPERATUR, °C     |      72 |   1.27 |  2.48 |  -4.7 |   0.18 |   1.9  |  2.72 |   6.6 |
 </div>
 
+Tabellen visar att alla stationer har 72 mätningar för båda parameter. Medelvärde är oftast inte avvikar mycket från medianen med undentag för temperatur i Umeå. Första och tredje kvartiler avstar ganska lika mycket från median, men minimala och maksimala värde avstar inte lika mycket från median.
+
+Det är svårt att säga om data är normalfördelat enbart från resultater av tabellen. Jag skaffar därför plottar som visar hur data fördelade.
+
+"""
+    stations = df_three['station_name'].unique()
+    parameters = df_three['parameter'].unique()
+
+    plt.figure(figsize=(8, 6)) # initiate figure
+
+    # Iterate through all stations and parameters
+    for i, station in enumerate(stations):
+        for j, parameter in enumerate(parameters):
+            # filter data for each station and parameter
+            data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+
+            # Subplot indexering: 3 rows for 3 stations and 2 columns for 2 parameters
+            plt.subplot(3, 2, i * len(parameters) + j + 1) 
+            
+            # create histogramm
+            sns.histplot(data['value'], kde=True, bins=24, color="green", edgecolor="black")
+            
+            # add title and axes
+            plt.title(f"{station} - {parameter}")
+            plt.xlabel("Värde")
+            plt.ylabel("Frekvens")
+
+    # Agast layout
+    plt.tight_layout()
+"""
+
+Grafiska fördelningar visas i Figur [1](Figur 1)
+
+![### Figur 1](img/frekvenser/alla.png)
+
+Plottar visar att data inte
+Jag vill teasta om datamängd är normalfördelad. För detta skull använder jag Shapiro-Wilk test för normalitets sprigning.
 
 Medelvärde i stationer Halmstad Flugplats och Upsala Flugplats är närmare medianen, som säger att de ssa data 
 närmare normafördelning än data från Umeå Flugplats
@@ -250,3 +296,4 @@ konfidensintervall av dessa. Visualisera detta i en graf med den linjära modell
 och originaldata i samma figur.*
 
 Jag gör liniar regression för relativt luft fuktighet i Umea Fluglats. Jag väljer det datamängd eftersom fördelningen i detta grupp data är normal med största sannolikhet.
+ganska

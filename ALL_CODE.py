@@ -102,35 +102,55 @@ for param_id, parameter in PARAMS.items():
 
 # Convert the list of dictionaries into a pandas DataFrame objekt
 df_three = pd.DataFrame(data_rows)
+df_three.columns.str.replace(' ', '\n')
 
 # save to markdown file to be able sow in the presentation
 utils.save_to_mdfile(df_three, 'dataframe.md', 'statistics')
+def comment_avay():
+    # CHECK FOR MISSING POINTS
+    # Count NaN valu3es per station_name and parameter
+    nan_counts = df_three.groupby(['station_name', 'parameter'])['value'].apply(lambda x: x.isna().sum()).reset_index()
 
-df_three.columns.str.replace(' ', '\n')
-#print(df_three)
+    # Give name for columns
+    nan_counts.columns = ['station_name', 'parameter', 'Missing values']
+    utils.save_to_mdfile(nan_counts, "nan_counts.md", "statistics")
+    
+    # descriptive statistics
+    descriptive_stats = df_three.groupby(['station_name', 'parameter'])['value'].describe()
+    utils.save_to_mdfile(descriptive_stats.round(2), "descriptive_stats.md", "statistics")
 
-# Pivot the data so each station gets its own column, and timestamps are aligned
-df_three_pivoted = df_three.pivot_table(index="time", columns=["station_name", "parameter"], values="value", aggfunc="mean")
+"""
+Create figur showing frequensy destérsion of values for all stations and parameters
+"""
+stations = df_three['station_name'].unique()
+parameters = df_three['parameter'].unique()
 
-# create markdown file for presentation
-utils.save_to_mdfile(df_three_pivoted, 'df_pivoted.md', OUTPUT_DIR['statistics'])
 
-# Display the DataFrame
-stats = df_three_pivoted.describe()
-# Flatten the MultiIndex columns
-stats.columns = [' '.join(col).strip() for col in stats.columns.values]
+plt.figure(figsize=(8, 6)) # initiate figure
 
-# Display the flattened DataFrame
-#print(stats.round(2))
-#md_tabel = utils.change_to_markdown(stats.round(2), None)
-utils.save_to_mdfile(stats, 'describe_stat_all.md', OUTPUT_DIR['statistics'])
+# Iterate through all stations and parameters
+for i, station in enumerate(stations):
+    for j, parameter in enumerate(parameters):
+        # filter data for each station and parameter
+        data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+
+        # Subplot indexering: 3 rows for 3 stations and 2 columns for 2 parameters
+        plt.subplot(3, 2, i * len(parameters) + j + 1) 
+        
+        # create histogramm
+        sns.histplot(data['value'], kde=True, bins=24, color="green", edgecolor="black")
+        
+        # add title and axes
+        plt.title(f"{station} - {parameter}")
+        plt.xlabel("Värde")
+        plt.ylabel("Frekvens")
+
+# Justera layout och visa figuren
+plt.tight_layout()
+plt.savefig("img/frekvenser/alla.png")
+
 exit()
-
-# Summary of missing data
-missing_summary = df_three_pivoted.isna().sum()
-# print(missing_summary.to_markdown())
-
-def code_to_skip():
+def comment_avasy():
     for key in three_days.keys():
         df = pd.DataFrame.from_dict(three_days[key], orient='columns')
         # convert time index from timestamp to date-time format

@@ -48,7 +48,7 @@ def save_to_mdfile(data_frame, filename: str = 'RAPPORT.md', dir_name: str = "de
     file_path = f'{dir_name}/{filename}'
 
     # Write the markdown table to the file
-    with open(file_path, 'w') as file:
+    with open(file_path, 'w', encoding='utf-8') as file:
         file.write(markdown_table)
 
 def table_to_picture(table: pd.DataFrame, saving_path: str):

@@ -1,4 +1,4 @@
-|       |   Halmstad flygplats LUFTFUKTIGHET |   Halmstad flygplats TEMPERATUR |   Umeå Flygplats LUFTFUKTIGHET |   Umeå Flygplats TEMPERATUR |   Uppsala Flygplats LUFTFUKTIGHET |   Uppsala Flygplats TEMPERATUR |
+|       |   Halmstad flygplats LUFTFUKTIGHET |   Halmstad flygplats TEMPERATUR |   UmeÃ¥ Flygplats LUFTFUKTIGHET |   UmeÃ¥ Flygplats TEMPERATUR |   Uppsala Flygplats LUFTFUKTIGHET |   Uppsala Flygplats TEMPERATUR |
 |:------|-----------------------------------:|--------------------------------:|-------------------------------:|----------------------------:|----------------------------------:|-------------------------------:|
 | count |                           72       |                       72        |                       72       |                    72       |                           72      |                       72       |
 | mean  |                           91.4722  |                        6.90972  |                       88.375   |                   -10.6111  |                           78.0139 |                        1.27361 |
