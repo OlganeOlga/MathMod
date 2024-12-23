@@ -103,10 +103,13 @@ for param_id, parameter in PARAMS.items():
 # Convert the list of dictionaries into a pandas DataFrame objekt
 df_three = pd.DataFrame(data_rows)
 df_three.columns.str.replace(' ', '\n')
+stations = df_three['station_name'].unique()
+parameters = df_three['parameter'].unique()
 
-# save to markdown file to be able sow in the presentation
-utils.save_to_mdfile(df_three, 'dataframe.md', 'statistics')
 def comment_avay():
+    # save to markdown file to be able sow in the presentation
+    utils.save_to_mdfile(df_three, 'dataframe.md', 'statistics')
+    
     # CHECK FOR MISSING POINTS
     # Count NaN valu3es per station_name and parameter
     nan_counts = df_three.groupby(['station_name', 'parameter'])['value'].apply(lambda x: x.isna().sum()).reset_index()
@@ -119,174 +122,108 @@ def comment_avay():
     descriptive_stats = df_three.groupby(['station_name', 'parameter'])['value'].describe()
     utils.save_to_mdfile(descriptive_stats.round(2), "descriptive_stats.md", "statistics")
 
-"""
-Create figur showing frequensy destérsion of values for all stations and parameters
-"""
-stations = df_three['station_name'].unique()
-parameters = df_three['parameter'].unique()
-
-
-plt.figure(figsize=(8, 6)) # initiate figure
-
-# Iterate through all stations and parameters
-for i, station in enumerate(stations):
-    for j, parameter in enumerate(parameters):
-        # filter data for each station and parameter
-        data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
-
-        # Subplot indexering: 3 rows for 3 stations and 2 columns for 2 parameters
-        plt.subplot(3, 2, i * len(parameters) + j + 1) 
-        
-        # create histogramm
-        sns.histplot(data['value'], kde=True, bins=24, color="green", edgecolor="black")
-        
-        # add title and axes
-        plt.title(f"{station} - {parameter}")
-        plt.xlabel("Värde")
-        plt.ylabel("Frekvens")
-
-# Justera layout och visa figuren
-plt.tight_layout()
-plt.savefig("img/frekvenser/alla.png")
-
-exit()
-def comment_avasy():
-    for key in three_days.keys():
-        df = pd.DataFrame.from_dict(three_days[key], orient='columns')
-        # convert time index from timestamp to date-time format
-        df.index = pd.to_datetime(df.index, unit='ms')
-        # Make it readable string
-        df.index = df.index.strftime('%Y-%m-%d %H:%M:%S')
-        #summary of missing data: 
-        missing_summary = df.isna().sum()
-        missing_summary_df = missing_summary.to_frame().T  # Convert Series to DataFrame (single-row)
-        md_tabel = utils.change_to_markdown(missing_summary, None)
-        utils.save_to_mdfile(md_tabel, f'{PARAMS[key][0]}_mis_summ.md', OUTPUT_DIR['statistics'])
-        # Generate statistics for each location
-        stats = df.describe()
-        md_tabel = utils.change_to_markdown(stats.round(2), None)
-        utils.save_to_mdfile(md_tabel, f'{PARAMS[key][0]}_describe_stat.md', OUTPUT_DIR['statistics'])    
-        # Flatten axes for easy iteration
-
-        # Generate box plots for each column
-        NUM_COLUMNS = len(df.columns)
-        fig, axes = plt.subplots(1, NUM_COLUMNS, figsize=(4 * NUM_COLUMNS, 4), squeeze=False)
-        axes = axes.flatten()  # Flatten axes for easier iteration
-        for ax, column, color in zip(axes, df.columns, COLORS):
-            values = df[column].dropna()  # Exclude NaN values for boxplot
-            box = ax.boxplot(
-                values,
-                patch_artist=True,  # Provides custom coloring
-                boxprops=dict(facecolor=color, color="black"),  # Box fill and edge color
-                whiskerprops=dict(color="black"),  # Whisker color
-                capprops=dict(color="black"),  # Cap color
-                medianprops=dict(color="black"),  # Median line color
-            )
-            ax.set_title('') # no title
-            ax.set_xlabel(f"{column}", fontsize=10)
-            ax.set_ylabel(f"{PARAMS[key][0].lower()}, {PARAMS[key][1]}", fontsize=10)
-            ax.grid(False)
-            ax.set_xticks([])
-
-        # Adjust subplot spacing
-        plt.subplots_adjust(wspace=0.4)
-        
-        # Add a title for the figure
-        fig.suptitle(f"Box plots for {PARAMS[key][0]}, {PARAMS[key][1]}", fontsize=15)
-        
-        # Save the plot
-        output_path = f"img/box_plot/{PARAMS[key][0]}_combined_box_plots.png"
-        plt.savefig(output_path)
-        plt.close()
-    
     """
-    Distributions plottar för enskilda parametrar
+    Create figur showing frequensy destérsion of values for all stations and parameters
     """
-    # create plot for each parameter
-    for param_id in three_days.keys():
-        df = pd.DataFrame.from_dict(three_days[param_id], orient='columns')
-        norm_distr = utils.stat_norm_distribution(df)
-        
-        # Define Seaborn style
-        sns.set_theme(style="whitegrid")
-        
-        # Create a single figure with multiple subplots (one for each station)
+    stations = df_three['station_name'].unique()
+    parameters = df_three['parameter'].unique()
 
-        fig, axes = plt.subplots(1, NUM_COLUMNS, figsize=(3 * NUM_COLUMNS, 4), squeeze=False)  # Subplots as a 2D array
-        
-        # Flatten axes for easy iteration
-        axes = axes.flatten()
-        x_lable = PARAMS[param_id][0].lower() + " " + PARAMS[param_id][1]
-        
-        utils.define_axix(axes, x_lable,  "frekvens", df, array2=norm_distr)
-        # Adjust spacing
-        plt.tight_layout()
-        
-        # Save combined plot
-        path = f'img/frekvenser/{PARAMS[param_id][0]}_combined.png'
-        plt.savefig(path)
+    plt.figure(figsize=(8, 6)) # initiate figure
 
-        # # # Show the combined plot
-        # # plt.show()
-        plt.close()
-        
-    # Create Q_Q plot for each parametr
-    for param_id in three_days.keys():    
-        
-        """
-        Plots Q-Q plots for each column in the dataframe to check normality visually.
-        All Q-Q plots are displayed in a single figure with multiple subplots.
-        """
-        df = pd.DataFrame.from_dict(three_days[param_id], orient='columns')
-        norm_distr = utils.stat_norm_distribution(df)
+    # Iterate through all stations and parameters
+    for i, station in enumerate(stations):
+        for j, parameter in enumerate(parameters):
+            # filter data for each station and parameter
+            data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
 
-        # Define Seaborn style
-        sns.set_theme(style="whitegrid")
-        
-        # Create a single figure with multiple subplots (one for each column)
-        fig, axes = plt.subplots(1, NUM_COLUMNS, figsize=(4 * NUM_COLUMNS, 4), squeeze=False)  # Subplots as a 2D array
-        
-        # Flatten axes for easy iteration
-        axes = axes.flatten()
-        # Loop through each column in the DataFrame
-        for ax, key in zip(axes, df.columns):
-            values = df[key]  # Extract the column values
-            # add color for boxes
-            box = ax.boxplot(
-                values,
-                patch_artist=True,  # Enable custom coloring
-                boxprops=dict(facecolor=color, color=color),  # Box fill and edge color
-                whiskerprops=dict(color=color),  # Whisker color
-                capprops=dict(color=color),  # Cap color
-                medianprops=dict(color="black"),  # Median line color
-            )
-            # Generate Q-Q plot for each station/column
-            sci.probplot(values, dist="norm", plot=ax)
+            # Subplot indexering: 3 rows for 3 stations and 2 columns for 2 parameters
+            plt.subplot(3, 2, i * len(parameters) + j + 1) 
             
-            # Title and labels for the plot
-            ax.set_title(f"Q-Q Plot för {key}", fontsize=10)  # Title for the plot
-            ax.set_xlabel("Teoretiska kvantiler", fontsize=10)
-            ax.set_ylabel(f"Ordnade {PARAMS[param_id][0]} kvantiler, {PARAMS[param_id][1]}", fontsize=10)
-            ax.grid()
+            # create histogramm
+            sns.histplot(data['value'], kde=True, bins=24, color="green", edgecolor="black")
+            
+            # add title and axes
+            plt.title(f"{station} - {parameter}")
+            plt.xlabel("Värde")
+            plt.ylabel("Frekvens")
 
-        # Adjust spacing between subplots
-        plt.tight_layout(pad=2.0, w_pad=1.5, h_pad=1.5) 
-
-        # # Adjust the spacing between the subplots (increase space between them)
-        # plt.subplots_adjust(wspace=0.3, hspace=0.3)  # Adjust the width and height spacing between plots
-        # Save the combined plot
-        path = f'img/q_q_plot/{PARAMS[param_id][0]}_combined_qq_plots.png'
-        plt.savefig(path)
-        # print(f"Combined Q-Q Plot saved to {path}")
-        
-        # Show the combined plot
-        #plt.show()
-        plt.close()
+    plt.tight_layout()
+    plt.savefig("img/frekvenser/alla.png")
 
     """
-    CORRELATION MATRIX FOR 6 PARAMETERS
+    BOX plots and Shapiro_Wilk test
     """
-    # Combine data for all parameters, with station names included
+
+    # Unique stations and parameters
+    stations = df_three['station_name'].unique()
+    parameters = df_three['parameter'].unique()
+
+    # Set up the figure
+    fig, axes = plt.subplots(2, 3, figsize=(12, 4 * 2)) # 2 rows 3 columns
+
+    results = []
+    # Loop over stations and parameters
+    for i, parameter in enumerate(parameters):
+        for j, station in enumerate(stations):
+            # Filter data for the current station and parameter
+            data_filtered = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+            stat, p_value = sci.shapiro(data_filtered['value'])
+            results.append({
+            'Station': station,
+            'Parameter': parameter,
+            'Shapiro-Wilk Statistic': round(stat, 5),
+            'P-value': round(p_value, 5),
+            'Normal Distribution (p > 0.05)': 'Yes' if p_value > 0.05 else 'No'
+        })
+            # Select the current axis
+            ax = axes[i, j]
+            
+            # Create a boxplot
+            sns.boxplot(
+                ax=ax,
+                data=data_filtered,
+                x='station_name',  # Same station on x-axis
+                y='value',
+                hue='station_name',
+                palette=[COLORS[j]],  # Assign unique color for the station
+                width=0.3,
+                dodge=False
+            )
+            
+            # Rotate x-axis labels
+            ax.tick_params(axis='x')
+            
+            # Add title and labels
+            ax.set_title(f"{station} - {parameter}", fontsize=12)
+            ax.set_xlabel("Station Name", fontsize=10)
+            ax.set_ylabel("Value", fontsize=10)
+            # Annotate p-value on the plot
+            ax.text(
+                0.9, 0.8,  # Position: center-top of the plot
+                f"p={p_value:.3f}",
+                transform=ax.transAxes,
+                fontsize=10,
+                ha='center',
+                color='red' if p_value < 0.05 else 'black'
+            )
+
+    # Adjust layout
+    plt.tight_layout()
+
+    # Show the figure
+    plt.savefig('img/box_plot/all.png')
+
+    # Save the results of Shapiro-Wilk test
+    results_df = pd.DataFrame(results)
+    utils.save_to_mdfile(results_df, "shapiro_wilk.md", "statistics")
+    
+
+     
+exit()
+"""
+CORRELATION MATRIX FOR 6 PARAMETERS
+"""
+# Combine data for all parameters, with station names included
 combined_data = pd.DataFrame()
 column_name1 = "TEMPERATUR_Umeå Flygplats"  # Replace with actual column name for temperature
 column_name2 = "LUFTFUKTIGHET_Umeå Flygplats"  # Replace with actual column name for humidity

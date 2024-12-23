@@ -170,16 +170,16 @@ För att lättare operera med data jag skaffar också kombinerad <DataFrame> obj
 | 430 | 2024-12-18 16:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    95   |
 | 431 | 2024-12-18 17:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    96   |
 
-Det är intressant att veta om vissa tidpunkter saknar någon av m'ätningar på något station.
+Det är intressant att veta om vissa tidpunkter saknar någon av mätningar på något station.
 Följande kode skaffar detta satistik:
 
 '''
-# Count NaN values per station_name and parameter
-nan_counts = df_three.groupby(['station_name', 'parameter'])['value'].apply(lambda x: x.isna().sum()).reset_index()
+    # Count NaN values per station_name and parameter
+    nan_counts = df_three.groupby(['station_name', 'parameter'])['value'].apply(lambda x: x.isna().sum()).reset_index()
 
-# Give name for columns
-nan_counts.columns = ['station_name', 'parameter', 'Missing values']
-utils.save_to_mdfile(nan_counts, "nan_counts.md", "statistics")
+    # Give name for columns
+    nan_counts.columns = ['station_name', 'parameter', 'Missing values']
+    utils.save_to_mdfile(nan_counts, "nan_counts.md", "statistics")
 
 '''
 
@@ -253,15 +253,76 @@ Grafiska fördelningar visas i Figur [1](Figur 1)
 
 ![### Figur 1](img/frekvenser/alla.png)
 
-Plottar visar att data inte
-Jag vill teasta om datamängd är normalfördelad. För detta skull använder jag Shapiro-Wilk test för normalitets sprigning.
+Med  hjälp av Figur 1 vi ser att inte någon sätt av data är normalfördelad. Plottar visar ocjså att relativt luftfuktighet förändras inte likadant med temperaturförändring vid varje station. Här ifrån tar jag slutsatsen att det är inte lönt att bearbeta data från alla stationer tilsammans.
 
-Medelvärde i stationer Halmstad Flugplats och Upsala Flugplats är närmare medianen, som säger att de ssa data 
-närmare normafördelning än data från Umeå Flugplats
+Ett annat sätt för att testa om data är normalfördelad är att använda [Shapiro-Wilk test](https://academic.oup.com/biomet/article-abstract/52/3-4/591/336553?redirectedFrom=fulltext) för normalitets sprigning.
 
-![Ladogrammar för TEMPERATUR](img/box_plot/TEMPERATUR_combined_box_plots.png)
+Följande kode skaffar ladogrammer för varje station ohc parameter, samt gör Shapiro-Wilk test. TEst resultat visas på respektivt ladogramm.
 
-![Temperatur frekvenser](img/frekvenser/TEMPERATUR_combined.png)
+'''
+    # Unique stations and parameters
+    stations = df_three['station_name'].unique()
+    parameters = df_three['parameter'].unique()
+
+    # Set up the figure
+    fig, axes = plt.subplots(2, 3, figsize=(12, 4 * 2)) # 2 rows 3 columns
+
+    # Loop over stations and parameters
+    for i, parameter in enumerate(parameters):
+        for j, station in enumerate(stations):
+            # Filter data for the current station and parameter
+            data_filtered = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+            stat, p_value = sci.shapiro(data_filtered['value'])
+            
+            # Select the current axis
+            ax = axes[i, j]
+            
+            # Create a boxplot
+            sns.boxplot(
+                ax=ax,
+                data=data_filtered,
+                x='station_name',  # Same station on x-axis
+                y='value',
+                hue='station_name',
+                palette=[COLORS[j]],  # Assign unique color for the station
+                width=0.3,
+                dodge=False
+            )
+            
+            # Rotate x-axis labels
+            ax.tick_params(axis='x')
+            
+            # Add title and labels
+            ax.set_title(f"{station} - {parameter}", fontsize=12)
+            ax.set_xlabel("Station Name", fontsize=10)
+            ax.set_ylabel("Value", fontsize=10)
+            # Annotate p-value on the plot
+            ax.text(
+                0.9, 0.8,  # Position: center-top of the plot
+                f"p={p_value:.3f}",
+                transform=ax.transAxes,
+                fontsize=10,
+                ha='center',
+                color='red' if p_value < 0.05 else 'black'
+            )
+
+    # Adjust layout
+    plt.tight_layout()
+'''
+
+
+![Ladogrammar ](img/box_plot/all.png)
+
+### Tabell 4. Shapiro-Wilk test
+
+| Station            | Parameter     |   Shapiro-Wilk Statistic |   P-value | Normal Distribution (p > 0.05)   |
+|:-------------------|:--------------|-------------------------:|----------:|:---------------------------------|
+| Halmstad flygplats | LUFTFUKTIGHET |                    0.884 |     0     | No                               |
+| Halmstad flygplats | TEMPERATUR    |                    0.964 |     0.038 | No                               |
+| Umeå Flygplats     | LUFTFUKTIGHET |                    0.969 |     0.07  | Yes                              |
+| Umeå Flygplats     | TEMPERATUR    |                    0.92  |     0     | No                               |
+| Uppsala Flygplats  | LUFTFUKTIGHET |                    0.918 |     0     | No                               |
+| Uppsala Flygplats  | TEMPERATUR    |                    0.944 |     0.003 | No                               |
 
 *Med dessa plottar och Shapiro-Wilk test testar jag nulhypotes: att data är noirmalfördelad.*
 Både plottar och Shapiro-Wilk test för normality tillåtar förkasta nulhypotes om att temperatur spridning är normal fördelad. Sannolikheten att nulhypotes stämmer är 3.78% för Halmstad flygplats, som är mindre än 5% och därmed är sannolikhet för typ II fel är ganska liten.
