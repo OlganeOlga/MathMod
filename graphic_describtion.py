@@ -158,138 +158,138 @@ def plot_param_distribution(df: pd.DataFrame, param="TEMPERATUR"):
 # # # Generate descriptive statistics
 # # stats = df.describe()
 
-# def value_on_hour(output_dir="grapfic_decription"):
-#     os.makedirs(output_dir, exist_ok=True)
-#     # Create a plot for temperature data (without modifying the original data)
-#     plt.figure(figsize=(10, 6))
-#     for column in df.columns:
-#         # Extract the hours only for the rows with non-null values
-#         valid_data = df[column].dropna()
+def value_on_hour(output_dir="grapfic_decription"):
+    os.makedirs(output_dir, exist_ok=True)
+    # Create a plot for temperature data (without modifying the original data)
+    plt.figure(figsize=(10, 6))
+    for column in df.columns:
+        # Extract the hours only for the rows with non-null values
+        valid_data = df[column].dropna()
         
-#         # Use the index of valid_data directly to get the corresponding hours
-#         valid_hours = valid_data.index.hour
+        # Use the index of valid_data directly to get the corresponding hours
+        valid_hours = valid_data.index.hour
         
-#         # Handle missing values only in the plot, without changing the original data
-#         plt.plot(valid_hours, valid_data, marker='o', label=column)            
+        # Handle missing values only in the plot, without changing the original data
+        plt.plot(valid_hours, valid_data, marker='o', label=column)            
 
-#         #  Add labels and title
-#         plt.xlabel('Hour of the day')
-#         plt.ylabel('Temperature (°C)')
-#         plt.xticks(range(24))  # Set x-ticks to range from 0 to 23 (hours of the day)
-#         plt.grid(True)
-#         plt.legend()
+        #  Add labels and title
+        plt.xlabel('Hour of the day')
+        plt.ylabel('Temperature (°C)')
+        plt.xticks(range(24))  # Set x-ticks to range from 0 to 23 (hours of the day)
+        plt.grid(True)
+        plt.legend()
         
-#         # save plot figure
-#         plt.savefig(f"{output_dir}/{column}_temperature_plot.png")
+        # save plot figure
+        plt.savefig(f"{output_dir}/{column}_temperature_plot.png")
 
-#         # Show plot
-#         plt.show()   
-    # # Calculate the frequency of each unique temperature
-    # temp_counts = all_temperatures.value_counts().sort_index()  # Sorted by temperature
+        # Show plot
+        plt.show()   
+    # Calculate the frequency of each unique temperature
+    temp_counts = all_temperatures.value_counts().sort_index()  # Sorted by temperature
     
-    # # Create the scatter plot (Temperature vs Frequency)
-    # plt.figure(figsize=(10, 6))
-    # plt.scatter(temp_counts.index, temp_counts.values, color='blue', alpha=0.7)
+    # Create the scatter plot (Temperature vs Frequency)
+    plt.figure(figsize=(10, 6))
+    plt.scatter(temp_counts.index, temp_counts.values, color='blue', alpha=0.7)
     
-    # # Adding title and labels
-    # plt.title('Distribution of Temperatures Across Stations (Frequency)')
-    # plt.xlabel('Temperature (°C)')
-    # plt.ylabel('Frequency')
+    # Adding title and labels
+    plt.title('Distribution of Temperatures Across Stations (Frequency)')
+    plt.xlabel('Temperature (°C)')
+    plt.ylabel('Frequency')
     
-    # # Display the grid for better readability
-    # plt.grid(True)
+    # Display the grid for better readability
+    plt.grid(True)
 
-    # # Show the plot
-    # plt.show()
+    # Show the plot
+    plt.show()
 
 # Call the function to plot temperature distribution
 #plot_temperature_distribution(df)
 
 
-# def plot_missing_data_points():
-#     # Create a DataFrame indicating where data is missing (True for missing, False for present)
-#     missing_data = df.isna()
-#     output_dir = ".grapfic_decription"
+def plot_missing_data_points():
+    # Create a DataFrame indicating where data is missing (True for missing, False for present)
+    missing_data = df.isna()
+    output_dir = ".grapfic_decription"
     
-#     # Convert the index to datetime if not already done
-#     if not pd.api.types.is_datetime64_any_dtype(df.index):
-#         df.index = pd.to_datetime(df.index, unit='ms')
+    # Convert the index to datetime if not already done
+    if not pd.api.types.is_datetime64_any_dtype(df.index):
+        df.index = pd.to_datetime(df.index, unit='ms')
     
-#     # Extract dates and hours from the index
-#     dates = df.index.date
-#     hours = df.index.hour
+    # Extract dates and hours from the index
+    dates = df.index.date
+    hours = df.index.hour
     
-#     # Create a scatter plot for each station
-#     fig, ax = plt.subplots(figsize=(12, 8))
-#     for station in df.columns:
-#         station_missing = missing_data[station]
+    # Create a scatter plot for each station
+    fig, ax = plt.subplots(figsize=(12, 8))
+    for station in df.columns:
+        station_missing = missing_data[station]
         
-#         # Filter dates and hours where data is missing
-#         missing_dates = dates[station_missing]
-#         missing_hours = hours[station_missing]
+        # Filter dates and hours where data is missing
+        missing_dates = dates[station_missing]
+        missing_hours = hours[station_missing]
         
-#         # Plot the missing data points for this station
-#         ax.scatter(
-#             missing_hours, missing_dates, label=station, alpha=0.7
-#         )
+        # Plot the missing data points for this station
+        ax.scatter(
+            missing_hours, missing_dates, label=station, alpha=0.7
+        )
 
-#     # Add labels, legend, and grid
-#     ax.set_title("Missing Data Points by Station")
-#     ax.set_xlabel("Hour of the Day")
-#     ax.set_ylabel("Date")
-#     ax.set_xticks(range(24))  # Set x-ticks for all hours
-#     ax.legend(title="Stations")
-#     ax.grid(True, which="both", linestyle="--", alpha=0.5)
+    # Add labels, legend, and grid
+    ax.set_title("Missing Data Points by Station")
+    ax.set_xlabel("Hour of the Day")
+    ax.set_ylabel("Date")
+    ax.set_xticks(range(24))  # Set x-ticks for all hours
+    ax.legend(title="Stations")
+    ax.grid(True, which="both", linestyle="--", alpha=0.5)
 
-#     # Show the plot
-#     plt.tight_layout()
-#     plt.savefig(f"{output_dir}/missing_temperature_plot.png")
-#     plt.show()
+    # Show the plot
+    plt.tight_layout()
+    plt.savefig(f"{output_dir}/missing_temperature_plot.png")
+    plt.show()
 
 # # Call the function
 # #plot_missing_data_points()
 
 
-# def plot_missing_data_separate():
-#     # Create a DataFrame indicating where data is missing (True for missing, False for present)
-#     missing_data = df.isna()
+def plot_missing_data_separate():
+    # Create a DataFrame indicating where data is missing (True for missing, False for present)
+    missing_data = df.isna()
     
-#     # Convert the index to datetime if not already done
-#     if not pd.api.types.is_datetime64_any_dtype(df.index):
-#         df.index = pd.to_datetime(df.index, unit='ms')
+    # Convert the index to datetime if not already done
+    if not pd.api.types.is_datetime64_any_dtype(df.index):
+        df.index = pd.to_datetime(df.index, unit='ms')
     
-#     # Extract dates and hours from the index
-#     dates = df.index.date
-#     hours = df.index.hour
+    # Extract dates and hours from the index
+    dates = df.index.date
+    hours = df.index.hour
 
-#     # Create a separate plot for each station
-#     for station in df.columns:
-#         # Filter missing data for this station
-#         station_missing = missing_data[station]
-#         missing_dates = df.index[station_missing]  # Use full datetime index here
-#         missing_hours = hours[station_missing]
+    # Create a separate plot for each station
+    for station in df.columns:
+        # Filter missing data for this station
+        station_missing = missing_data[station]
+        missing_dates = df.index[station_missing]  # Use full datetime index here
+        missing_hours = hours[station_missing]
 
-#         # Plot the missing data
-#         plt.figure(figsize=(10, 6))
-#         plt.scatter(missing_hours, missing_dates, color='red', alpha=0.7, label='Missing Data')
+        # Plot the missing data
+        plt.figure(figsize=(10, 6))
+        plt.scatter(missing_hours, missing_dates, color='red', alpha=0.7, label='Missing Data')
         
-#         # Customize the plot
-#         plt.title(f"Missing Data for {station}")
-#         plt.xlabel("Hour of the Day")
-#         plt.ylabel("Date")
-#         plt.xticks(range(24))  # Set x-ticks for all hours
+        # Customize the plot
+        plt.title(f"Missing Data for {station}")
+        plt.xlabel("Hour of the Day")
+        plt.ylabel("Date")
+        plt.xticks(range(24))  # Set x-ticks for all hours
 
-#         # Set the date format for the Y-axis to show year, month, and day
-#         ax = plt.gca()
-#         ax.yaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-#         ax.yaxis.set_major_locator(mdates.DayLocator(interval=2))  # Adjust interval as needed
+        # Set the date format for the Y-axis to show year, month, and day
+        ax = plt.gca()
+        ax.yaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+        ax.yaxis.set_major_locator(mdates.DayLocator(interval=2))  # Adjust interval as needed
 
-#         plt.grid(True, which="both", linestyle="--", alpha=1)
-#         plt.legend()
+        plt.grid(True, which="both", linestyle="--", alpha=1)
+        plt.legend()
 
-#         # Show the plot
-#         plt.tight_layout()
-#         plt.show()
+        # Show the plot
+        plt.tight_layout()
+        plt.show()
 
 # # Call the function
 # #plot_missing_data_separate()

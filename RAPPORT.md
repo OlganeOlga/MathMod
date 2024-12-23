@@ -5,16 +5,7 @@
 
 I projektet förväntas vi att plocka data från en open API och berbeta de med statistiska metoder.
 
-## Uppgift 1-3. Databeskrivning och beskrivande diagrammer
-*Uppgift 1: Beskriv data 
-Introducera den data som valts och beskriv vad den visar och varifrån den kommer. Cirka 250 ord 
-(halv A4). Var tydliga med vad de olika variablerna beskriver och i vilken enhet de är i. Det kan vara 
-en god idé att ha en mindre tabell med ett urval från datan för att lättare beskriva mätvärdena.  
-Det ska också finnas en visuell representation av hur datamängden ser ut, samt tillhörande figurtext 
-med förklaringar till vad som visas och om det finns några konstigheter (till exempel outliers i datan). 
-Visualiseringen görs med lämplig graf, t.ex. stapeldiagram, linjediagram, scatterplot, cirkeldiagram 
-etc. Obs! Glöm inte att ange enheter på axlarna!*
-
+## Uppgift 1. Databeskrivning
 
 Jag vädle att plocka data från [SMHI Open Data API Docs - Meteorological Observations](https://opendata.smhi.se/apidocs/metobs/index.html). Jag välde att plocka temperaturmätningar (parameter 1) och relativt luftfuktighet (parameter 6). Dessa mätningar pågar varje timme. Jag använder tre stationer: Halmstad flygplats, Uppsala Flygplats och Umeå Flygplats. Stations nämns som i SMHI Oen Data. Temperatur mäts i Celcie grad (°C) och Relativt luftfuktighet i procenter (%). Dataurval presenterades i [Tabel 1a](### Tabel 1a. TEMPERATUR per timme under sista tre dagar från tre stationer:) och [Tabel 1b](### Tabel 1b. LUFTFUKTIGHET per timme från tre stationer).
 Koden till funktioner för att hämta data finns i [GitHub](https://github.com/OlganeOlga/MathMod/tree/master/get_dynam_data).
@@ -53,6 +44,22 @@ Alla tabeller och figurer skapas med filen [ALL_CODE.py](ALL_CODE.py)
 | 2024-12-18 15:00:00 |                      96 |                    100 |                  95 |
 | 2024-12-18 16:00:00 |                      96 |                    100 |                  96 |
 
+Jag använder pivottabel:
+station_name              Halmstad flygplats            Umeå Flygplats            Uppsala Flygplats
+parameter                      LUFTFUKTIGHET TEMPERATUR  LUFTFUKTIGHET TEMPERATUR     LUFTFUKTIGHET TEMPERATUR
+time
+2024-12-15 18:00:00+01:00               98.0        7.8           90.0       -6.8              99.0       -2.3
+2024-12-15 19:00:00+01:00               95.0        8.1           92.0       -4.4             100.0       -1.8
+2024-12-15 20:00:00+01:00               94.0        8.2           93.0       -3.1             100.0       -1.1
+2024-12-15 21:00:00+01:00               94.0        8.4           96.0       -1.3             100.0        0.4
+2024-12-15 22:00:00+01:00               93.0        8.2           95.0       -2.3             100.0        1.2
+...                                      ...        ...            ...        ...               ...        ...
+2024-12-18 13:00:00+01:00               96.0        6.1           92.0       -7.9             100.0        0.5
+2024-12-18 14:00:00+01:00               98.0        6.0           93.0       -6.8             100.0        1.6
+2024-12-18 15:00:00+01:00               97.0        6.5           95.0       -4.1             100.0        2.3
+2024-12-18 16:00:00+01:00               96.0        7.0           95.0       -3.4             100.0        2.7
+2024-12-18 17:00:00+01:00               96.0        7.4           96.0       -3.1             100.0        3.4
+
 
 Jag tittar om det finns missade data för [temperatur](### Tabel 2a.) och för [relativt luftfuktighet](### Tabel 2b.)
 
@@ -69,11 +76,32 @@ Jag tittar om det finns missade data för [temperatur](### Tabel 2a.) och för [
 | Halmstad flygplats |   0 |
 | Umeå Flygplats     |   0 |
 | Uppsala Flygplats  |   0 |
+
+### Tabel 3c. [Missade data för alla parameter: ](statistics/ALLA_mis_summ.md)
+|        station och parameter            |N missad|
+|:----------------------------------------|-------:|
+| ('Halmstad flygplats', 'LUFTFUKTIGHET') |   0    |
+| ('Halmstad flygplats', 'TEMPERATUR')    |   0    |
+| ('Umeå Flygplats', 'LUFTFUKTIGHET')     |   0    |
+| ('Umeå Flygplats', 'TEMPERATUR')        |   0    |
+| ('Uppsala Flygplats', 'LUFTFUKTIGHET')  |   0    |
+| ('Uppsala Flygplats', 'TEMPERATUR')     |   0    |
+
 Det verkar att inga tidspunkter var missad under dessa tre dagar.
 
 Jag vill teasta om datamängd är normalfördelad. För detta skull använder jag Shapiro-Wilk test för normalitets sprigning.
 
-### Tabel 3a. [Beskrivande statistik TEMPERATUR](statistics/TEMPERATUR_describe_stat.md)
+### Tabel 3. [Beskrivande statistik for parameters](statistics/describe_stat_all.md)
+station_name:          Halmstad flygplats            Umeå Flygplats            Uppsala Flygplats
+parameter         LUFTFUKTIGHET TEMPERATUR  LUFTFUKTIGHET TEMPERATUR     LUFTFUKTIGHET TEMPERATUR
+count                     72.00      72.00          72.00      72.00             72.00      72.00
+mean                      91.47       6.91          88.38     -10.61             78.01       1.27
+std                        5.98       0.93           4.10       5.68             14.14       2.48
+min                       75.00       4.40          81.00     -20.40             57.00      -4.70
+25%                       90.00       6.38          85.00     -15.82             64.00       0.18
+50%                       93.00       7.00          88.00     -10.05             77.50       1.90
+75%                       96.00       7.43          91.25      -5.38             87.25       2.72
+max                       99.00       8.90          96.00      -1.30            100.00       6.60
 
 
 Medelvärde i stationer Halmstad Flugplats och Upsala Flugplats är närmare medianen, som säger att de ssa data 
@@ -103,8 +131,16 @@ Om jag gör samma test för relativt lurftfuktighet visas det att luftfuktighet 
 
 Dess plottar visa samma: aärmast till normalfördelningen är data från station Halmstad flygplats, för både temperatur och relativt lyftfuktighet.
 
-# Uppgift 4: Linjär regression 
-Utför en linjärregression av minst en av variablerna och ett tillhörande 95% konfidensintervall. 
+# Uppgift 4: Linjär regression
+jag ser hur korrelerar olika variabler med varandra
+![Korrelation matrix](img/correlations/all_correlations.png)
+
+Matrix visar att den bästa correlation är mellan temperatur och relativt luftfuktighet i Umeå.
+Därför välde jag att använda dessa variabler för liniar regression
+
+*Utför en linjärregression av minst en av variablerna och ett tillhörande 95% konfidensintervall. 
 Rapportera variablerna 𝑎  och 𝑏  i sambandet 𝑦 = 𝑎 + 𝑏 ∙ 𝑥  samt punktskattningens 
 konfidensintervall av dessa. Visualisera detta i en graf med den linjära modellen, konfidensintervallet 
-och originaldata i samma figur.  
+och originaldata i samma figur.*
+
+Jag gör liniar regression för relativt luft fuktighet i Umea Fluglats. Jag väljer det datamängd eftersom fördelningen i detta grupp data är normal med största sannolikhet.
