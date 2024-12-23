@@ -105,7 +105,7 @@ Som resultat far jag nästlad diktionary: {Paramere_id: {plats:{timestamp:value}
 Koden till funktioner för att hämta data finns i [GitHub](https://github.com/OlganeOlga/MathMod/tree/master/get_dynam_data). Alla tabeller och figurer skapas med filen [ALL_CODE.py](ALL_CODE.py)
 
 
-### Tabel 1a. TEMPERATUR per timme under sista tre dagar från tre stationer:
+#### Tabel 1a. TEMPERATUR per timme under sista tre dagar från tre stationer:
 (exampel)
 |      tid            |   Halmstad flygplats(°C) |   Uppsala Flygplats(°C) |   Umeå Flygplats(°C) |
 |:--------------------|-------------------------:|------------------------:|---------------------:|
@@ -121,7 +121,7 @@ Koden till funktioner för att hämta data finns i [GitHub](https://github.com/O
 | 2024-12-18 15:00:00 |                      7   |                     2.7 |                 -3.4 |
 | 2024-12-18 16:00:00 |                      7.4 |                     3.4 |                 -3.1 |
  
-### Tabel 1b. LUFTFUKTIGHET per timme från tre stationer
+#### Tabel 1b. LUFTFUKTIGHET per timme från tre stationer
 (exampel)
 |                     |   Halmstad flygplats(%) |   Uppsala Flygplats(%) |   Umeå Flygplats(%) |
 |:--------------------|------------------------:|-----------------------:|--------------------:|
@@ -150,7 +150,7 @@ För att lättare operera med data jag skaffar också kombinerad <DataFrame> obj
         f.write(markdown_string)
 '''
 
-### Tabel 1c. Sammansätta data
+#### Tabel 1c. Sammansätta data
 
 |     | time                      | station_name       | parameter     |   value |
 |----:|:--------------------------|:-------------------|:--------------|--------:|
@@ -185,7 +185,7 @@ Följande kode skaffar detta satistik:
 
 Det verkar att inga mätningar är missade data för båda parameters under välde tiden:
 
-### Tabel 2. [Missade data för alla parameter: ](statistics/nan_count.md)
+#### Tabel 2. [Missade data för alla parameter: ](statistics/nan_count.md)
 |    | station_name       | parameter     |   Missing values |
 |---:|:-------------------|:--------------|-----------------:|
 |  0 | Halmstad flygplats | LUFTFUKTIGHET |                0 |
@@ -251,7 +251,7 @@ Det är svårt att säga om data är normalfördelat enbart från resultater av 
 
 Grafiska fördelningar visas i Figur [1](Figur 1)
 
-![### Figur 1](img/frekvenser/alla.png)
+![#### Figur 1](img/frekvenser/alla.png)
 
 Med  hjälp av Figur 1 vi ser att inte någon sätt av data är normalfördelad. Plottar visar ocjså att relativt luftfuktighet förändras inte likadant med temperaturförändring vid varje station. Här ifrån tar jag slutsatsen att det är inte lönt att bearbeta data från alla stationer tilsammans.
 
@@ -311,13 +311,13 @@ Följande kode skaffar ladogrammer för varje station ohc parameter, samt gör S
 '''
 
 
-### Figur 2
+#### Figur 2
 [Ladogrammar ](img/box_plot/all.png)
-#### Förklaring till Figur 2.
+##### Förklaring till Figur 2.
 Figuren visar boxplottar för olika stationer och parametrar. Varje delplott representerar en specifik kombination av station och parameter. De parametrar som visas är temperatur och luftfuktighet, och motsvarande enheter anges i diagrammets etiketter. Boxplottarna visar fördelningen av värden för varje station, där den centrala linjen representerar medianen, boxarna visar det interkvartila intervallet (IQR) och morrhåren sträcker sig till minimi- och maximivärdena inom 1,5 * IQR. Små sirklar visar avvikande värde.
 För varje boxplott anges ett resultat från Shapiro-Wilk-testetm, den hjälper att bedöma om data följer en normalfördelning. Ett p-värde under 0,05 indikerar att data inte följer en normalfördelning, och detta markeras med rött i diagrammet. 
 
-### Tabell 4. Shapiro-Wilk test
+#### Tabell 4. Shapiro-Wilk test
 
 | Station            | Parameter     |   Shapiro-Wilk Statistic |   P-value | Normal Distribution (p > 0.05)   |
 |:-------------------|:--------------|-------------------------:|----------:|:---------------------------------|
@@ -334,9 +334,9 @@ Samma påstående stämmer för relativt lyft fuktighet med undantag för relati
 
 ### Q_Q plottar
 Det finns ett annat sät att visualisera avvikelse från normalfördelning, n-mligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Varje axel visar fördelningen av en dataset. I detta fall jämför jag dataset från olika stationer mot den teoretiska normalfördelningen. På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
-### Fig 4
+#### Figur 3
 ![Kvanti_kventil plottar ](img/q_q_plot/all.png)
-## Förklaring av Q-Q Plottar
+##### Förklaring av Q-Q Plottar
 
 Den här figuren visar **Q-Q plottar** för data från olika stationer och parametrar. En Q-Q plot (Quantile-Quantile plot) jämför de empiriska kvantilerna från den faktiska datan med de teoretiska kvantilerna från en normalfördelning. Syftet med denna figur är att visuellt bedöma hur väl datan följer en normalfördelning.
 
@@ -364,15 +364,364 @@ Dessa plottar visa samma: närmast till normalfördelningen är data från relat
 ## Uppgift 4: Linjär regression
 
 För att ser med vilka data ska jag arbeta vill jag först titta på hur data korrelerrar med varandra. Däerför skaffar jag korrelation matris.
+
+"""
+    combined_data = pd.DataFrame()
+    column_name1 = "TEMPERATUR_Umeå Flygplats"  # Replace with actual column name for temperature
+    column_name2 = "LUFTFUKTIGHET_Umeå Flygplats"  # Replace with actual column name for humidity
+
+
+    for param_key, dataset in three_days.items():
+        param_name = PARAMS[param_key][0]  # Parameter name (e.g., Temperature, Humidity)
+        df = pd.DataFrame(dataset)
+        df.columns = [f"{param_name}_{station}" for station in df.columns]  # Add station to column names
+        combined_data = pd.concat([combined_data, df], axis=1)
+    # Calculate the correlation matrix
+    correlation_matrix = combined_data.corr()
+    # Plot the heatmap
+    plt.figure(figsize=(12, 10))
+    ax = sns.heatmap(
+        correlation_matrix, 
+        annot=True,  # Avoid cluttering with too many annotations
+        cmap=CUSTOM_CMAP, 
+        cbar=True
+    )
+    # Adjust font sizes for station names
+    ax.tick_params(axis='x', labelsize=8)
+    ax.tick_params(axis='y', labelsize=8)
+    plt.title("Correlation Matrix for All Parameters and Stations", fontsize=14)
+    plt.tight_layout()
+    plt.show()
+
+"""
+
 ![Korrelation matris](img/correlations/all_correlations.png)
 
-Matrix visar att den bästa correlation är mellan temperatur och relativt luftfuktighet i Umeå.
+Jag skaffar också skatterplottar for alla variabelns kombinationer:
+
+"""
+    f = sns.pairplot(combined_data, height=1.8, diag_kind='kde')
+    # Adjust font size for axis labels, titles, and ticks
+    for ax in f.axes.flatten():
+        # Get current x and y axis labels
+        xlabel = ax.get_xlabel()
+        ylabel = ax.get_ylabel()
+        # Apply all transformations to the xlabel and ylabel in one go:
+        xlabel = re.sub(r'(?i)flygplats', '', xlabel).strip()  # Remove "flygplats" (case-insensitive)
+        xlabel = xlabel.replace("TEMPERATUR_", "TEMP_").strip()  # Replace "TEMPERATUR_" with "TEMP_"
+        xlabel = xlabel.replace("LUFTFUKTIGHET_", "FUKT_").strip()  # Replace "LUFTFUKTIGHET_" with "FUKT_"
+        
+        ylabel = re.sub(r'(?i)flygplats', '', ylabel).strip()  # Remove "flygplats" (case-insensitive)
+        ylabel = ylabel.replace("TEMPERATUR_", "TEMP_").strip()  # Replace "TEMPERATUR_" with "TEMP_"
+        ylabel = ylabel.replace("LUFTFUKTIGHET_", "FUKT_").strip()  # Replace "LUFTFUKTIGHET_" with "FUKT_"
+        
+        # Set the modified labels with font size
+        ax.set_xlabel(xlabel, fontsize=6)
+        ax.set_ylabel(ylabel, fontsize=6)
+        
+        ax.set_ylabel(ylabel.replace("LUFTFUKTIGHET_", "FUKT_").strip(), fontsize=6)
+        
+        # Set font size for tick labels
+        ax.tick_params(axis='x', labelsize=5)  # X-axis tick labels
+        ax.tick_params(axis='y', labelsize=5)  # Y-axis tick labels
+
+    plt.suptitle("Pairwise Relationships for Parameters and Stations", y=0.99, fontsize=16)  # Title for the plot
+    plt.subplots_adjust(hspace=0.2, wspace=0.2, top=0.9) # Ajust spase between subplots
+    plt.show()
+"""
+#### Figure 5. Liniar refressioner parvisa
+![plot](img/regression/all_pairwise_relationships.png)
+
+Båda figurer visar att den bästa correlation är mellan temperatur och relativt luftfuktighet i Umeå.
 Därför välde jag att använda dessa variabler för liniar regression
+
+
+Jag väljer att göra liniar regression för relativt luft fuktighet i Umea Fluglats. Jag väljer det datamängd eftersom fördelningen i detta grupp data är normal med största sannolikhet.
+
+"""
+    # Get training ang testing datasets
+    fraktion = 0.5
+    train = combined_data.sample(frac=fraktion, random_state=1)
+    test = combined_data.drop(train.index)
+
+    # # Extract X (independent variable) and y (dependent variable) from the dataframe
+    X_train = train[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
+    y_train = train[column_name2].values  # Dependent variable (y)
+    X_test = test[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
+    y_test = test[column_name2].values  # Dependent variable (y)
+
+
+    model = LinearRegression().fit(X_train, y_train)
+    pred = model.predict(X_test)
+
+    # Räkna ut MSE
+    mse = np.mean((pred - y_test)**2)
+    linear_slope = model.coef_[0]
+    linear_intercept = model.intercept_
+
+
+    # Add linear regression parameters to the plot
+    plt.text(0.5, 0.95, f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}',
+            ha='center', va='center', transform=plt.gca().transAxes, fontsize=12, color='red')
+    # Visulisera prediktioner
+    plt.scatter(X_train, y_train, label='Träningsdata')
+    plt.scatter(X_test, y_test, label='Test data')
+    plt.plot(X_test, pred, label='Linjär regression', color='g', linewidth=3)
+    plt.legend()
+    plt.title(f"Prediktioner av luftfuktighet på temperatur i Umeå\nMean squared error: {mse}" + 
+            f"\nFraktion: {fraktion}")
+    plt.xlabel("Temperatur")
+    plt.ylabel("Relativt Luftfuktighet")
+    plt.savefig(f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png')
+    plt.show()
+ 
+"""
+#### Linjäreggresion 
+"""
+    # Get training ang testing datasets
+    fraktion = 0.5
+    train = combined_data.sample(frac=fraktion, random_state=1)
+    test = combined_data.drop(train.index)
+
+    # # Extract X (independent variable) and y (dependent variable) from the dataframe
+    X_train = train[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
+    y_train = train[column_name2].values  # Dependent variable (y)
+    X_test = test[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
+    y_test = test[column_name2].values  # Dependent variable (y)
+
+
+    model = LinearRegression().fit(X_train, y_train)
+    pred = model.predict(X_test)
+
+    # Räkna ut MSE
+    mse = np.mean((pred - y_test)**2)
+    linear_slope = model.coef_[0]
+    linear_intercept = model.intercept_
+
+    plt.figure(figsize=(10,6))
+    # Add linear regression parameters to the plot
+    plt.text(0.5, 0.95, f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}',
+            ha='center', va='center', transform=plt.gca().transAxes, fontsize=12, color='red')
+    # Visulisera prediktioner
+    plt.scatter(X_train, y_train, color="orange", label='Träningsdata', alpha=0.6)
+    plt.scatter(X_test, y_test, color="blue", label='Test data', alpha=0.6)
+    # Create the regression plot with a confidence interval (95%)
+    sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter=False, 
+                line_kws={'color': 'red', 'label': f'Y = {linear_slope:.2f}X + {linear_intercept:.2f}'}, 
+                ci=95)  # 'ci' specifies the confidence interval
+    #plt.plot(X_test, pred, label='Linjär regression', color='g', linewidth=3)
+    #plt.plot(X_test, pred, label=f'Linear Regression: y = {linear_slope:.2f}x + {linear_intercept:.2f}', color='green', linewidth=2)
+
+    # Add regression line from the model's predictions (for test data)
+    y_pred = model.predict(X_test)
+
+    plt.plot(X_test, y_pred, color='green', label='Test Data Prediction', linewidth=2)
+
+    plt.legend()
+    plt.title(f"Prediktioner av luftfuktighet på temperatur i Umeå\nMean squared error: {mse}" + 
+            f"\nFraktion: {fraktion}")
+    plt.xlabel("Temperatur")
+    plt.ylabel("Relativt Luftfuktighet")
+    plt.savefig(f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png')
+    plt.close() 
+"""
+### Figur 6 
+![Temperatur- luftfuktighet regression](img/regression/regr_prediction_Umea_temp_luft_0.5.png)
 
 *Utför en linjärregression av minst en av variablerna och ett tillhörande 95% konfidensintervall. 
 Rapportera variablerna 𝑎  och 𝑏  i sambandet 𝑦 = 𝑎 + 𝑏 ∙ 𝑥  samt punktskattningens 
 konfidensintervall av dessa. Visualisera detta i en graf med den linjära modellen, konfidensintervallet 
 och originaldata i samma figur.*
 
-Jag gör liniar regression för relativt luft fuktighet i Umea Fluglats. Jag väljer det datamängd eftersom fördelningen i detta grupp data är normal med största sannolikhet.
-ganska
+Jag skaffar också plot för residualer:
+
+
+"""
+            """
+    # Get training ang testing datasets
+    fraktion = 0.5
+    train = combined_data.sample(frac=fraktion, random_state=1)
+    test = combined_data.drop(train.index)
+
+    # # Extract X (independent variable) and y (dependent variable) from the dataframe
+    X_train = train[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
+    y_train = train[column_name2].values  # Dependent variable (y)
+    X_test = test[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
+    y_test = test[column_name2].values  # Dependent variable (y)
+
+
+    model = LinearRegression().fit(X_train, y_train)
+    pred = model.predict(X_test)
+
+    # Räkna ut MSE
+    mse = np.mean((pred - y_test)**2)
+    linear_slope = model.coef_[0]
+    linear_intercept = model.intercept_
+
+    plt.figure(figsize=(10,6))
+    # Add linear regression parameters to the plot
+    plt.text(0.5, 0.95, f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}',
+            ha='center', va='center', transform=plt.gca().transAxes, fontsize=12, color='red')
+    # Visulisera prediktioner
+    plt.scatter(X_train, y_train, color="orange", label='Träningsdata', alpha=0.6)
+    plt.scatter(X_test, y_test, color="blue", label='Test data', alpha=0.6)
+    # Create the regression plot with a confidence interval (95%)
+    sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter=False, 
+                line_kws={'color': 'red', 'label': f'Y = {linear_slope:.2f}X + {linear_intercept:.2f}'}, 
+                ci=95)  # 'ci' specifies the confidence interval
+    #plt.plot(X_test, pred, label='Linjär regression', color='g', linewidth=3)
+    #plt.plot(X_test, pred, label=f'Linear Regression: y = {linear_slope:.2f}x + {linear_intercept:.2f}', color='green', linewidth=2)
+
+    # Add regression line from the model's predictions (for test data)
+    y_pred = model.predict(X_test)
+
+    plt.plot(X_test, y_pred, color='green', label='Test Data Prediction', linewidth=2)
+
+    plt.legend()
+    plt.title(f"Prediktioner av luftfuktighet på temperatur i Umeå\nMean squared error: {mse}" + 
+            f"\nFraktion: {fraktion}")
+    plt.xlabel("Temperatur")
+    plt.ylabel("Relativt Luftfuktighet")
+    plt.savefig(f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png')
+    plt.close() 
+"""
+Resultat visas på Figur 6a:
+
+![#### Figur 6a](img/regression/residuals_temp_fukt_UME.png)
+
+## Uppgift 5: Transformera data
+Jag först transformera temperatur:
+
+"""
+     Jag kan inte använda direkt logaritmisk transformation för temperatur, pga negativa value 
+
+    X_combined = combined_data[column_name1].values
+
+    shift_value = abs(X_combined.min()) + 1e-5  # Ensure no zero values
+
+    X_train_log = np.log(X_train + shift_value)
+    X_test_log = np.log(X_test + shift_value)
+
+    # Visualisera logaritmisk transformation
+    plt.figure(figsize=(12, 6))
+
+    # Visa original data i subplot 1
+    plt.subplot(1, 2, 1)
+    plt.scatter(X_train, y_train, label='Träningsdata')
+    plt.scatter(X_test, y_test, label='Test data')
+    plt.legend()
+    plt.title("Original data")
+    plt.xlabel("Temperatur")
+    plt.ylabel("Relativt luftfuktighet")
+
+    # Visa logaritmisk transformation i subplot 2
+    plt.subplot(1, 2, 2)
+    plt.scatter(X_train_log, y_train, label='Träningsdata')
+    plt.scatter(X_test_log, y_test, label='Test data')
+    plt.legend()
+    plt.title("Logaritmisk transformation")
+    plt.xlabel("Temperatur, log(value - min - 0.00001 )")
+    plt.ylabel("Relativt luftfuktighet")
+    plt.savefig(f'img/regression/log_data.png')
+    #plt.show()
+    plt.close()
+
+    # Bygg linjär regression med logaritmerad temperatur
+    log_model = LinearRegression()
+    log_model.fit(X_train_log, y_train)
+
+    # Prediktera med test data
+    pred_log = log_model.predict(X_test_log)
+
+    x_log = np.linspace(-0.2, 3.0, 100)
+    draw_exp_model = log_model.predict(x_log.reshape(-1, 1))
+
+    # Räkna ut MSE
+    mse_log = np.mean((pred_log - X_test_log)**2)
+    print("Mean squared error log transformerad:", mse_log)
+    # Transform predictions back to the original scale
+    pred_original = np.exp(pred_log) - shift_value
+
+    # Calculate MSE in the original domain
+    mse_original = np.mean((pred_original - X_test)**2)
+    print("Mean squared error original domain:", mse_original)
+    #print("Mean squared error linjär regression:", mse)
+
+    # Visalisera prediktioner
+    plt.scatter(X_train_log, y_train, label='Träningsdata')
+    plt.scatter(X_test_log, y_test, label='Test data')
+    plt.plot(x_log, draw_exp_model, label='Linjär regression, log transformerad i x', color='c', linewidth=3)
+    plt.legend()
+    plt.title("Prediktioner av relativt luftfuktighet (log transformerad)")
+    plt.xlabel("Temperatur [log]")
+    plt.ylabel("Relativt luftfuktighet")
+    plt.savefig(f'img/regression/residuals_log_data.png')
+    #plt.show()
+    plt.close()
+
+"""
+
+#### Figur 7
+![Regression med log-transormerad temperatur](img/regression/residuals_log_data.png)
+
+#### Figut 7a
+![Residualer för liniar regression med log-transormerad temepratur](img/regression/residuals_LOGtemp_fukt_UME.png)
+
+Sedan applicera jag detta model till originala data:
+
+"""
+    # Transformera tillbaka modellen
+    plt.scatter(X_train, y_train, label='Träningsdata')
+    plt.scatter(X_test, y_test, label='Test data')
+    plt.plot(np.exp(x_log) - shift_value, draw_exp_model, label='Linjär regression, exponentiell i x', color='c', linewidth=3)
+    plt.legend()
+    plt.title("Prediktioner av relativt luftfuktighet exponentiell modell")
+    plt.xlabel("Temperatur")
+    plt.ylabel("Relativt luftfuktighet")
+    plt.savefig('img/regression/transform_back.png')
+    #plt.show()
+    plt.close()
+"""
+#### Figur 7b
+![Applicer model till originala data](img/regression/transform_back.png)
+
+Jag dör samma såk mot relativt luftfuktighet:
+"""
+    # Regression med logaritmerad relativt luft fuktighet
+    # Relativt luftfuktighet är alltid pozitivt
+    y_train_log = np.log(y_train)
+    y_test_log = np.log(y_test)
+
+    # Bygg linjär regression av logaritmerad data
+    log_y_model = LinearRegression()
+    log_y_model.fit(X_train, y_train_log)
+
+    # Prediktera med test data
+    pred_log_y = log_y_model.predict(X_train)
+    # pred_log_y = np.exp(pred_log_y)
+
+    # Räkna ut MSE
+    mse_log_y = np.mean((pred_log_y - y_test_log)**2)
+    print("Mean squared error log transformerad y:", mse_log_y)
+    print("Mean squared error log transformerad x:", mse_log)
+    #print("Mean squared error linjär regression:", mse)
+
+    # Visalisera prediktioner
+    x = np.linspace(-21, -0.5, 100)
+    y_log = log_y_model.predict(x.reshape(-1, 1))
+
+    plt.scatter(X_train, y_train_log, label='Träningsdata')
+    plt.scatter(X_test, y_test_log, label='Test data')
+    plt.plot(x, y_log, label='Linjär regression log domän', color='g', linewidth=3)
+    plt.legend()
+    plt.title("Prediktioner av relativt luftfuktighet (log transformerad y)")
+    plt.xlabel("Temperatyr")
+    plt.ylabel("Relativt luftfuktighet [log]")
+    plt.savefig('img/regression/log_transform_FUKT_Umeå.png')
+    #plt.show()
+    plt.close()
+
+    # Beräkna residualer
+    residual_log_y = y_test - np.exp(pred_log_y)
+"""
+![Här visas resultat av detta transformation:](img/regression/Y_LOG_transform_model_Umeå.png)

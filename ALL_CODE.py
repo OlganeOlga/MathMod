@@ -217,36 +217,36 @@ def comment_avay():
     results_df = pd.DataFrame(results)
     utils.save_to_mdfile(results_df, "shapiro_wilk.md", "statistics")
 
-""""
-Q_Q plottar
-"""
-fig, axes = plt.subplots(2, 3, figsize=(10, 3 * 2))
+    """"
+    Q_Q plottar
+    """
+    fig, axes = plt.subplots(2, 3, figsize=(10, 3 * 2))
 
 
-# Loopa igenom alla stationer och parametrar
-for i, station in enumerate(stations):
-    for j, parameter in enumerate(parameters):
-        # Filtrera data för station och parameter
-        data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
-        numeric_data = data['value'].dropna()
-        # Skapa Q-Q diagram för att jämföra med normalfördelning
-        ax = axes[j, i]
-        
-        sci.probplot(numeric_data, dist="norm", plot=ax)
-        ax.set_ylabel(f"{'temperatur, °C' if parameter == 'TEMPERATUR' else 'humidity, %'}", fontsize=8)
-        # Lägg till titel
-        ax.set_title(f"Q-Q plot: {station} - {parameter}", fontsize=8)
-        ax.get_lines()[1].set_color('red')  # Gör linjen för teoretiska kvantiler röd
-        
-# Justera layouten
-plt.tight_layout()
-plt.savefig('img/q_q_plot/all.png')
-plt.close()
-exit()
-"""
-CORRELATION MATRIX FOR 6 PARAMETERS
-"""
-# Combine data for all parameters, with station names included
+    # Loopa igenom alla stationer och parametrar
+    for i, station in enumerate(stations):
+        for j, parameter in enumerate(parameters):
+            # Filtrera data för station och parameter
+            data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+            numeric_data = data['value'].dropna()
+            # Skapa Q-Q diagram för att jämföra med normalfördelning
+            ax = axes[j, i]
+            
+            sci.probplot(numeric_data, dist="norm", plot=ax)
+            ax.set_ylabel(f"{'temperatur, °C' if parameter == 'TEMPERATUR' else 'humidity, %'}", fontsize=8)
+            # Lägg till titel
+            ax.set_title(f"Q-Q plot: {station} - {parameter}", fontsize=8)
+            ax.get_lines()[1].set_color('red')  # Gör linjen för teoretiska kvantiler röd
+            
+    # Justera layouten
+    plt.tight_layout()
+    plt.savefig('img/q_q_plot/all.png')
+    plt.close()
+
+    """
+    CORRELATION MATRIX FOR 6 PARAMETERS
+    """
+    # Combine data for all parameters, with station names included
 combined_data = pd.DataFrame()
 column_name1 = "TEMPERATUR_Umeå Flygplats"  # Replace with actual column name for temperature
 column_name2 = "LUFTFUKTIGHET_Umeå Flygplats"  # Replace with actual column name for humidity
@@ -259,7 +259,7 @@ for param_key, dataset in three_days.items():
     combined_data = pd.concat([combined_data, df], axis=1)
 # Calculate the correlation matrix
 correlation_matrix = combined_data.corr()
-def functio_sceep():
+def comment():
     # Plot the heatmap
     plt.figure(figsize=(12, 10))
     ax = sns.heatmap(
@@ -308,56 +308,55 @@ def functio_sceep():
     # plt.show()
     plt.close()
 
+"""
+Calculate regression for FUKT dependently on TEMP in UMEÅ
+"""
+# Specify the column names
 
-    """
-    Calculate regression for FUKT dependently on TEMP in UMEÅ
-    """
-    # Specify the column names
-    
-    # Extract X (independent variable) and y (dependent variable) from the dataframe
-    X = combined_data[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
-    y = combined_data[column_name2].values  # Dependent variable (y)
+# Extract X (independent variable) and y (dependent variable) from the dataframe
+X = combined_data[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
+y = combined_data[column_name2].values  # Dependent variable (y)
 
-    # Initialize the LinearRegression model
-    model = LinearRegression()
+# Initialize the LinearRegression model
+model = LinearRegression()
 
-    # Fit the model on the data
-    model.fit(X, y)
+# Fit the model on the data
+model.fit(X, y)
 
-    # Get the regression line parameters (slope and intercept)
-    slope = model.coef_[0]
-    intercept = model.intercept_
+# Get the regression line parameters (slope and intercept)
+slope = model.coef_[0]
+intercept = model.intercept_
 
-    # Print the regression equation
-    print(f"Regression Equation: y = {slope:.2f} * X + {intercept:.2f}")
+# Print the regression equation
+print(f"Regression Equation: y = {slope:.2f} * X + {intercept:.2f}")
 
-    # Plot the data and regression line
-    plt.scatter(X, y, color='blue', label='Data Points')  # Plot the data points
-    plt.plot(X, model.predict(X), color='red', label='Regression Line')  # Plot the regression line
+# Plot the data and regression line
+plt.scatter(X, y, color='blue', label='Data Points')  # Plot the data points
+plt.plot(X, model.predict(X), color='red', label='Regression Line')  # Plot the regression line
 
-    # Customize the plot
-    plt.xlabel(column_name1)
-    plt.ylabel(column_name2)
-    plt.title(f"Linear regression model.\nPrediktion av relativt luftfuktighet på grund of temperatur i Umeå")
+# Customize the plot
+plt.xlabel(column_name1)
+plt.ylabel(column_name2)
+plt.title(f"Linear regression model.\nPrediktion av relativt luftfuktighet på grund of temperatur i Umeå")
 
-    # Create the regression plot with a custom label
-    sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter_kws={'s': 10}, line_kws={'color': 'red', 'label': f'Y = {slope:.2f}X + {intercept:.2f}'})
-    # Manually handle the legend and remove unwanted "Regression Line" entry
-    handles, labels = plt.gca().get_legend_handles_labels()
+# Create the regression plot with a custom label
+sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter_kws={'s': 10}, line_kws={'color': 'red', 'label': f'Y = {slope:.2f}X + {intercept:.2f}'})
+# Manually handle the legend and remove unwanted "Regression Line" entry
+handles, labels = plt.gca().get_legend_handles_labels()
 
-    # Remove "Regression Line" from legend if it exists
-    handles = [handle for handle, label in zip(handles, labels) if label != 'Regression Line']
-    labels = [label for label in labels if label != 'Regression Line']
+# Remove "Regression Line" from legend if it exists
+handles = [handle for handle, label in zip(handles, labels) if label != 'Regression Line']
+labels = [label for label in labels if label != 'Regression Line']
 
-    # Add the correct custom legend (keeping only data points and regression equation)
-    plt.legend(handles=handles, labels=labels, loc='best')# remove regression line from legend as it will be desplayed by sns.regplot
-    plt.savefig('img/regression/Umea_temp_fukt_relation.png')
-    plt.close()
+# Add the correct custom legend (keeping only data points and regression equation)
+plt.legend(handles=handles, labels=labels, loc='best')# remove regression line from legend as it will be desplayed by sns.regplot
+plt.savefig('img/regression/Umea_temp_fukt_relation.png')
+plt.close()
 
-    """
-    Regression for FUKT dependently on TEMP in UMEÅ
-    with train and test data
-    """
+"""
+Regression for FUKT dependently on TEMP in UMEÅ
+with train and test data
+"""
 # Get training ang testing datasets
 fraktion = 0.5
 train = combined_data.sample(frac=fraktion, random_state=1)
@@ -369,61 +368,69 @@ y_train = train[column_name2].values  # Dependent variable (y)
 X_test = test[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
 y_test = test[column_name2].values  # Dependent variable (y)
 
-def sceep_2():
-    model = LinearRegression().fit(X_train, y_train)
-    pred = model.predict(X_test)
 
-    # Räkna ut MSE
-    mse = np.mean((pred - y_test)**2)
-    linear_slope = model.coef_[0]
-    linear_intercept = model.intercept_
+model = LinearRegression().fit(X_train, y_train)
+pred = model.predict(X_test)
+
+# Räkna ut MSE
+mse = np.mean((pred - y_test)**2)
+linear_slope = model.coef_[0]
+linear_intercept = model.intercept_
+
+plt.figure(figsize=(10,6))
+# Add linear regression parameters to the plot
+plt.text(0.5, 0.95, f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}',
+        ha='center', va='center', transform=plt.gca().transAxes, fontsize=12, color='red')
+# Visulisera prediktioner
+plt.scatter(X_train, y_train, color="orange", label='Träningsdata', alpha=0.6)
+plt.scatter(X_test, y_test, color="blue", label='Test data', alpha=0.6)
+# Create the regression plot with a confidence interval (95%)
+sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter=False, 
+            line_kws={'color': 'red', 'label': f'Y = {linear_slope:.2f}X + {linear_intercept:.2f}'}, 
+            ci=95)  # 'ci' specifies the confidence interval
+#plt.plot(X_test, pred, label='Linjär regression', color='g', linewidth=3)
+#plt.plot(X_test, pred, label=f'Linear Regression: y = {linear_slope:.2f}x + {linear_intercept:.2f}', color='green', linewidth=2)
+
+# Add regression line from the model's predictions (for test data)
+y_pred = model.predict(X_test)
+
+plt.plot(X_test, y_pred, color='green', label='Test Data Prediction', linewidth=2)
+
+plt.legend()
+plt.title(f"Prediktioner av luftfuktighet på temperatur i Umeå\nMean squared error: {mse}" + 
+        f"\nFraktion: {fraktion}")
+plt.xlabel("Temperatur")
+plt.ylabel("Relativt Luftfuktighet")
+plt.savefig(f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png')
+plt.close() 
 
 
-    # Add linear regression parameters to the plot
-    plt.text(0.5, 0.95, f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}',
-            ha='center', va='center', transform=plt.gca().transAxes, fontsize=12, color='red')
-    # Visulisera prediktioner
-    plt.scatter(X_train, y_train, label='Träningsdata')
-    plt.scatter(X_test, y_test, label='Test data')
-    plt.plot(X_test, pred, label='Linjär regression', color='g', linewidth=3)
-    plt.legend()
-    plt.title(f"Prediktioner av luftfuktighet på temperatur i Umeå\nMean squared error: {mse}" + 
-            f"\nFraktion: {fraktion}")
-    plt.xlabel("Temperatur")
-    plt.ylabel("Relativt Luftfuktighet")
-    path = f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png'
-    plt.savefig(path)
-    # plt.show()
-    plt.close() 
+# Beräkna residualen för test data
+residual = y_test - pred
 
+# Beräkna standardavvikelsen för residualen
+std_residual = np.std(residual)
+#print(f"Standardavvikelsen för residualen: {std_residual:.2f}")
 
-    # Beräkna residualen för test data
-    residual = y_test - pred
+# Visualisera residualen för test data
+plt.scatter(X_test, residual)
+plt.axhline(0, color='r', linestyle='--')
+plt.title("Residualer av temperatur i Umeå")
+plt.xlabel("temperatur i Halmstad")
+plt.ylabel("Residual")
+plt.savefig('img/regression/residuals_temp_fukt_UME.png')
+plt.close()
 
-    # Beräkna standardavvikelsen för residualen
-    std_residual = np.std(residual)
-    #print(f"Standardavvikelsen för residualen: {std_residual:.2f}")
-
-    # Visualisera residualen för test data
-    plt.scatter(X_test, residual)
-    plt.axhline(0, color='r', linestyle='--')
-    plt.title("Residualer av temperatur i Umeå")
-    plt.xlabel("temperatur i Halmstad")
-    plt.ylabel("Residual")
-    path = f'img/regression/residuals_temp_fukt_UME.png'
-    plt.savefig(path)
-    plt.close()
-
-    # Visa histogram av residualen för test data
-    plt.hist(residual, bins=10)
-    plt.title("Histogram av residualer av luftfuktighet i Umeå")
-    plt.xlabel("Residual")
-    plt.ylabel("Frekvens")
-    path = f'img/regression/residuals_hist_temp_fukt_UME.png'
-    # plt.savefig(path)
-    # plt.show()
-    plt.close() 
-
+# Visa histogram av residualen för test data
+plt.hist(residual, bins=10)
+plt.title("Histogram av residualer av luftfuktighet i Umeå")
+plt.xlabel("Residual")
+plt.ylabel("Frekvens")
+path = f'img/regression/residuals_hist_temp_fukt_UME.png'
+# plt.savefig(path)
+# plt.show()
+plt.close() 
+exit()
 """
 
 MODIFIERA DATA
