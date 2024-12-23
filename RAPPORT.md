@@ -7,7 +7,7 @@ I projektet förväntas vi att plocka data från en open API och berbeta de med 
 
 ## Uppgift 1. Databeskrivning
 
-Jag hämtar data från [SMHI Open Data API Docs - Meteorological Observations](https://opendata.smhi.se/apidocs/metobs/index.html). Det finns flera olika mätningar, bland annat temperatur (parameter 1) och relativt luftfuktighet (parameter 6). Dessa mätningar pågar varje timme. Jag hämtar data för tre stationer: Halmstad flygplats, Uppsala Flygplats och Umeå Flygplats. Jag använder samma namn som i SMHI Oen Data. Temperatur mäts i Celcie grad (°C) och relativt luftfuktighet i procenter (%).
+Jag hämtar data från [SMHI Open Data API Docs - Meteorological Observations](https://opendata.smhi.se/apidocs/metobs/index.html). Data i detta API beskriver väder fröändringar i olika platser i Sverige. Det finns flera olika mätningar, bland annat temperatur (parameter 1) och relativt luftfuktighet (parameter 6). Eftersom mätningar pågar varje timme, det känns lämpligt att använda data för att öva med statistisk bearbetning. Data hämtas från tre stationer: Halmstad flygplats, Uppsala Flygplats och Umeå Flygplats. Jag använder samma namn som i SMHI Open Data. Temperatur mäts i Celcie grader (°C) och relativt luftfuktighet i procenter (%). 
 
 Kod som jag använder för att plocka data:
 
@@ -47,7 +47,7 @@ Kod som jag använder för att plocka data:
                 json.dump(result, file, indent=4, ensure_ascii=False)
 """
 
-Data sparas data i filer, egen fil skaffas för varje station och variabel. För statistisk bearbetning hämtas data med hjälp av förljande kod:
+Data sparas data i filer, egen fil skaffas för varje station och variabel. Varje fil innehåller mera än 2500 mätnings punkter. För statistisk bearbetning hämtas data från sista 72 timmar med hjälp av förljande kod:
 
 """
 
@@ -138,9 +138,65 @@ Koden till funktioner för att hämta data finns i [GitHub](https://github.com/O
 | 2024-12-18 15:00:00 |                      96 |                    100 |                  95 |
 | 2024-12-18 16:00:00 |                      96 |                    100 |                  96 |
 
-Jag använder pivottabel:
+För att lättare operera med data jag skaffar också kombinerad <DataFrame> objekt ´df_three´
+
+'''
+    # Convert the list of dictionaries into a pandas DataFrame objekt
+    df_three = pd.DataFrame(data_rows)
+
+    # Spara till en Markdown-fil
+    markdown_string = df_three.to_markdown()  # Genererar Markdown-sträng
+    with open("statistics/dataframe.md", "w", encoding="utf-8") as f:
+        f.write(markdown_string)
+'''
+
+### Tabel 1c. Sammansätta data
+
+|     | time                      | station_name       | parameter     |   value |
+|----:|:--------------------------|:-------------------|:--------------|--------:|
+|   0 | 2024-12-15 18:00:00+01:00 | Halmstad flygplats | TEMPERATUR    |     7.8 |
+|   1 | 2024-12-15 19:00:00+01:00 | Halmstad flygplats | TEMPERATUR    |     8.1 |
+--------
+| 132 | 2024-12-18 06:00:00+01:00 | Uppsala Flygplats  | TEMPERATUR    |    -3.7 |
+| 133 | 2024-12-18 07:00:00+01:00 | Uppsala Flygplats  | TEMPERATUR    |    -3.2 |
+| 134 | 2024-12-18 08:00:00+01:00 | Uppsala Flygplats  | TEMPERATUR    |    -2.7 |
+-------
+| 214 | 2024-12-18 16:00:00+01:00 | Umeå Flygplats     | TEMPERATUR    |    -3.4 |
+| 215 | 2024-12-18 17:00:00+01:00 | Umeå Flygplats     | TEMPERATUR    |    -3.1 |
+| 216 | 2024-12-15 18:00:00+01:00 | Halmstad flygplats | LUFTFUKTIGHET |    98   |
+| 217 | 2024-12-15 19:00:00+01:00 | Halmstad flygplats | LUFTFUKTIGHET |    95   |
+--------
+| 429 | 2024-12-18 15:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    95   |
+| 430 | 2024-12-18 16:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    95   |
+| 431 | 2024-12-18 17:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    96   |
+
+Det är intressant att veta om vissa tidpunkter saknar någon av m'ätningar på något station.
+Följande kode skaffar detta satistik:
+
+'''
+
+'''
+
+Det verkar att inga mätningar är missade data för båda parameters:
+
+### Tabel 2. [Missade data för alla parameter: ](statistics/ALLA_mis_summ.md)
+|        station och parameter            |N missad|
+|:----------------------------------------|-------:|
+| ('Halmstad flygplats', 'LUFTFUKTIGHET') |   0    |
+| ('Halmstad flygplats', 'TEMPERATUR')    |   0    |
+| ('Umeå Flygplats', 'LUFTFUKTIGHET')     |   0    |
+| ('Umeå Flygplats', 'TEMPERATUR')        |   0    |
+| ('Uppsala Flygplats', 'LUFTFUKTIGHET')  |   0    |
+| ('Uppsala Flygplats', 'TEMPERATUR')     |   0    |
+
+Det verkar att inga tidspunkter var missad under dessa tre dagar. Sedan 
+
+Jag vill teasta om datamängd är normalfördelad. För detta skull använder jag Shapiro-Wilk test för normalitets sprigning.
+
+Datamängder har förljande karakteristiker:
 
 <div style="font-size: 8px;">
+
 |       |   Halmstad flygplats LUFTFUKTIGHET |   Halmstad flygplats TEMPERATUR |   Umeå Flygplats LUFTFUKTIGHET |   Umeå Flygplats TEMPERATUR |   Uppsala Flygplats LUFTFUKTIGHET |   Uppsala Flygplats TEMPERATUR |
 |:------|-----------------------------------:|--------------------------------:|-------------------------------:|----------------------------:|----------------------------------:|-------------------------------:|
 | count |                              72    |                           72    |                          72    |                       72    |                             72    |                          72    |
@@ -152,47 +208,6 @@ Jag använder pivottabel:
 | 75%   |                              96    |                            7.43 |                          91.25 |                       -5.38 |                             87.25 |                           2.72 |
 | max   |                              99    |                            8.9  |                          96    |                       -1.3  |                            100    |                           6.6  |
 </div>
-Jag tittar om det finns missade data för [temperatur](### Tabel 2a.) och för [relativt luftfuktighet](### Tabel 2b.)
-
-### Tabel 2a. [Missade data för TEMPERATUR](statistics/TEMPERATUR_mis_summ.md)           
-|                    |   0 |                
-|:-------------------|----:|                
-| Halmstad flygplats |   0 |                
-| Umeå Flygplats     |   0 |               
-| Uppsala Flygplats  |   0 |               
-
-### Tabel 2b. [Missade data för RELATIVT LUFTFUKTIGHET](statistics/LUFTFUKTIGHET_mis_summ.md) 
-|                    |   0 |
-|:-------------------|----:|
-| Halmstad flygplats |   0 |
-| Umeå Flygplats     |   0 |
-| Uppsala Flygplats  |   0 |
-
-### Tabel 3c. [Missade data för alla parameter: ](statistics/ALLA_mis_summ.md)
-|        station och parameter            |N missad|
-|:----------------------------------------|-------:|
-| ('Halmstad flygplats', 'LUFTFUKTIGHET') |   0    |
-| ('Halmstad flygplats', 'TEMPERATUR')    |   0    |
-| ('Umeå Flygplats', 'LUFTFUKTIGHET')     |   0    |
-| ('Umeå Flygplats', 'TEMPERATUR')        |   0    |
-| ('Uppsala Flygplats', 'LUFTFUKTIGHET')  |   0    |
-| ('Uppsala Flygplats', 'TEMPERATUR')     |   0    |
-
-Det verkar att inga tidspunkter var missad under dessa tre dagar.
-
-Jag vill teasta om datamängd är normalfördelad. För detta skull använder jag Shapiro-Wilk test för normalitets sprigning.
-
-### Tabel 3. [Beskrivande statistik for parameters](statistics/describe_stat_all.md)
-station_name:          Halmstad flygplats            Umeå Flygplats            Uppsala Flygplats
-parameter         LUFTFUKTIGHET TEMPERATUR  LUFTFUKTIGHET TEMPERATUR     LUFTFUKTIGHET TEMPERATUR
-count                     72.00      72.00          72.00      72.00             72.00      72.00
-mean                      91.47       6.91          88.38     -10.61             78.01       1.27
-std                        5.98       0.93           4.10       5.68             14.14       2.48
-min                       75.00       4.40          81.00     -20.40             57.00      -4.70
-25%                       90.00       6.38          85.00     -15.82             64.00       0.18
-50%                       93.00       7.00          88.00     -10.05             77.50       1.90
-75%                       96.00       7.43          91.25      -5.38             87.25       2.72
-max                       99.00       8.90          96.00      -1.30            100.00       6.60
 
 
 Medelvärde i stationer Halmstad Flugplats och Upsala Flugplats är närmare medianen, som säger att de ssa data 

@@ -30,19 +30,20 @@ def change_to_markdown(df: pd.DataFrame, units="°C"):
     markdown_table = df.to_markdown()
     return markdown_table
 
-def append_to_markdown(markdown_table, filename: str = 'RAPPORT.md', header=""):
+def append_to_markdown(data_frame, filename: str = 'RAPPORT.md', header=""):
+    md_str = data_frame.to_markdown()
     # Read the existing contents of the Markdown file
     try:
         with open(filename, 'a', encoding='utf-8') as file:  # Open in append mode
             file.write("\n")  # Add a newline before appending
             file.write(f'### {header}\n')  #  header for the table
-            file.write(markdown_table)  # Append the markdown table to the file
+            file.write(md_str)  # Append the markdown table to the file
             print(f"Markdown table appended to {filename}")
     except FileNotFoundError:
         print(f"File '{filename}' not found.")
 
-def save_to_mdfile(markdown_table, filename: str = 'RAPPORT.md', dir_name: str = "describe"):
-    
+def save_to_mdfile(data_frame, filename: str = 'RAPPORT.md', dir_name: str = "describe"):
+    markdown_table = data_frame.to_markdown()
     # Specify the file path where you want to save the markdown file
     file_path = f'{dir_name}/{filename}'
 

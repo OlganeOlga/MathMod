@@ -75,7 +75,7 @@ for param_id, parameter in PARAMS.items():
                 key=lambda x: datetime.fromtimestamp(x["date"] / 1000, tz=pytz.timezone("Europe/Stockholm"))
             )
             # Get the last N points
-            last_points = sorted_data[-mesured_points:]
+            last_points = sorted_data[- mesured_points:]
             """
             change it to pivot tabel
             """
@@ -97,40 +97,40 @@ for param_id, parameter in PARAMS.items():
                 'value': value
             })
         three_d_station[name] = stat_set
-        print(three_d_station)
-        exit()
-        
+
         three_days[param_id] = three_d_station
-# chage dataset for each parameter into pandas DateFrame
 
-
-# Convert the list of rows into a pandas DataFrame
+# Convert the list of dictionaries into a pandas DataFrame objekt
 df_three = pd.DataFrame(data_rows)
+
+# save to markdown file to be able sow in the presentation
+utils.save_to_mdfile(df_three, 'dataframe.md', 'statistics')
+
+df_three.columns.str.replace(' ', '\n')
+#print(df_three)
+
+# Pivot the data so each station gets its own column, and timestamps are aligned
+df_three_pivoted = df_three.pivot_table(index="time", columns=["station_name", "parameter"], values="value", aggfunc="mean")
+
+# create markdown file for presentation
+utils.save_to_mdfile(df_three_pivoted, 'df_pivoted.md', OUTPUT_DIR['statistics'])
+
+# Display the DataFrame
+stats = df_three_pivoted.describe()
+# Flatten the MultiIndex columns
+stats.columns = [' '.join(col).strip() for col in stats.columns.values]
+
+# Display the flattened DataFrame
+#print(stats.round(2))
+#md_tabel = utils.change_to_markdown(stats.round(2), None)
+utils.save_to_mdfile(stats, 'describe_stat_all.md', OUTPUT_DIR['statistics'])
+exit()
+
+# Summary of missing data
+missing_summary = df_three_pivoted.isna().sum()
+# print(missing_summary.to_markdown())
+
 def code_to_skip():
-    df_three.columns.str.replace(' ', '\n')
-    #print(df_three)
-
-    # Pivot the data so each station gets its own column, and timestamps are aligned
-    df_three_pivoted = df_three.pivot_table(index="time", columns=["station_name", "parameter"], values="value", aggfunc="mean")
-
-    # flatten pivottabel
-    df_md = df_three_pivoted.to_markdown()
-
-    utils.save_to_mdfile(df_md, 'df_pivoted.md', OUTPUT_DIR['statistics'])
-    # Display the DataFrame
-    stats = df_three_pivoted.describe()
-    # Flatten the MultiIndex columns
-    stats.columns = [' '.join(col).strip() for col in stats.columns.values]
-
-    # Display the flattened DataFrame
-    #print(stats.round(2))
-    md_tabel = utils.change_to_markdown(stats.round(2), None)
-    utils.save_to_mdfile(md_tabel, 'describe_stat_all.md', OUTPUT_DIR['statistics']) 
-
-    # Summary of missing data
-    missing_summary = df_three_pivoted.isna().sum()
-    # print(missing_summary.to_markdown())
-
     for key in three_days.keys():
         df = pd.DataFrame.from_dict(three_days[key], orient='columns')
         # convert time index from timestamp to date-time format
