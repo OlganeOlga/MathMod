@@ -10,6 +10,7 @@ I projektet förväntas vi att plocka data från en open API och berbeta de med 
 Jag hämtar data från [SMHI Open Data API Docs - Meteorological Observations](https://opendata.smhi.se/apidocs/metobs/index.html). Det finns flera olika mätningar, bland annat temperatur (parameter 1) och relativt luftfuktighet (parameter 6). Dessa mätningar pågar varje timme. Jag hämtar data för tre stationer: Halmstad flygplats, Uppsala Flygplats och Umeå Flygplats. Jag använder samma namn som i SMHI Oen Data. Temperatur mäts i Celcie grad (°C) och relativt luftfuktighet i procenter (%).
 
 Kod som jag använder för att plocka data:
+
 """python
 import json
 import request
