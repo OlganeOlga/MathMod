@@ -101,15 +101,13 @@ Data sparas data i filer, egen fil skaffas för varje station och variabel. För
             three_days[param_id] = three_d_station
 """
 
-Som resultat far jag nästlad diktionary: {Paramere_id: {plats:{timestamp:value}}}. Detta datatyp förändet jag till pandas <DataFrame> objekt. Ibbland anvädner jag separata objekt som innehåller bara en parameter. För de sista uppgifter använder jag objekt som innehåler båda parameter.
+Som resultat far jag nästlad diktionary: {Paramere_id: {plats:{timestamp:value}}}. Detta datatyp förändet jag till pandas <DataFrame> objekt. Ibbland anvädner jag separata objekt som innehåller bara en parameter. För de sista uppgifter använder jag objekt som innehåler båda parameter. Dataurval presenterades i Tabel 1a och 1b.
+Koden till funktioner för att hämta data finns i [GitHub](https://github.com/OlganeOlga/MathMod/tree/master/get_dynam_data). Alla tabeller och figurer skapas med filen [ALL_CODE.py](ALL_CODE.py)
 
-Dataurval presenterades i [Tabel 1a](### Tabel 1a. TEMPERATUR per timme under sista tre dagar från tre stationer:) och [Tabel 1b](### Tabel 1b. LUFTFUKTIGHET per timme från tre stationer).
-Koden till funktioner för att hämta data finns i [GitHub](https://github.com/OlganeOlga/MathMod/tree/master/get_dynam_data).
 
-Alla tabeller och figurer skapas med filen [ALL_CODE.py](ALL_CODE.py)
 ### Tabel 1a. TEMPERATUR per timme under sista tre dagar från tre stationer:
 (exampel)
-|                     |   Halmstad flygplats(°C) |   Uppsala Flygplats(°C) |   Umeå Flygplats(°C) |
+|      tid            |   Halmstad flygplats(°C) |   Uppsala Flygplats(°C) |   Umeå Flygplats(°C) |
 |:--------------------|-------------------------:|------------------------:|---------------------:|
 | 2024-12-15 17:00:00 |                      7.8 |                    -2.3 |                 -6.8 |
 | 2024-12-15 18:00:00 |                      8.1 |                    -1.8 |                 -4.4 |
@@ -141,21 +139,16 @@ Alla tabeller och figurer skapas med filen [ALL_CODE.py](ALL_CODE.py)
 | 2024-12-18 16:00:00 |                      96 |                    100 |                  96 |
 
 Jag använder pivottabel:
-station_name              Halmstad flygplats            Umeå Flygplats            Uppsala Flygplats
-parameter                      LUFTFUKTIGHET TEMPERATUR  LUFTFUKTIGHET TEMPERATUR     LUFTFUKTIGHET TEMPERATUR
-time
-2024-12-15 18:00:00+01:00               98.0        7.8           90.0       -6.8              99.0       -2.3
-2024-12-15 19:00:00+01:00               95.0        8.1           92.0       -4.4             100.0       -1.8
-2024-12-15 20:00:00+01:00               94.0        8.2           93.0       -3.1             100.0       -1.1
-2024-12-15 21:00:00+01:00               94.0        8.4           96.0       -1.3             100.0        0.4
-2024-12-15 22:00:00+01:00               93.0        8.2           95.0       -2.3             100.0        1.2
-...                                      ...        ...            ...        ...               ...        ...
-2024-12-18 13:00:00+01:00               96.0        6.1           92.0       -7.9             100.0        0.5
-2024-12-18 14:00:00+01:00               98.0        6.0           93.0       -6.8             100.0        1.6
-2024-12-18 15:00:00+01:00               97.0        6.5           95.0       -4.1             100.0        2.3
-2024-12-18 16:00:00+01:00               96.0        7.0           95.0       -3.4             100.0        2.7
-2024-12-18 17:00:00+01:00               96.0        7.4           96.0       -3.1             100.0        3.4
-
+|       |   Halmstad flygplats LUFTFUKTIGHET |   Halmstad flygplats TEMPERATUR |   Ume� Flygplats LUFTFUKTIGHET |   Ume� Flygplats TEMPERATUR |   Uppsala Flygplats LUFTFUKTIGHET |   Uppsala Flygplats TEMPERATUR |
+|:------|-----------------------------------:|--------------------------------:|-------------------------------:|----------------------------:|----------------------------------:|-------------------------------:|
+| count |                              72    |                           72    |                          72    |                       72    |                             72    |                          72    |
+| mean  |                              91.47 |                            6.91 |                          88.38 |                      -10.61 |                             78.01 |                           1.27 |
+| std   |                               5.98 |                            0.93 |                           4.1  |                        5.68 |                             14.14 |                           2.48 |
+| min   |                              75    |                            4.4  |                          81    |                      -20.4  |                             57    |                          -4.7  |
+| 25%   |                              90    |                            6.38 |                          85    |                      -15.82 |                             64    |                           0.18 |
+| 50%   |                              93    |                            7    |                          88    |                      -10.05 |                             77.5  |                           1.9  |
+| 75%   |                              96    |                            7.43 |                          91.25 |                       -5.38 |                             87.25 |                           2.72 |
+| max   |                              99    |                            8.9  |                          96    |                       -1.3  |                            100    |                           6.6  |
 
 Jag tittar om det finns missade data för [temperatur](### Tabel 2a.) och för [relativt luftfuktighet](### Tabel 2b.)
 
