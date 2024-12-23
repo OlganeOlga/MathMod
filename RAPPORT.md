@@ -12,6 +12,7 @@ Jag hämtar data från [SMHI Open Data API Docs - Meteorological Observations](h
 Kod som jag använder för att plocka data:
 
 """
+
     import json
     import request
 
@@ -49,6 +50,7 @@ Kod som jag använder för att plocka data:
 Data sparas data i filer, egen fil skaffas för varje station och variabel. För statistisk bearbetning hämtas data med hjälp av förljande kod:
 
 """
+
     import datetime
 
     # Extract requaired period (tree days) from downloaded data
