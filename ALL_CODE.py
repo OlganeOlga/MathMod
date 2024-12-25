@@ -197,9 +197,8 @@ plt.suptitle("Databeskrivning med ladogrammar", fontsize=16)
 plt.tight_layout(rect=[0, 0, 1, 0.95]) 
 
 plt.savefig('img/box_plot/all.png')
-plt.show()
+#plt.show()
 plt.close()
-exit()
 # Save the results of Shapiro-Wilk test in a file
 ShapiroW_df = pd.DataFrame(ShapiroW)
 utils.save_to_mdfile(ShapiroW_df, "shapiro_wilk.md", "statistics")
@@ -259,7 +258,7 @@ plt.subplots_adjust(top=0.85)  # Adjust top margin to make room for the legend
 
 # Save and show the plot
 plt.savefig("img/frekvenser/alla.png")
-plt.show()
+#plt.show()
 plt.close()
 
 """"

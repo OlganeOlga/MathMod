@@ -175,7 +175,7 @@ För att snabbt räkna ut statistiska egenskaper jag använder [describe()](http
 
 Resultat presenterad i Tabel 3:
 
-### Tabell 3. [Beskrivande statistik för alla stationer och parametrar](statistics/descriptive_stats.md)
+#### Tabell 3. [Beskrivande statistik för alla stationer och parametrar](statistics/descriptive_stats.md)
 <div style="font-size: 8px;">
 
 |      staion, parameter, enheter       |   count |   mean |   std |   min |    25% |    50% |   75% |   max |
@@ -260,45 +260,14 @@ Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde 
 
 '''
 
-#### Figur 2
+#### Figur 1.
 ![Ladogrammar](img/box_plot/all.png)
 ##### Förklaring till Figur 2.
 Figuren visar boxplottar för olika stationer och parametrar. De parametrar som visas och respectiva stationer skriven under varje subplot. Motsvarande enheter anges med etiketter till y-axes. Boxplottarna visar fördelningen av värden för varje station, där den horisontal linjen representerar medianen, boxarna visar det interkvartila intervallet (IQR) och morrhåren sträcker sig till minimi- och maximivärdena inom 1,5 * IQR. Små sirklar visar avvikande värde.
 För varje boxplott anges ett resultat från Shapiro-Wilk-testetm, den hjälper att bedöma om data följer en normalfördelning. Ett p-värde under 0,05 indikerar att data inte följer en normalfördelning, och detta markeras med rött i diagrammet.
 
-Fördelning av data i urvalet kan visualiseras även med stapeldiagram. Figur med stapeldiagammar skapas med följande koden:
+#### Tabell 4. Resultater av [Shapiro-Wilk test](statistics/shapiro_wilk.md)
 
-"""
-    plt.figure(figsize=(8, 6)) # initiate figure
-
-    # Iterate through all stations and parameters
-    for i, station in enumerate(stations):
-        for j, parameter in enumerate(parameters):
-            # filter data for each station and parameter
-            data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
-
-            # Subplot indexering: 3 rows for 3 stations and 2 columns for 2 parameters
-            plt.subplot(3, 2, i * len(parameters) + j + 1) 
-            
-            # create histogramm
-            sns.histplot(data['value'], kde=True, bins=24, color="green", edgecolor="black")
-            
-            # add title and axes
-            plt.title(f"{station} - {parameter}")
-            plt.xlabel("Värde")
-            plt.ylabel("Frekvens")
-
-    # Agast layout
-    plt.tight_layout()
-"""
-
-Grafiska fördelningar visas i Figur [1](Figur 1)
-
-![#### Figur 1](img/frekvenser/alla.png)
-
-Med  hjälp av Figur 1 vi ser att inte någon sätt av data är normalfördelad. Plottar visar ocjså att relativt luftfuktighet förändras inte likadant med temperaturförändring vid varje station. Här ifrån tar jag slutsatsen att det är inte lönt att bearbeta data från alla stationer tilsammans.
-
-#### Tabell 4. Shapiro-Wilk test
 
 | Station            | Parameter     |   Shapiro-Wilk Statistic |   P-value | Normal Distribution (p > 0.05)   |
 |:-------------------|:--------------|-------------------------:|----------:|:---------------------------------|
@@ -313,12 +282,107 @@ Med  hjälp av Figur 1 vi ser att inte någon sätt av data är normalfördelad.
 Ldogrammar och Shapiro-Wilk test för normality tillåtar förkasta nulhypotes om att temperatur spridning är normal fördelad. Sannolikheten att nulhypotes stämmer är mindre än 5% och därmed för alla tre platsar och därmed är sannolikhet för typ II fel (att felaktigt förkasta null hupotes) är ganska liten.
 Samma påstående stämmer för relativt lyft fuktighet med undantag för relativt luftfuktighet i Umeå flygplats, där sannolikhet att null hypotes stämmer är mera än 5%, nämlgen 7%.
 
+Fördelning av data i urvalet kan visualiseras även med stapeldiagram. Figur med stapeldiagammar skapas med följande koden:
+
+"""
+    """
+    Create figur showing frequensy despersion of values for all stations and parameters
+    """
+
+    plt.figure(figsize=(8, 6)) # initiate figure
+    # Prepare the custom blue square legend handle
+    text = f"Blue color shows samples distribution"
+    blue_square = Line2D([0], [0], marker='s', color='w', markerfacecolor='blue', markersize=8, label=text)
+
+    # Prepare the legend for the normal distribution
+    normal_dist_line = Line2D([0], [0], color='orange', lw=2, label="Normal Distribution")
+
+    normal_dist_added = False # variable to chose what norm dist line vill be shown in the legend
+    # Iterate through all stations and parameters
+    for i, station in enumerate(stations):
+        for j, parameter in enumerate(parameters):
+            # filter data for each station and parameter
+            data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+
+            # Subplot indexering: 3 rows for 3 stations and 2 columns for 2 parameters
+            plt.subplot(3, 2, i * len(parameters) + j + 1) 
+            
+            sns.histplot(data['value'], kde=True, bins=24, color="blue", edgecolor="black")
+                    
+            # Calculate the mean and standard deviation
+            mean = data['value'].mean()
+            std_dev = data['value'].std()
+
+            # Generate x values for normal distribution (range around the data's values)
+            x = np.linspace(data['value'].min(), data['value'].max(), 100)
+            
+            # Calculate the normal distribution values (PDF)
+            y = sci.norm.pdf(x, mean, std_dev)
+            # Add normal distribution with te same parameters to the subplot
+            plt.plot(x, y * len(data) * (x[1] - x[0]), color='orange')
+            
+            # add title and axes
+            plt.title(f"{station}", fontsize=10)
+            # Conditionally set the xlabel depending on the parameter
+            if parameter == 'TEMPERATUR':
+                plt.xlabel(f"{parameter.lower()} (°C)")
+            else:
+                plt.xlabel(f"{parameter.lower()} (%)")
+            
+            plt.ylabel("Frekvens")
+    # Create a global legend outside the subplots (top)
+    fig = plt.gcf()  # Get the current figure
+
+    fig.legend(handles=[blue_square, normal_dist_line], loc='upper center', bbox_to_anchor=(0.5, 0.99), ncol=2, fontsize='small')
+
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.85)  # Adjust top margin to make room for the legend
+
+    # Save and show the plot
+    plt.savefig("img/frekvenser/alla.png")
+"""
+
+Grafiska fördelningar visas i Figur 2.
+
+![#### Figur 2](img/frekvenser/alla.png)
+##### Förklaring till Figur 2.
+Den här figuren visualiserar frekvensfördelningen av temperatur- och relativ luftfuktighetsdata från flera stationer i Sverige, inklusive Halmstad Flygplats, Uppsala Flygplats och Umeå Flygplats. Fördelningen visas som histogram med Kernel Density Estimation (KDE), och varje subplot motsvarar en kombination av station och parameter.De blå staplarna representerar frekvensfördelningen av mätningarna, där varje stapel representerar ett specifikt värdeintervall. Blå linjän visar Kernel density estimation, eller den uppskattade sannolikhetsdensiteten för mätvärdena. Normalfördelningskurvan är en orange linje. Denna kurva beräknas med hjälp av medelvärdet och standardavvikelsen för värdena i datasetet för varje station och parameter. Normalfördelningen läggs till för att visuellt jämföra hur den faktiska datadistributionen överensstämmer med den teoretiska normalfördelningen.
+
+
+Figurer 1 och 2 visar att spridningen i alla datamängder avviker från Normalspridningen. Shapiro-Wilk dock säger att dataspridning av relativt luftfuktighet i Umeå närmar sig mest till normalt. Stapelldiagrammar visar också att relativt luftfuktighet förändras inte likadant med temperaturförändring vid varje station. Här ifrån tar jag slutsatsen att det är inte korrekt att utföra statistiska tester på sammansätta data från alla stationer.
+
 ### Q_Q plottar
-Det finns ett annat sät att visualisera avvikelse från normalfördelning, n-mligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Varje axel visar fördelningen av en dataset. I detta fall jämför jag dataset från olika stationer mot den teoretiska normalfördelningen. På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
+Det finns ett annat sät att visualisera avvikelse från eller liknande till normalfördelning, nämligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Q-Q plottar skaffas ed förljande koden: 
+"""
+    """"
+    Q_Q plottar
+    """
+    fig, axes = plt.subplots(2, 3, figsize=(10, 3 * 2))
+    # Loopa through all stations and parameters
+    for i, station in enumerate(stations):
+        for j, parameter in enumerate(parameters):
+            # Filter for station and oarameter
+            data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+            numeric_data = data['value'].dropna()
+            # Create Q_Q plots
+            ax = axes[j, i]
+            sci.probplot(numeric_data, dist="norm", plot=ax)
+            ax.set_ylabel(f"{'temperatur, °C' if parameter == 'TEMPERATUR' else 'humidity, %'}", fontsize=8)
+            # Add titel
+            ax.set_title(f"Q-Q plot: {station} - {parameter}", fontsize=8)
+            ax.get_lines()[1].set_color('red')  # Give lene for the 
+    plt.tight_layout()
+    plt.savefig('img/q_q_plot/all.png')
+    plt.close()
+
+"""
+REsultat visas på Figur 3.
+
 #### Figur 3
 ![Kvanti_kventil plottar ](img/q_q_plot/all.png)
 ##### Förklaring av Q-Q Plottar
 
+Varje axel visar fördelningen av en dataset. I detta fall jämför jag dataset från olika stationer mot den teoretiska normalfördelningen. På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
 Den här figuren visar **Q-Q plottar** för data från olika stationer och parametrar. En Q-Q plot (Quantile-Quantile plot) jämför de empiriska kvantilerna från den faktiska datan med de teoretiska kvantilerna från en normalfördelning. Syftet med denna figur är att visuellt bedöma hur väl datan följer en normalfördelning.
 
 Vad visar figuren?
