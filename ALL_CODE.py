@@ -15,6 +15,7 @@ import requests
 import scipy.stats as sci
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import seaborn as sns
@@ -127,7 +128,14 @@ stations = df_three['station_name'].unique()
 parameters = df_three['parameter'].unique()
 
 plt.figure(figsize=(8, 6)) # initiate figure
+# Prepare the custom blue square legend handle
+text = f"Blue color shows samples distribution"
+blue_square = Line2D([0], [0], marker='s', color='w', markerfacecolor='blue', markersize=8, label=text)
 
+# Prepare the legend for the normal distribution
+normal_dist_line = Line2D([0], [0], color='orange', lw=2, label="Normal Distribution")
+
+normal_dist_added = False # variable to chose what norm dist line vill be shown in the legend
 # Iterate through all stations and parameters
 for i, station in enumerate(stations):
     for j, parameter in enumerate(parameters):
@@ -137,20 +145,45 @@ for i, station in enumerate(stations):
         # Subplot indexering: 3 rows for 3 stations and 2 columns for 2 parameters
         plt.subplot(3, 2, i * len(parameters) + j + 1) 
         
-        sns.histplot(data['value'], kde=True, bins=24, color="green", edgecolor="black")
+        sns.histplot(data['value'], kde=True, bins=24, color="blue", edgecolor="black")
+                
+        # Calculate the mean and standard deviation
+        mean = data['value'].mean()
+        std_dev = data['value'].std()
+
+        # Generate x values for normal distribution (range around the data's values)
+        x = np.linspace(data['value'].min(), data['value'].max(), 100)
+        
+        # Calculate the normal distribution values (PDF)
+        y = sci.norm.pdf(x, mean, std_dev)
+        # Add normal distribution with te same parameters to the subplot
+        plt.plot(x, y * len(data) * (x[1] - x[0]), color='orange')
         
         # add title and axes
-        plt.title(f"{station} - {parameter}")
-        plt.xlabel("Värde")
+        plt.title(f"{station}", fontsize=10)
+         # Conditionally set the xlabel depending on the parameter
+        if parameter == 'TEMPERATUR':
+            plt.xlabel(f"{parameter.lower()} (°C)")
+        else:
+            plt.xlabel(f"{parameter.lower()} (%)")
+        
         plt.ylabel("Frekvens")
+# Create a global legend outside the subplots (top)
+fig = plt.gcf()  # Get the current figure
+
+fig.legend(handles=[blue_square, normal_dist_line], loc='upper center', bbox_to_anchor=(0.5, 0.99), ncol=2, fontsize='small')
 
 plt.tight_layout()
+plt.subplots_adjust(top=0.85)  # Adjust top margin to make room for the legend
+
+# Save and show the plot
 plt.savefig("img/frekvenser/alla.png")
+plt.show()
+plt.close()
 
 """
 BOX plots and Shapiro_Wilk test
 """
-
 # Unique stations and parameters
 stations = df_three['station_name'].unique()
 parameters = df_three['parameter'].unique()
@@ -184,7 +217,6 @@ for i, parameter in enumerate(parameters):
             width=0.3,
             dodge=False
         )
-
         ax.set_title(f"{station} - {parameter}", fontsize=8)
         ax.set_ylabel(f"{'°C' if parameter == 'TEMPERATUR' else '%'}", fontsize=8)
 
@@ -197,7 +229,6 @@ for i, parameter in enumerate(parameters):
             ha='center',
             color='red' if p_value < 0.05 else 'black'
         )
-
 plt.tight_layout()
 plt.savefig('img/box_plot/all.png')
 plt.show()
@@ -210,8 +241,6 @@ utils.save_to_mdfile(results_df, "shapiro_wilk.md", "statistics")
 Q_Q plottar
 """
 fig, axes = plt.subplots(2, 3, figsize=(10, 3 * 2))
-
-
 # Loopa through all stations and parameters
 for i, station in enumerate(stations):
     for j, parameter in enumerate(parameters):
@@ -220,14 +249,11 @@ for i, station in enumerate(stations):
         numeric_data = data['value'].dropna()
         # Create Q_Q plots
         ax = axes[j, i]
-        
         sci.probplot(numeric_data, dist="norm", plot=ax)
         ax.set_ylabel(f"{'temperatur, °C' if parameter == 'TEMPERATUR' else 'humidity, %'}", fontsize=8)
         # Add titel
         ax.set_title(f"Q-Q plot: {station} - {parameter}", fontsize=8)
         ax.get_lines()[1].set_color('red')  # Give lene for the 
-        
-# Ajust leyout
 plt.tight_layout()
 plt.savefig('img/q_q_plot/all.png')
 plt.close()
@@ -237,7 +263,6 @@ Q_Q plottar without outliers (ex for Umeå)
 """
 # CHANGE DATA
 fig, axes = plt.subplots(1, 2, figsize=(8, 4))
-
 for i, value in enumerate(PARAMS.values()):
     ax = axes[i]
     # Filter data for the specific station and parameter
@@ -278,8 +303,6 @@ CORRELATION MATRIX FOR 6 PARAMETERS
 combined_data = pd.DataFrame()
 column_name1 = "TEMPERATUR_Umeå Flygplats"
 column_name2 = "LUFTFUKTIGHET_Umeå Flygplats" 
-
-
 for param_key, dataset in three_days.items():
     param_name = PARAMS[param_key][0]  # Parameter name (e.g., Temperature, Humidity)
     df = pd.DataFrame(dataset)
@@ -341,7 +364,6 @@ plt.close()
 """
 Calculate regression for FUKT dependently on TEMP in UMEÅ
 """
-
 # X (independent variable) and y (dependent variable)
 X = combined_data[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
 y = combined_data[column_name2].values
@@ -397,7 +419,6 @@ y_train = train[column_name2].values  # Dependent variable (y)
 X_test = test[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
 y_test = test[column_name2].values  # Dependent variable (y)
 
-
 model = LinearRegression().fit(X_train, y_train)
 pred = model.predict(X_test)
 
@@ -417,9 +438,6 @@ plt.scatter(X_test, y_test, color="blue", label='Test data', alpha=0.6)
 sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter=False, 
             line_kws={'color': 'red', 'label': f'Y = {linear_slope:.2f}X + {linear_intercept:.2f}'}, 
             ci=95)
-#plt.plot(X_test, pred, label='Linjär regression', color='g', linewidth=3)
-#plt.plot(X_test, pred, label=f'Linear Regression: y = {linear_slope:.2f}x + {linear_intercept:.2f}', color='green', linewidth=2)
-
 # Add regression line from the model's predictions (for test data)
 y_pred = model.predict(X_test)
 
@@ -433,13 +451,11 @@ plt.ylabel("Relativt Luftfuktighet, %")
 plt.savefig(f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png')
 plt.close() 
 
-
 # Calculate residuals of test data
 residual = y_test - pred
 
 # Calculate standarddeviation of residuals
 std_residual = np.std(residual)
-#print(f"Standardavvikelsen för residualen: {std_residual:.2f}")
 
 # Visualise residuals
 plt.scatter(X_test, residual)
@@ -468,10 +484,8 @@ MODIFATED DATA
 
 TRANSFORMATION temperatur och fuktighet i Umeå
 """
-
 # Log transformation
 # I cannot use direct log-transformaton due to negative values of the tempture
-
 X_combined = combined_data[column_name1].values
 
 shift_value = abs(X_combined.min()) + 1e-5  # Make no zero values
@@ -607,7 +621,6 @@ log_y_model.fit(X_train, y_train_log)
 
 # Make prediction of the test data
 pred_log_y = log_y_model.predict(X_train)
-#pred_log_y = np.exp(pred_log_y)
 
 # Calculate MSE
 mse_log_y = np.mean((pred_log_y - y_test_log)**2)
@@ -660,7 +673,7 @@ plt.plot(X_test, y_pred, color='green', label='Test Data Prediction', linewidth=
 plt.title("Prediktioner av luftfuktighet av alla modeller")
 plt.ylabel("Relativt lutfuktighet %")
 plt.xlabel("Temperatur, °C")
-plt.legend(loc='best', frameon=True, fontsize=10, title="Modeller och data", title_fontsize=12)
+plt.legend(loc='best', frameon=True, fontsize=10, title="Modeller och data", title_fontsize=10)
 plt.tight_layout()
 plt.savefig('img/regression/alla_modeller_Umeå.png')
 plt.show()

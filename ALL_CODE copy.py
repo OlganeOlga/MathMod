@@ -164,6 +164,8 @@ exit()
 """
 regression for TEMPERATUR predicted by the hour in Halmstad flugplats
 """
+# Add 'hour' feature from the time index
+df_three['hour'] = df_three['time'].dt.hour
 # prepere date to regression investigation
 df_three_temp = df_three[df_three['parameter'] == 'TEMPERATUR']
 df_three_temp = df_three_temp.pivot_table(index='time', columns='station_name', values='value')
@@ -171,8 +173,6 @@ df_three_temp = df_three_temp.pivot_table(index='time', columns='station_name', 
 # Ensure correct data indexing for sampling
 df_three_temp = df_three_temp.reset_index()
 
-# Add 'hour' feature from the time index
-df_three_temp['hour'] = df_three_temp['time'].dt.hour
 
 # Train/test split (50% for training and 50% for testing)
 train_temp = df_three_temp.sample(frac=0.5, random_state=1)
