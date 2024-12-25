@@ -3,13 +3,13 @@
 
 # TO save json and download json
 import json
-# # to be abble create ne files and dir
-# import os
-
+# create new files and dir
+import os
 # change timestamt to time
 from datetime import datetime
 import math
 import pytz
+
 ## statisticks and figures
 import requests
 import scipy.stats as sci
@@ -27,15 +27,8 @@ from sklearn.metrics import r2_score, mean_squared_error
 import utils
 # variables
 STATIONS = {'Halmstad flygplats': 62410, 'Uppsala Flygplats': 97530, 'Umeå Flygplats': 140480}
-COLORS = ["red"]
-# number of columns each dataframe
-NUM_COLUMNS = len(STATIONS)
-# Directory to save the data files and statistics
-OUTPUT_DIR = {"data":"smhi_data_temp_fukt", "img":"img", "statistics":"statistics"}
+# colors to use in the plots
 COLORS = ["orange", "yellow", "green"]
-CUSTOM_CMAP = LinearSegmentedColormap.from_list(
-    "CustomCmap", COLORS, N=256
-)
 # parameters to download (parameter_id:parameter_name)
 PARAMS = {1:["TEMPERATUR", "°C"], 6:["LUFTFUKTIGHET", "%"]}
 # period to request. Available periods: latest-hour, latest-day, latest-months or corrected-archive
@@ -50,61 +43,89 @@ for key in PARAMS.keys():
         response.raise_for_status()  # Check if the request succeeded
         
         result = json.loads(response.content)
-        save_path = f'{OUTPUT_DIR["data"]}/{id}_{key}.json'
+        save_path = f'data/{id}_{key}.json'
         with open(save_path, "w", encoding="utf-8") as file:
             json.dump(result, file, indent=4, ensure_ascii=False)"""
 
-# Extract requaired period (tree days) from downloaded data
-mesured_points = 72 # how mach n will be in the data
-#all_data = {}
+# Extract the required period (three days) from downloaded data
+measured_points = 72  # Number of points to include
 three_days = {}
-
 data_rows = []
 
-# Create dictionary for three days data form each station in accending order
+# # Create dictionary for three days data form each station in accending order
+# for param_id, parameter in PARAMS.items():
+#     three_d_station = {}
+#     for name, station_id in STATIONS.items():
+#         file_path = 'data/' + f'{station_id}_{param_id}.json'
+#         with open(file_path, 'r') as file:
+#             data = json.load(file)
+
+#             # Extract the "value" list and sort it by timestamp
+#             sorted_data = sorted(
+#                 data.get("value", []),
+#                 key=lambda x: datetime.fromtimestamp(x["date"] / 1000, tz=pytz.timezone("Europe/Stockholm"))
+#             )
+#             # Get the last N points
+#             last_points = sorted_data[- mesured_points:]
+#             """
+#             change it to pivot tabel
+#             """
+#         """the arrays' item are dict with keys: date, value and quality. 
+#         I want remove quality but replace value to nympy.nan if quality is not G or Y
+#         """
+#         stat_set = {}
+#         for item in last_points:
+#             new_value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
+#             stat_set[item['date']] = new_value  # Add date-value pair to value_set
+#             time = datetime.fromtimestamp(item['date'] / 1000, tz=pytz.timezone("Europe/Stockholm"))
+#             value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
+
+#             data_rows.append({
+#                 'time': time,
+#                 'station_name': name,
+#                 'parameter': PARAMS[param_id][0],
+#                 'value': value
+#             })
+#         three_d_station[name] = stat_set
+
+#         three_days[param_id] = three_d_station
+
+
+# Process data for each parameter and station
 for param_id, parameter in PARAMS.items():
     three_d_station = {}
     for name, station_id in STATIONS.items():
-        file_path = OUTPUT_DIR["data"] + '/' + f'{station_id}_{param_id}.json'
+        file_path = f"data/{station_id}_{param_id}.json"
         with open(file_path, 'r') as file:
             data = json.load(file)
 
-            # Extract the "value" list and sort it by timestamp
-            sorted_data = sorted(
-                data.get("value", []),
-                key=lambda x: datetime.fromtimestamp(x["date"] / 1000, tz=pytz.timezone("Europe/Stockholm"))
-            )
-            # Get the last N points
-            last_points = sorted_data[- mesured_points:]
-            """
-            change it to pivot tabel
-            """
-        """the arrays' item are dict with keys: date, value and quality. 
-        I want remove quality but replace value to nympy.nan if quality is not G or Y
-        """
-        stat_set = {}
-        for item in last_points:
-            new_value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
-            stat_set[item['date']] = new_value  # Add date-value pair to value_set
-            time = datetime.fromtimestamp(item['date'] / 1000, tz=pytz.timezone("Europe/Stockholm"))
-            value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
+        # Sort data by timestamp and select the last N points
+        sorted_data = sorted(
+            data.get("value", []),
+            key=lambda x: datetime.fromtimestamp(x["date"] / 1000, tz=pytz.timezone("Europe/Stockholm"))
+        )[-measured_points:]
 
+        # Prepare station data and append rows for further processing
+        stat_set = {}
+        for item in sorted_data:
+            new_value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
+            stat_set[item['date']] = new_value
             data_rows.append({
-                'time': time,
+                'time': datetime.fromtimestamp(item['date'] / 1000, tz=pytz.timezone("Europe/Stockholm")),
                 'station_name': name,
                 'parameter': PARAMS[param_id][0],
-                'value': value
+                'value': new_value
             })
         three_d_station[name] = stat_set
+    three_days[param_id] = three_d_station
 
-        three_days[param_id] = three_d_station
-
-# Convert the list of dictionaries into a pandas DataFrame objekt
+# Convert the list of dictionaries into a pandas DataFrame object
 df_three = pd.DataFrame(data_rows)
 df_three.columns.str.replace(' ', '\n')
+
+# get stations and parameters from the DataFrame object
 stations = df_three['station_name'].unique()
 parameters = df_three['parameter'].unique()
-
 
 # save to markdown file to be able sow in the presentation
 utils.save_to_mdfile(df_three, 'dataframe.md', 'statistics')
@@ -122,10 +143,70 @@ descriptive_stats = df_three.groupby(['station_name', 'parameter'])['value'].des
 utils.save_to_mdfile(descriptive_stats.round(2), "descriptive_stats.md", "statistics")
 
 """
-Create figur showing frequensy destérsion of values for all stations and parameters
+BOX plots and Shapiro_Wilk test
 """
-stations = df_three['station_name'].unique()
-parameters = df_three['parameter'].unique()
+
+# Set up the figure
+fig, axes = plt.subplots(2, 3, figsize=(12, 4 * 2))  # 2 rows, 3 columns
+
+# Array t
+ShapiroW = []
+# Loop over stations and parameters
+for i, parameter in enumerate(parameters):
+    for j, station in enumerate(stations):
+        data_filtered = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+        
+        # Perform Shwpiro-Wilk normality test
+        stat, p_value = sci.shapiro(data_filtered['value'])
+        ShapiroW.append({
+            'Station': station,
+            'Parameter': parameter,
+            'Shapiro-Wilk Statistic': round(stat, 5),
+            'P-value': round(p_value, 5),
+            'Normal Distribution (p > 0.05)': 'Yes' if p_value > 0.05 else 'No'
+        })
+        ax = axes[i, j]
+        
+        # the boxplot
+        sns.boxplot(
+            ax=ax,
+            data=data_filtered,
+            x='station_name',  # Same station on x-axis
+            y='value',
+            palette=[COLORS[j]],  # Assign unique color for the station
+            width=0.3,
+            dodge=False
+        )
+        #ax.set_title(f"{station} - {parameter}", fontsize=8)
+        ax.set_ylabel(f"{parameter}, {'°C' if parameter == 'TEMPERATUR' else '%'}", fontsize=8)
+        # Remove the x-axis label
+        ax.set_xlabel("")
+
+        # Annotate p-value on the plot
+        ax.text(
+            0.8, 0.13,  # Position: center-top of the plot
+            f"p={p_value:.5f}",
+            transform=ax.transAxes,
+            fontsize=10,
+            ha='center',
+            color='red' if p_value < 0.05 else 'black'
+        )
+plt.suptitle("Databeskrivning med ladogrammar", fontsize=16)
+
+# Adjust layout to make space for the title
+plt.tight_layout(rect=[0, 0, 1, 0.95]) 
+
+plt.savefig('img/box_plot/all.png')
+plt.show()
+plt.close()
+exit()
+# Save the results of Shapiro-Wilk test in a file
+ShapiroW_df = pd.DataFrame(ShapiroW)
+utils.save_to_mdfile(ShapiroW_df, "shapiro_wilk.md", "statistics")
+
+"""
+Create figur showing frequensy despersion of values for all stations and parameters
+"""
 
 plt.figure(figsize=(8, 6)) # initiate figure
 # Prepare the custom blue square legend handle
@@ -180,62 +261,6 @@ plt.subplots_adjust(top=0.85)  # Adjust top margin to make room for the legend
 plt.savefig("img/frekvenser/alla.png")
 plt.show()
 plt.close()
-
-"""
-BOX plots and Shapiro_Wilk test
-"""
-# Unique stations and parameters
-stations = df_three['station_name'].unique()
-parameters = df_three['parameter'].unique()
-
-# Set up the figure
-fig, axes = plt.subplots(2, 3, figsize=(12, 4 * 2))  # 2 rows, 3 columns
-
-results = []
-# Loop over stations and parameters
-for i, parameter in enumerate(parameters):
-    for j, station in enumerate(stations):
-        data_filtered = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
-        stat, p_value = sci.shapiro(data_filtered['value'])
-        results.append({
-            'Station': station,
-            'Parameter': parameter,
-            'Shapiro-Wilk Statistic': round(stat, 5),
-            'P-value': round(p_value, 5),
-            'Normal Distribution (p > 0.05)': 'Yes' if p_value > 0.05 else 'No'
-        })
-        ax = axes[i, j]
-        
-        # the boxplot
-        sns.boxplot(
-            ax=ax,
-            data=data_filtered,
-            x='station_name',  # Same station on x-axis
-            y='value',
-            hue='station_name',
-            palette=[COLORS[j]],  # Assign unique color for the station
-            width=0.3,
-            dodge=False
-        )
-        ax.set_title(f"{station} - {parameter}", fontsize=8)
-        ax.set_ylabel(f"{'°C' if parameter == 'TEMPERATUR' else '%'}", fontsize=8)
-
-        # Annotate p-value on the plot
-        ax.text(
-            0.9, 0.8,  # Position: center-top of the plot
-            f"p={p_value:.5f}",
-            transform=ax.transAxes,
-            fontsize=10,
-            ha='center',
-            color='red' if p_value < 0.05 else 'black'
-        )
-plt.tight_layout()
-plt.savefig('img/box_plot/all.png')
-plt.show()
-plt.close()
-# Save the results of Shapiro-Wilk test
-results_df = pd.DataFrame(results)
-utils.save_to_mdfile(results_df, "shapiro_wilk.md", "statistics")
 
 """"
 Q_Q plottar
@@ -317,7 +342,7 @@ plt.figure(figsize=(12, 10))
 ax = sns.heatmap(
     correlation_matrix, 
     annot=True,  # Avoid cluttering with too many annotations
-    cmap=CUSTOM_CMAP, 
+    cmap=LinearSegmentedColormap.from_list("CustomCmap", COLORS, N=256), 
     cbar=True
 )
 # Adjust font sizes for station names
