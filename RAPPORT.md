@@ -352,8 +352,9 @@ Den här figuren visualiserar frekvensfördelningen av temperatur- och relativ l
 Figurer 1 och 2 visar att spridningen i alla datamängder avviker från Normalspridningen. Shapiro-Wilk dock säger att dataspridning av relativt luftfuktighet i Umeå närmar sig mest till normalt. Stapelldiagrammar visar också att relativt luftfuktighet förändras inte likadant med temperaturförändring vid varje station. Här ifrån tar jag slutsatsen att det är inte korrekt att utföra statistiska tester på sammansätta data från alla stationer.
 
 ### Q_Q plottar
-Det finns ett annat sät att visualisera avvikelse från eller liknande till normalfördelning, nämligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Q-Q plottar skaffas ed förljande koden: 
-"""
+Det finns ett annat sät att visualisera avvikelse från eller liknande till normalfördelning, nämligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Q-Q plottar skaffas ed förljande koden:
+
+'''
     """"
     Q_Q plottar
     """
@@ -375,7 +376,8 @@ Det finns ett annat sät att visualisera avvikelse från eller liknande till nor
     plt.savefig('img/q_q_plot/all.png')
     plt.close()
 
-"""
+'''
+
 REsultat visas på Figur 3.
 
 #### Figur 3
