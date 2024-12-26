@@ -197,7 +197,7 @@ Beskrivande statistik kan visualiseras med hjälp av ladogrammar, som visar mede
 Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde att göra Shapiro-Wilk test och visualisera resultat på ladogrammer, ([Figur 2.](#### Figur 2.)).
 [Shapiro-Wilk test](https://academic.oup.com/biomet/article-abstract/52/3-4/591/336553?redirectedFrom=fulltext) en av mest användda tester för att jamföra urvalet med normalfordelninen. p-värde mindre än 5% tillåter säga att det är ossannolikt att urvalets data normalfördelade. 
 
-'''pyton
+"""
 
     # Arrayer to itirate through
     stations = df_three['station_name'].unique()
@@ -256,7 +256,7 @@ Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde 
     plt.savefig('img/box_plot/all.png')
     plt.show()
 
-'''
+"""
 
 #### Figur 1.
 ![Ladogrammar](img/box_plot/all.png)
