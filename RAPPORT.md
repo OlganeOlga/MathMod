@@ -198,9 +198,6 @@ Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde 
 [Shapiro-Wilk test](https://academic.oup.com/biomet/article-abstract/52/3-4/591/336553?redirectedFrom=fulltext) en av mest användda tester för att jamföra urvalet med normalfordelninen. p-värde mindre än 5% tillåter säga att det är ossannolikt att urvalets data normalfördelade. 
 
 '''
-    """
-    BOX plots and Shapiro_Wilk test
-    """
     # Arrayer to itirate through
     stations = df_three['station_name'].unique()
     parameters = df_three['parameter'].unique()
@@ -284,11 +281,7 @@ Samma påstående stämmer för relativt lyft fuktighet med undantag för relati
 
 Fördelning av data i urvalet kan visualiseras även med stapeldiagram. Figur med stapeldiagammar skapas med följande koden:
 
-"""
-    """
-    Create figur showing frequensy despersion of values for all stations and parameters
-    """
-
+'''
     plt.figure(figsize=(8, 6)) # initiate figure
     # Prepare the custom blue square legend handle
     text = f"Blue color shows samples distribution"
@@ -340,7 +333,7 @@ Fördelning av data i urvalet kan visualiseras även med stapeldiagram. Figur me
 
     # Save and show the plot
     plt.savefig("img/frekvenser/alla.png")
-"""
+'''
 
 Grafiska fördelningar visas i Figur 2.
 
@@ -354,10 +347,8 @@ Figurer 1 och 2 visar att spridningen i alla datamängder avviker från Normalsp
 ### Q_Q plottar
 Det finns ett annat sät att visualisera avvikelse från eller liknande till normalfördelning, nämligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Q-Q plottar skaffas ed förljande koden:
 
-'''
-    """"
-    Q_Q plottar
-    """
+"""
+   
     fig, axes = plt.subplots(2, 3, figsize=(10, 3 * 2))
     # Loopa through all stations and parameters
     for i, station in enumerate(stations):
@@ -376,21 +367,15 @@ Det finns ett annat sät att visualisera avvikelse från eller liknande till nor
     plt.savefig('img/q_q_plot/all.png')
     plt.close()
 
-'''
+"""
 
 REsultat visas på Figur 3.
 
 #### Figur 3
 ![Kvanti_kventil plottar ](img/q_q_plot/all.png)
-##### Förklaring av Q-Q Plottar
+##### Förklaring av Quantile-Quantile fördelning plottar
 
-Varje axel visar fördelningen av en dataset. I detta fall jämför jag dataset från olika stationer mot den teoretiska normalfördelningen. På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
-Den här figuren visar **Q-Q plottar** för data från olika stationer och parametrar. En Q-Q plot (Quantile-Quantile plot) jämför de empiriska kvantilerna från den faktiska datan med de teoretiska kvantilerna från en normalfördelning. Syftet med denna figur är att visuellt bedöma hur väl datan följer en normalfördelning.
-
-Vad visar figuren?
-- **X-axeln**: De teoretiska kvantilerna från en normalfördelning.
-- **Y-axeln**: De empiriska kvantilerna från vår data, som representerar de observerade värdena.
-- **Punkterna**: Varje punkt representerar ett par kvantiler – ett från den empiriska fördelningen (vår data) och ett från den teoretiska fördelningen (normalfördelning). Om punkterna ligger på en rak linje, indikerar detta att datan följer en normalfördelning.
+ På plottar jämförs dataset från olika stationer och parametrar mot den teoretiska normalfördelningen. En Q-Q plot (Quantile-Quantile plot) jämför de empiriska kvantilerna från den faktiska datan med de teoretiska kvantilerna från en normalfördelning. Syftet med denna figur är att visuellt bedöma hur väl datan följer en normalfördelning. Varje plot visar fördelningen av en dataset. I På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
 
 Tolkning av figuren:
 - **Om punkterna ligger nära en rak linje**: Detta tyder på att datan är nära en normalfördelning.
@@ -398,16 +383,12 @@ Tolkning av figuren:
   - **Om punkterna böjer sig uppåt vid svansarna**: Detta kan indikera att datan har för mycket extrema värden, vilket tyder på en tyngre svans än normalfördelningen (t.ex. en t-fördelning).
   - **Om punkterna böjer sig nedåt vid svansarna**: Detta kan tyda på att datan har för få extrema värden och inte har lika många extremvärden som en normalfördelning.
   - **Om punkterna är ojämnt fördelade eller böjer sig i mitten**: Detta kan indikera en snedvridning (skewness) i datan, vilket innebär att den inte är symmetrisk.
-För varje plot
-- Varje subplot representerar en **station** och en **parameter**.
-- De röda linjerna representerar den teoretiska normalfördelningen som används för att jämföra den empiriska datan.
-- Om data följer en normalfördelning bör punkterna vara nära den röda linjen, särskilt i mitten och vid svansarna.
 
 Denna typ av figur används för att snabbt bedöma om datan följer en normalfördelning, vilket kan vara användbart i statistiska tester eller när du ska välja lämpliga modeller för analysen.
 
-Dessa plottar visa samma: närmast till normalfördelningen är data från relativt luftfuktighet i Umeå flygplats.
+Liksom tidigare testar visar figur att närmast till normalfördelningen är data från relativt luftfuktighet i Umeå flygplats.
 
-Jag försökte ta bort som example 5 högsta och 2 lagsta värde för att se om det hjälper att nå normalfördelning. (Även om jag var säkert att det ska inte hjälpa.)
+Jag försökte ta bort mest avvikande värde från Umeå dataset (i example kod kastas de 5 högsta och 2 lagsta värde) för att se om det hjälper att nå normalfördelning.
 
 Här är exampel kod:
 """
