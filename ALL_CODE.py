@@ -287,20 +287,22 @@ plt.close()
 Q_Q plottar without outliers (ex for Umeå)
 """
 # Get data with removed titestips for the lowers temperatur
-name = 'Halmstad flygplats'
+name = 'Umeå Flygplats'
 # Filter data for the specific station
 station_data = df_three[df_three['station_name'] == name]
 
 # Number of lowest temperature data points to remove
-to_remove = 5
-chaged_by ='LUFTFUKTIGHET'
+to_remove = 4
+changed_by ='TEMPERATUR'
 # Find the rows with the lowest temperature values
-param_data = station_data[station_data['parameter'] == chaged_by]
+param_data = station_data[station_data['parameter'] == changed_by]
 lowest_param = param_data.nsmallest(to_remove, 'value')  # Rows with the lowest parparameter values
-lowest_param_timestamps = lowest_param['time'].tolist()  # Extract the timestamps as a list
+#all_param = lowest_param.nlargest(1, 'value')
+all_param = lowest_param
+all_param_timestamps = lowest_param['time'].tolist()  # Extract the timestamps as a list
 
 # Filter out rows with the lowest parameter values timestamps across all parameters
-filtered_data = station_data[~station_data['time'].isin(lowest_param_timestamps)]  # Use .isin() for filtering
+filtered_data = station_data[~station_data['time'].isin(all_param_timestamps)]  # Use .isin() for filtering
 
 # Plot the filtered data
 fig, axes = plt.subplots(1, 2, figsize=(8, 4))
@@ -314,9 +316,10 @@ for i, value in enumerate(PARAMS.values()):
     # Generate Q-Q plot
     sci.probplot(numeric_data, dist="norm", plot=ax)
     ax.set_ylabel(f"{'temperatur, °C' if value[0] == 'TEMPERATUR' else 'humidity, %'}", fontsize=8)
+    ax.set_xlabel("teoretiska quantiler")
     axes[i].text(
         0.1, 0.9, 
-        f"Shapiro_Wilk test: statistics={stat:.2f},\nprobability for normal distribution={prob:.2f}", 
+        f"Shapiro_Wilk test: statistik={stat:.2f},\nsannolikhet för normalspridning={prob:.2f}", 
         color="red", fontsize=5,
         transform=ax.transAxes, 
         verticalalignment='top', 
@@ -326,9 +329,9 @@ for i, value in enumerate(PARAMS.values()):
     ax.set_title(value[0].lower())
     # Add line
     ax.get_lines()[1].set_color('red')  # Color theoretical quantile line red
-plt.suptitle(f"Q-Q plot: {name} utan {to_remove} tidpunkter med lägst {chaged_by.lower()}", fontsize=12)
+plt.suptitle(f"Q-Q plot: {name} utan {to_remove} tidpunkter\nmed de lägsta {changed_by.lower()} värder", fontsize=12)
 plt.tight_layout()
-plt.savefig(f'img/q_q_plot/{name}_min_{to_remove}_outliers.png')
+plt.savefig(f'img/q_q_plot/{re.sub("(?i)"+re.escape("flygplats"), "", name)}_{changed_by.lower()}_min_{to_remove}_outliers.png')
 plt.show()
 plt.close()
 exit()

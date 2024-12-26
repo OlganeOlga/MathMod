@@ -440,8 +440,10 @@ Här är exampel kod:
 Resultat visas bara för Umeå
 
 #### Figur 3a
-![Q-Q plottar utan 2 största och 1 minsta värde](img/q_q_plot/Umeå_min_outliers.png)
-
+![Umeå](img/q_q_plot/Umeå _temperatur_min_4_outliers.png)
+![Uppsala](img/q_q_plot/Uppsala_temperatur_min_5_outliers.png)
+![Halmstad](img/q_q_plot/Halmstad_luftfuktighet_min_4_outliers.png)
+![](img/q_q_plot/Halmstad_temperatur_min_2_outliers.png)
 Jag spelade lite med data och försökte ta bort vissa hogsta och lagsta värde. Det visade sig att flera dataset både för temperatur och för relativt lyftfuktighet närmar sig till normalfördelning. Plottar finns i [GitHub](https://github.com/OlganeOlga/MathMod/tree/master/img/q_q_plot). 
 Resultat visar att fördelning liknar ännu mindre normal.
 
