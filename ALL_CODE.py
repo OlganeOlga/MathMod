@@ -173,6 +173,7 @@ for i, parameter in enumerate(parameters):
             data=data_filtered,
             x='station_name',  # Same station on x-axis
             y='value',
+            hue = 'station_name',
             palette=[COLORS[j]],  # Assign unique color for the station
             width=0.3,
             dodge=False
@@ -285,41 +286,52 @@ plt.close()
 """"
 Q_Q plottar without outliers (ex for Umeå)
 """
-# CHANGE DATA
+# Get data with removed titestips for the lowers temperatur
+name = 'Halmstad flygplats'
+# Filter data for the specific station
+station_data = df_three[df_three['station_name'] == name]
+
+# Number of lowest temperature data points to remove
+to_remove = 5
+chaged_by ='LUFTFUKTIGHET'
+# Find the rows with the lowest temperature values
+param_data = station_data[station_data['parameter'] == chaged_by]
+lowest_param = param_data.nsmallest(to_remove, 'value')  # Rows with the lowest parparameter values
+lowest_param_timestamps = lowest_param['time'].tolist()  # Extract the timestamps as a list
+
+# Filter out rows with the lowest parameter values timestamps across all parameters
+filtered_data = station_data[~station_data['time'].isin(lowest_param_timestamps)]  # Use .isin() for filtering
+
+# Plot the filtered data
 fig, axes = plt.subplots(1, 2, figsize=(8, 4))
 for i, value in enumerate(PARAMS.values()):
     ax = axes[i]
-    # Filter data for the specific station and parameter
-    data = df_three[(df_three['station_name'] == 'Halmstad flygplats') & (df_three['parameter'] == value[0])]
+    # Filter the parameter-specific data
+    param_data = filtered_data[filtered_data['parameter'] == value[0]]
+    stat, prob = sci.shapiro(param_data['value'])
+    numeric_data = param_data['value'].dropna()
 
-    # Sort the data by 'value' column to identify outliers
-    sorted_data = data.sort_values(by='value')
-
-    # Remove two highest and one lowest value
-    filtered_data = sorted_data.iloc[4:]  # Removes the first .. (lowest) and last .. (highest) rows
-    iloc = "4:"
-    # Modify the station name to reflect the adjustment
-    filtered_data = filtered_data.copy()  # By DataFrame object metod copy() by defoult make deep copy
-    filtered_data['station_name'] = f"Halmstad {value[0]} minus outliers"
-    stat, prob = sci.shapiro(filtered_data['value'])
-    numeric_data = filtered_data['value'].dropna()
-
+    # Generate Q-Q plot
     sci.probplot(numeric_data, dist="norm", plot=ax)
     ax.set_ylabel(f"{'temperatur, °C' if value[0] == 'TEMPERATUR' else 'humidity, %'}", fontsize=8)
-    axes[i].text(0.1, 0.9, 
-                f"Shapiro_Wilk test: statistics={stat},\n probubility for normal distribution={prob}", 
-                color="red", fontsize=5,
-                transform=ax.transAxes, 
-                verticalalignment='top', 
-                bbox=dict(facecolor='white', alpha=0.5))
-    # Add titel
-    ax.set_title(f"Q-Q plot: Halmstad - {value[0]}, removed {iloc}", fontsize=8)
-    ax.get_lines()[1].set_color('red')  # Give line of teoretish quatnils color (red) 
+    axes[i].text(
+        0.1, 0.9, 
+        f"Shapiro_Wilk test: statistics={stat:.2f},\nprobability for normal distribution={prob:.2f}", 
+        color="red", fontsize=5,
+        transform=ax.transAxes, 
+        verticalalignment='top', 
+        bbox=dict(facecolor='white', alpha=0.5)
+    )
+    # Clear the title
+    ax.set_title(value[0].lower())
+    # Add line
+    ax.get_lines()[1].set_color('red')  # Color theoretical quantile line red
+plt.suptitle(f"Q-Q plot: {name} utan {to_remove} tidpunkter med lägst {chaged_by.lower()}", fontsize=12)
 plt.tight_layout()
-plt.savefig('img/q_q_plot/Halmstad_min_outliers.png')
+plt.savefig(f'img/q_q_plot/{name}_min_{to_remove}_outliers.png')
 plt.show()
 plt.close()
-
+exit()
 """
 CORRELATION MATRIX FOR 6 PARAMETERS
 """
