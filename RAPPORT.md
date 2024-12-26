@@ -15,7 +15,7 @@ Temperaturen mäts i grader Celsius (°C), medan relativ luftfuktighet anges i p
 All kod som jag använder för att hämta och bearbeta data finns i [GitHub](https://github.com/OlganeOlga/MathMod/tree/master/get_dynam_data). För att hämta en ny dataset, skaffa alla tabeller och figurer tillräckligt att använda fill [´ALL_CODE.py´](ALL_CODE.py)
 Datamängder plockas med följande kod:
 
-"""
+```
     import json
 
     # This part i inactivated because i am working with downloaded data
@@ -30,11 +30,11 @@ Datamängder plockas med följande kod:
             save_path = f'data/{id}_{key}.json'
             with open(save_path, "w", encoding="utf-8") as file:
                 json.dump(result, file, indent=4, ensure_ascii=False)
-"""
+```
 
 Som resultat genereras en JSON-fil för varje kombination av station och parameter. Varje fil innehåller över 2500 mätpunkter, vilket ger en omfattande datamängd för analys. För statistisk bearbetning används data från de senaste 72 timmarna. Urvalet av data görs med hjälp av följande kod:
 
-"""
+```
 
     import datetime
     import json
@@ -77,10 +77,10 @@ Som resultat genereras en JSON-fil för varje kombination av station och paramet
                 })
             three_d_station[name] = stat_set
         three_days[param_id] = three_d_station
-"""
+```
 Det skaffas två objekt med samma innhåll:
 1. ´tree-days´ - En nästlad ordbok (dictionary) som innehåller filtrerad och sorterad data för de senaste 72 timmarna för varje parameter och station. Strukturen ser ut så här:
-"""
+```
     {
         param_id: {  # Parameterens ID
             station_name: {  # Stationens namn
@@ -91,7 +91,7 @@ Det skaffas två objekt med samma innhåll:
         },
         ...
     }
-"""
+```
 Nycklar: param_id (parameter-ID) och station_name (stationens namn).
 Värden: För varje station skapas en ordbok där nyckeln är en tidsstämpel och värdet är ett numeriskt mätvärde (eller numpy.nan om kvaliteten inte är godkänd). Det objekt används i flesta fall.
 2. ´data_rows` - En lista med rader där varje rad är en ordbok med information om en specifik mätpunkt. Strukturen ser ut så här:
@@ -197,7 +197,7 @@ Beskrivande statistik kan visualiseras med hjälp av ladogrammar, som visar mede
 Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde att göra Shapiro-Wilk test och visualisera resultat på ladogrammer, ([Figur 2.](#### Figur 2.)).
 [Shapiro-Wilk test](https://academic.oup.com/biomet/article-abstract/52/3-4/591/336553?redirectedFrom=fulltext) en av mest användda tester för att jamföra urvalet med normalfordelninen. p-värde mindre än 5% tillåter säga att det är ossannolikt att urvalets data normalfördelade. 
 
-"""
+```
 
     # Arrayer to itirate through
     stations = df_three['station_name'].unique()
@@ -256,7 +256,7 @@ Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde 
     plt.savefig('img/box_plot/all.png')
     plt.show()
 
-"""
+```
 
 #### Figur 1.
 ![Ladogrammar](img/box_plot/all.png)
@@ -348,7 +348,7 @@ Figurer 1 och 2 visar att spridningen i alla datamängder avviker från Normalsp
 ### Q_Q plottar
 Det finns ett annat sät att visualisera avvikelse från eller liknande till normalfördelning, nämligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Q-Q plottar skaffas ed förljande koden:
 
-"""
+```
    
     fig, axes = plt.subplots(2, 3, figsize=(10, 3 * 2))
     # Loopa through all stations and parameters
@@ -368,7 +368,7 @@ Det finns ett annat sät att visualisera avvikelse från eller liknande till nor
     plt.savefig('img/q_q_plot/all.png')
     plt.close()
 
-"""
+```
 
 REsultat visas på Figur 3.
 
@@ -392,7 +392,7 @@ Liksom tidigare testar visar figur att närmast till normalfördelningen är dat
 Jag försökte ta bort mest avvikande värde från Umeå dataset (i example kod kastas de 5 högsta och 2 lagsta värde) för att se om det hjälper att nå normalfördelning.
 
 Här är exampel kod:
-"""
+```
     """"
     Q_Q plottar without outliers (ex for Umeå)
     """
@@ -436,7 +436,7 @@ Här är exampel kod:
     #plt.savefig('img/q_q_plot/Umeå_min_outliers.png')
     plt.show()
     plt.close()
-"""
+```
 Resultat visas bara för Umeå
 
 #### Figur 3a
@@ -449,7 +449,7 @@ Resultat visar att fördelning liknar ännu mindre normal.
 
 För att ser med vilka data ska jag arbeta vill jag först titta på hur data korrelerrar med varandra. Däerför skaffar jag korrelation matris.
 
-"""
+```
     combined_data = pd.DataFrame()
     column_name1 = "TEMPERATUR_Umeå Flygplats"  # Replace with actual column name for temperature
     column_name2 = "LUFTFUKTIGHET_Umeå Flygplats"  # Replace with actual column name for humidity
@@ -477,13 +477,13 @@ För att ser med vilka data ska jag arbeta vill jag först titta på hur data ko
     plt.tight_layout()
     plt.show()
 
-"""
+```
 
 ![Korrelation matris](img/correlations/all_correlations.png)
 
 Jag skaffar också skatterplottar for alla variabelns kombinationer:
 
-"""
+```
     f = sns.pairplot(combined_data, height=1.8, diag_kind='kde')
     # Adjust font size for axis labels, titles, and ticks
     for ax in f.axes.flatten():
@@ -512,7 +512,7 @@ Jag skaffar också skatterplottar for alla variabelns kombinationer:
     plt.suptitle("Pairwise Relationships for Parameters and Stations", y=0.99, fontsize=16)  # Title for the plot
     plt.subplots_adjust(hspace=0.2, wspace=0.2, top=0.9) # Ajust spase between subplots
     plt.show()
-"""
+```
 #### Figure 5. Liniar refressioner parvisa
 ![plot](img/regression/all_pairwise_relationships.png)
 
@@ -522,7 +522,7 @@ Därför välde jag att använda dessa variabler för liniar regression
 
 Jag väljer att göra liniar regression för relativt luft fuktighet i Umea Fluglats. Jag väljer det datamängd eftersom fördelningen i detta grupp data är normal med största sannolikhet.
 
-"""
+```
     # Get training ang testing datasets
     fraktion = 0.5
     train = combined_data.sample(frac=fraktion, random_state=1)
@@ -559,10 +559,10 @@ Jag väljer att göra liniar regression för relativt luft fuktighet i Umea Flug
     plt.savefig(f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png')
     plt.show()
  
-"""
+```
 #### Figure 5a. Linjäreggresion mellan temperatur och relativt luftfuktighet i Umeå
 ![fig](img/regression/Umea_temp_fukt_relation.png)
-"""
+```
     # Get training ang testing datasets
     fraktion = 0.5
     train = combined_data.sample(frac=fraktion, random_state=1)
@@ -609,7 +609,7 @@ Jag väljer att göra liniar regression för relativt luft fuktighet i Umea Flug
     plt.ylabel("Relativt Luftfuktighet")
     plt.savefig(f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png')
     plt.close() 
-"""
+```
 ### Figur 6 
 ![Temperatur- luftfuktighet regression](img/regression/regr_prediction_Umea_temp_luft_0.5.png)
 
@@ -620,7 +620,7 @@ och originaldata i samma figur.*
 
 Jag räknar ut residualer och visa de på plottar:
 
-"""        
+```        
     # Beräkna residualen för test data
     residual = y_test - pred
 
@@ -650,7 +650,7 @@ Jag räknar ut residualer och visa de på plottar:
     plt.savefig(path)
     plt.show()
     plt.close() 
-"""
+```
 Resultat visas på Figur 6a:
 
 ![#### Figur 6a](img/regression/residuals_temp_fukt_UME.png)
@@ -659,7 +659,7 @@ Resultat visas på Figur 6a:
 ## Uppgift 5: Transformera data
 Jag först transformera temperatur:
 
-"""
+```
      Jag kan inte använda direkt logaritmisk transformation för temperatur, pga negativa value 
 
     X_combined = combined_data[column_name1].values
@@ -726,14 +726,14 @@ Jag först transformera temperatur:
     #plt.show()
     plt.close()
 
-"""
+```
 
 #### Figur 7
 ![Regression med log-transormerad temperatur](img/regression/original_and_log_data.png)
 
 Eftersom det finns en outlier i testdata, jag filtrerar testdata med följande code:
 
-"""
+```
     # Sort the log-transformed values to identify outliers and track original indices
     sorted_log = np.sort(X_test_log, axis=0)  # Sort along axis 0 (values)
     sorted_log_indices = np.argsort(X_test_log, axis=0)  # Get the sorted indices
@@ -753,7 +753,7 @@ Eftersom det finns en outlier i testdata, jag filtrerar testdata med följande c
     # Remove corresponding values from y_test
     y_test_filtered[sorted_log_indices[0]] = np.nan  # Remove corresponding y_test value
     y_test_filtered[sorted_log_indices[-1]] = np.nan  # Remove corresponding y_test value
-"""
+```
 Då blir resultat mera jamförbara
 ![### Figut 7a. Filtrerade data från logaritmisk transformation av temp](img/regression/original_and_log_data_filter.png)
 
@@ -765,7 +765,7 @@ Då blir resultat mera jamförbara
 
 Sedan applicera jag detta model till originala data:
 
-"""
+```
     # Transformera tillbaka modellen
     plt.scatter(X_train, y_train, label='Träningsdata')
     plt.scatter(X_test, y_test, label='Test data')
@@ -777,12 +777,12 @@ Sedan applicera jag detta model till originala data:
     plt.savefig('img/regression/transform_back.png')
     #plt.show()
     plt.close()
-"""
+```
 #### Figur 7b
 ![Applicer model till originala data](img/regression/transform_back.png)
 
 Jag dör samma såk mot relativt luftfuktighet:
-"""
+```
     # Regression med logaritmerad relativt luft fuktighet
     # Relativt luftfuktighet är alltid pozitivt
     y_train_log = np.log(y_train)
@@ -819,7 +819,7 @@ Jag dör samma såk mot relativt luftfuktighet:
 
     # Beräkna residualer
     residual_log_y = y_test - np.exp(pred_log_y)
-"""
+```
 ![Här visas resultat av detta transformation:](img/regression/Y_LOG_transform_model_Umeå.png)
 #### Fig 8. ![Alla modeller](img/regression/alla_modeller_Umeå.png)
 
