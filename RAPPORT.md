@@ -15,7 +15,7 @@ Temperaturen mäts i grader Celsius (°C), medan relativ luftfuktighet anges i p
 All kod som jag använder för att hämta och bearbeta data finns i [GitHub](https://github.com/OlganeOlga/MathMod/tree/master/get_dynam_data). För att hämta en ny dataset, skaffa alla tabeller och figurer tillräckligt att använda fill [´ALL_CODE.py´](ALL_CODE.py)
 Datamängder plockas med följande kod:
 
-```
+```python
     import json
 
     # This part i inactivated because i am working with downloaded data
@@ -34,7 +34,7 @@ Datamängder plockas med följande kod:
 
 Som resultat genereras en JSON-fil för varje kombination av station och parameter. Varje fil innehåller över 2500 mätpunkter, vilket ger en omfattande datamängd för analys. För statistisk bearbetning används data från de senaste 72 timmarna. Urvalet av data görs med hjälp av följande kod:
 
-```
+```python
 
     import datetime
     import json
@@ -80,7 +80,7 @@ Som resultat genereras en JSON-fil för varje kombination av station och paramet
 ```
 Det skaffas två objekt med samma innhåll:
 1. ´tree-days´ - En nästlad ordbok (dictionary) som innehåller filtrerad och sorterad data för de senaste 72 timmarna för varje parameter och station. Strukturen ser ut så här:
-```
+```python
     {
         param_id: {  # Parameterens ID
             station_name: {  # Stationens namn
@@ -194,10 +194,11 @@ Det är svårt att säga om data är normalfördelat enbart från resultater av 
 
 Beskrivande statistik kan visualiseras med hjälp av ladogrammar, som visar medelvärde, kvariler, 95% spridningen och avvikande värde i urvalet.
 
+## Uppgift 3. Beskrivande plottar
 Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde att göra Shapiro-Wilk test och visualisera resultat på ladogrammer, ([Figur 2.](#### Figur 2.)).
 [Shapiro-Wilk test](https://academic.oup.com/biomet/article-abstract/52/3-4/591/336553?redirectedFrom=fulltext) en av mest användda tester för att jamföra urvalet med normalfordelninen. p-värde mindre än 5% tillåter säga att det är ossannolikt att urvalets data normalfördelade. 
 
-```
+```python
 
     # Arrayer to itirate through
     stations = df_three['station_name'].unique()
@@ -348,7 +349,7 @@ Figurer 1 och 2 visar att spridningen i alla datamängder avviker från Normalsp
 ### Q_Q plottar
 Det finns ett annat sät att visualisera avvikelse från eller liknande till normalfördelning, nämligen [kvantil_kvantil plot](https://pubmed.ncbi.nlm.nih.gov/5661047/). Q-Q plottar skaffas ed förljande koden:
 
-```
+```python
    
     fig, axes = plt.subplots(2, 3, figsize=(10, 3 * 2))
     # Loopa through all stations and parameters
@@ -392,120 +393,112 @@ Liksom tidigare testar visar figur att närmast till normalfördelningen är dat
 Jag försökte ta bort mest avvikande värde från Umeå dataset (i example kod kastas de 5 högsta och 2 lagsta värde) för att se om det hjälper att nå normalfördelning.
 
 Här är exampel kod:
-```
-    """"
-    Q_Q plottar without outliers (ex for Umeå)
-    """
-    # CHANGE DATA
+```python
+    # Get data with removed titestips for the lowers temperatur
+    name = 'Umeå Flygplats'
+    # Filter data for the specific station
+    station_data = df_three[df_three['station_name'] == name]
+
+    # Number of lowest temperature data points to remove
+    to_remove = 4
+    changed_by ='TEMPERATUR'
+    # Find the rows with the lowest temperature values
+    param_data = station_data[station_data['parameter'] == changed_by]
+    lowest_param = param_data.nsmallest(to_remove, 'value')  # Rows with the lowest parparameter values
+    #all_param = lowest_param.nlargest(1, 'value')
+    all_param = lowest_param
+    all_param_timestamps = lowest_param['time'].tolist()  # Extract the timestamps as a list
+
+    # Filter out rows with the lowest parameter values timestamps across all parameters
+    filtered_data = station_data[~station_data['time'].isin(all_param_timestamps)]  # Use .isin() for filtering
+
+    # Plot the filtered data
     fig, axes = plt.subplots(1, 2, figsize=(8, 4))
-
     for i, value in enumerate(PARAMS.values()):
-        print(value[0])
         ax = axes[i]
-        # Filter data for the specific station and parameter
-        data = df_three[(df_three['station_name'] == 'Umeå Flygplats') & (df_three['parameter'] == value[0])]
+        # Filter the parameter-specific data
+        param_data = filtered_data[filtered_data['parameter'] == value[0]]
+        stat, prob = sci.shapiro(param_data['value'])
+        numeric_data = param_data['value'].dropna()
 
-        # Sort the data by 'value' column to identify outliers
-        sorted_data = data.sort_values(by='value')
-
-        # Remove two highest and one lowest value
-        filtered_data = sorted_data.iloc[2:-5]  # Removes the first ... (lowest) and last ... (highest) rows
-
-        # Modify the station name to reflect the adjustment
-        filtered_data = filtered_data.copy()  # By DataFrame object metod copy() by defoult make deep copy
-        #filtered_data['station_name'] = f"Umeå {value[0]} minus outliers"
-        stat, prob = sci.shapiro(filtered_data['value'])
-            
-        numeric_data = filtered_data['value'].dropna()
-        #print(numeric_data)
-        
+        # Generate Q-Q plot
         sci.probplot(numeric_data, dist="norm", plot=ax)
         ax.set_ylabel(f"{'temperatur, °C' if value[0] == 'TEMPERATUR' else 'humidity, %'}", fontsize=8)
-        axes[i].text(0.1, 0.9, 
-                    f"Shapiro_wilk test: statistics={stat},\n probubility for rejecting normal distribution={prob}", 
-                    color="red", fontsize=5,
-                    transform=ax.transAxes, 
-                    verticalalignment='top', 
-                    bbox=dict(facecolor='white', alpha=0.5))
-        # Add titel
-        ax.set_title(f"Q-Q plot: Umeå - {value[0]}", fontsize=8)
-        ax.get_lines()[1].set_color('red')  # Give line of teoretish quatnils color (red) 
-    
-    # Ajust leyout
+        ax.set_xlabel("teoretiska quantiler")
+        axes[i].text(
+            0.1, 0.9, 
+            f"Shapiro_Wilk test: statistik={stat:.2f},\nsannolikhet för normalspridning={prob:.2f}", 
+            color="red", fontsize=5,
+            transform=ax.transAxes, 
+            verticalalignment='top', 
+            bbox=dict(facecolor='white', alpha=0.5)
+        )
+        # Clear the title
+        ax.set_title(value[0].lower())
+        # Add line
+        ax.get_lines()[1].set_color('red')  # Color theoretical quantile line red
+    plt.suptitle(f"Q-Q plot: {name} utan {to_remove} tidpunkter\nmed de lägsta {changed_by.lower()} värder", fontsize=12)
     plt.tight_layout()
-    #plt.savefig('img/q_q_plot/Umeå_min_outliers.png')
+    plt.savefig(f'img/q_q_plot/{re.sub("(?i)"+re.escape("flygplats"), "", name)}_{changed_by.lower()}_min_{to_remove}_outliers.png')
     plt.show()
     plt.close()
 ```
-Resultat visas bara för Umeå
-
+I Figur 3a visas resultat.
 #### Figur 3a
 ![Umeå](img/q_q_plot/Umeå _temperatur_min_4_outliers.png)
 ![Uppsala](img/q_q_plot/Uppsala_temperatur_min_5_outliers.png)
 ![Halmstad](img/q_q_plot/Halmstad_luftfuktighet_min_4_outliers.png)
 ![](img/q_q_plot/Halmstad_temperatur_min_2_outliers.png)
-Jag spelade lite med data och försökte ta bort vissa hogsta och lagsta värde. Det visade sig att flera dataset både för temperatur och för relativt lyftfuktighet närmar sig till normalfördelning. Plottar finns i [GitHub](https://github.com/OlganeOlga/MathMod/tree/master/img/q_q_plot). 
-Resultat visar att fördelning liknar ännu mindre normal.
+
+Figur 3a visar om extrema värde tas bort, då närmar dataset sig normalfördelningen. Jag tycker dock att fördelninen förändras inte tillräckligt mycket. Därför fortätter jag analysera öförändrade dataset.
 
 ## Uppgift 4: Linjär regression
 
-För att ser med vilka data ska jag arbeta vill jag först titta på hur data korrelerrar med varandra. Däerför skaffar jag korrelation matris.
+För att ser med vilka data ska jag arbeta vill jag först titta på hur data korrelerrar med varandra. Därför skaffar jag några plottar, som visas på Figur 4.
 
-```
-    combined_data = pd.DataFrame()
-    column_name1 = "TEMPERATUR_Umeå Flygplats"  # Replace with actual column name for temperature
-    column_name2 = "LUFTFUKTIGHET_Umeå Flygplats"  # Replace with actual column name for humidity
+#### Figur 4a
+##### Parvisa relationer mellan relativt luftfuktighet och temperatur
+![](img/regression/param_param.png)
 
+Figuren visar att temperatur och luftfuktighet i Umeå flugplats korrelerar, men det kan inte sägas att luftfuktighet och temperatur korrelerar i två andra stationer. Plot var skaffat med förljande kod:
 
-    for param_key, dataset in three_days.items():
-        param_name = PARAMS[param_key][0]  # Parameter name (e.g., Temperature, Humidity)
-        df = pd.DataFrame(dataset)
-        df.columns = [f"{param_name}_{station}" for station in df.columns]  # Add station to column names
-        combined_data = pd.concat([combined_data, df], axis=1)
-    # Calculate the correlation matrix
-    correlation_matrix = combined_data.corr()
-    # Plot the heatmap
-    plt.figure(figsize=(12, 10))
-    ax = sns.heatmap(
-        correlation_matrix, 
-        annot=True,  # Avoid cluttering with too many annotations
-        cmap=CUSTOM_CMAP, 
-        cbar=True
-    )
-    # Adjust font sizes for station names
-    ax.tick_params(axis='x', labelsize=8)
-    ax.tick_params(axis='y', labelsize=8)
-    plt.title("Correlation Matrix for All Parameters and Stations", fontsize=14)
-    plt.tight_layout()
+```python
+    # Pivote three_days
+    pivote_df = df_three.pivot_table(index=['time', 'station_name'], columns='parameter', values='value').reset_index()
+
+    # create paired plot
+    sns.pairplot(pivote_df, hue='station_name')
+    plt.subplots_adjust(top=0.9)
+    plt.suptitle("Parvisa relationer mellan temperatur och luftfuktighet", fontsize=10, y=0.95)
+    plt.savefig("img/regression/param_param.png")
     plt.show()
-
+    plt.close()
 ```
 
-![Korrelation matris](img/correlations/all_correlations.png)
+Jag skaffar även ett annat plot, som visar mera detaljer:
 
-Jag skaffar också skatterplottar for alla variabelns kombinationer:
-
-```
-    f = sns.pairplot(combined_data, height=1.8, diag_kind='kde')
-    # Adjust font size for axis labels, titles, and ticks
-    for ax in f.axes.flatten():
+```python
+    # Pairplot 
+    fig = sns.pairplot(combined_data, height=1.8, diag_kind='kde')
+    # Adjust igont size and axis
+    for ax in fig.axes.flatten():
         # Get current x and y axis labels
         xlabel = ax.get_xlabel()
         ylabel = ax.get_ylabel()
-        # Apply all transformations to the xlabel and ylabel in one go:
+
         xlabel = re.sub(r'(?i)flygplats', '', xlabel).strip()  # Remove "flygplats" (case-insensitive)
-        xlabel = xlabel.replace("TEMPERATUR_", "TEMP_").strip()  # Replace "TEMPERATUR_" with "TEMP_"
-        xlabel = xlabel.replace("LUFTFUKTIGHET_", "FUKT_").strip()  # Replace "LUFTFUKTIGHET_" with "FUKT_"
+        xlabel = xlabel.replace("TEMPERATUR_", "°C, TEMP_").strip()  # Replace "TEMPERATUR_" with "TEMP_"
+        xlabel = xlabel.replace("LUFTFUKTIGHET_", "%, FUKT_").strip()  # Replace "LUFTFUKTIGHET_" with "FUKT_"
         
         ylabel = re.sub(r'(?i)flygplats', '', ylabel).strip()  # Remove "flygplats" (case-insensitive)
-        ylabel = ylabel.replace("TEMPERATUR_", "TEMP_").strip()  # Replace "TEMPERATUR_" with "TEMP_"
-        ylabel = ylabel.replace("LUFTFUKTIGHET_", "FUKT_").strip()  # Replace "LUFTFUKTIGHET_" with "FUKT_"
+        ylabel = ylabel.replace("TEMPERATUR_", "°C, TEMP_").strip()  # Replace "TEMPERATUR_" with "TEMP_"
+        ylabel = ylabel.replace("LUFTFUKTIGHET_", "%, FUKT_").strip()  # Replace "LUFTFUKTIGHET_" with "FUKT_"
         
         # Set the modified labels with font size
         ax.set_xlabel(xlabel, fontsize=6)
         ax.set_ylabel(ylabel, fontsize=6)
         
-        ax.set_ylabel(ylabel.replace("LUFTFUKTIGHET_", "FUKT_").strip(), fontsize=6)
+        ax.set_ylabel(ylabel.replace("LUFTFUKTIGHET_", "%, FUKT_").strip(), fontsize=6)
         
         # Set font size for tick labels
         ax.tick_params(axis='x', labelsize=5)  # X-axis tick labels
@@ -513,18 +506,45 @@ Jag skaffar också skatterplottar for alla variabelns kombinationer:
 
     plt.suptitle("Pairwise Relationships for Parameters and Stations", y=0.99, fontsize=16)  # Title for the plot
     plt.subplots_adjust(hspace=0.2, wspace=0.2, top=0.9) # Ajust spase between subplots
+    plt.savefig('img/regression/all_pairwise_relationships.png')
     plt.show()
+    plt.close()
 ```
-#### Figure 5. Liniar refressioner parvisa
-![plot](img/regression/all_pairwise_relationships.png)
 
-Båda figurer visar att den bästa correlation är mellan temperatur och relativt luftfuktighet i Umeå.
-Därför välde jag att använda dessa variabler för liniar regression
+#### Figur 4b. [Alla mojliga parade relationer mellan stationer och parametrar](img/regression/all_pairwise_relationships.png)
 
+Detta plot visar igen, att det kan finnas direkt samband mellan relativt luftfuktighet och temperatur i Umeå.
+Jag skapar också matris som visar hur korrelerrar en parameter från en station med alla andra parameter-station kombinationer.
 
-Jag väljer att göra liniar regression för relativt luft fuktighet i Umea Fluglats. Jag väljer det datamängd eftersom fördelningen i detta grupp data är normal med största sannolikhet.
+```python
+    # Calculate the correlation matrix
+    correlation_matrix = combined_data.corr()
+
+    # Plot the heatmap
+    plt.figure(figsize=(12, 10))
+    ax = sns.heatmap(
+        correlation_matrix, 
+        annot=True,  # Avoid cluttering with too many annotations
+        cmap=LinearSegmentedColormap.from_list("CustomCmap", COLORS, N=256), 
+        cbar=True
+    )
+    # Adjust font sizes for station names
+    ax.tick_params(axis='x', labelsize=8)
+    ax.tick_params(axis='y', labelsize=8)
+    plt.title("Korrelationsmatris för alla parametrar och stationer", fontsize=14)
+    plt.tight_layout()
+    plt.savefig('img/correlations/all_correlations.png')
+    plt.show()
+    plt.close()
 
 ```
+#### Figur 4c. ![Korrelation matris](img/correlations/all_correlations.png)
+##### Förklaring till Figur 4c.
+I figur visas korrelations koeffitienter mellan olika dataset.
+
+Korrelationmatrisen visar samma som  tidigare två figurer. Den enda tydliga korrelation finns mellan relativt luftfuktighet och temperatur i Umeå flugplats. Därför väljer jag att utförska samband mellan relativt luftfuktighet och temperatur bara i Umeå.
+
+```python
     # Get training ang testing datasets
     fraktion = 0.5
     train = combined_data.sample(frac=fraktion, random_state=1)
@@ -545,7 +565,6 @@ Jag väljer att göra liniar regression för relativt luft fuktighet i Umea Flug
     linear_slope = model.coef_[0]
     linear_intercept = model.intercept_
 
-
     # Add linear regression parameters to the plot
     plt.text(0.5, 0.95, f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}',
             ha='center', va='center', transform=plt.gca().transAxes, fontsize=12, color='red')
@@ -554,17 +573,17 @@ Jag väljer att göra liniar regression för relativt luft fuktighet i Umea Flug
     plt.scatter(X_test, y_test, label='Test data')
     plt.plot(X_test, pred, label='Linjär regression', color='g', linewidth=3)
     plt.legend()
-    plt.title(f"Prediktioner av luftfuktighet på temperatur i Umeå\nMean squared error: {mse}" + 
+    plt.title(f"Prognos av relativt luftfuktighet med temperatur i Umeå\nMean squared error: {mse}" + 
             f"\nFraktion: {fraktion}")
-    plt.xlabel("Temperatur")
-    plt.ylabel("Relativt Luftfuktighet")
+    plt.xlabel("temperatur, °C")
+    plt.ylabel("relativt luftfuktighet, %")
     plt.savefig(f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png')
     plt.show()
  
 ```
 #### Figure 5a. Linjäreggresion mellan temperatur och relativt luftfuktighet i Umeå
-![fig](img/regression/Umea_temp_fukt_relation.png)
-```
+![fig](img/regression/regr_prediction_Umea_temp_luft_0.5.png)
+```python
     # Get training ang testing datasets
     fraktion = 0.5
     train = combined_data.sample(frac=fraktion, random_state=1)
@@ -622,7 +641,7 @@ och originaldata i samma figur.*
 
 Jag räknar ut residualer och visa de på plottar:
 
-```        
+```python
     # Beräkna residualen för test data
     residual = y_test - pred
 
@@ -661,7 +680,7 @@ Resultat visas på Figur 6a:
 ## Uppgift 5: Transformera data
 Jag först transformera temperatur:
 
-```
+```python
      Jag kan inte använda direkt logaritmisk transformation för temperatur, pga negativa value 
 
     X_combined = combined_data[column_name1].values
@@ -735,7 +754,7 @@ Jag först transformera temperatur:
 
 Eftersom det finns en outlier i testdata, jag filtrerar testdata med följande code:
 
-```
+```python
     # Sort the log-transformed values to identify outliers and track original indices
     sorted_log = np.sort(X_test_log, axis=0)  # Sort along axis 0 (values)
     sorted_log_indices = np.argsort(X_test_log, axis=0)  # Get the sorted indices
@@ -767,7 +786,7 @@ Då blir resultat mera jamförbara
 
 Sedan applicera jag detta model till originala data:
 
-```
+```python
     # Transformera tillbaka modellen
     plt.scatter(X_train, y_train, label='Träningsdata')
     plt.scatter(X_test, y_test, label='Test data')
@@ -784,7 +803,7 @@ Sedan applicera jag detta model till originala data:
 ![Applicer model till originala data](img/regression/transform_back.png)
 
 Jag dör samma såk mot relativt luftfuktighet:
-```
+```python
     # Regression med logaritmerad relativt luft fuktighet
     # Relativt luftfuktighet är alltid pozitivt
     y_train_log = np.log(y_train)

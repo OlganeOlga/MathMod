@@ -287,18 +287,19 @@ plt.close()
 Q_Q plottar without outliers (ex for Umeå)
 """
 # Get data with removed titestips for the lowers temperatur
-name = 'Umeå Flygplats'
+name = 'Uppsala Flygplats'
 # Filter data for the specific station
 station_data = df_three[df_three['station_name'] == name]
 
 # Number of lowest temperature data points to remove
 to_remove = 4
 changed_by ='TEMPERATUR'
-# Find the rows with the lowest temperature values
+# Find and remove the rows with the lowest temperature values
 param_data = station_data[station_data['parameter'] == changed_by]
 lowest_param = param_data.nsmallest(to_remove, 'value')  # Rows with the lowest parparameter values
-#all_param = lowest_param.nlargest(1, 'value')
-all_param = lowest_param
+# remove even the row with the highest temprature value
+all_param = lowest_param.nlargest(1, 'value')
+#all_param = lowest_param
 all_param_timestamps = lowest_param['time'].tolist()  # Extract the timestamps as a list
 
 # Filter out rows with the lowest parameter values timestamps across all parameters
@@ -332,46 +333,39 @@ for i, value in enumerate(PARAMS.values()):
 plt.suptitle(f"Q-Q plot: {name} utan {to_remove} tidpunkter\nmed de lägsta {changed_by.lower()} värder", fontsize=12)
 plt.tight_layout()
 plt.savefig(f'img/q_q_plot/{re.sub("(?i)"+re.escape("flygplats"), "", name)}_{changed_by.lower()}_min_{to_remove}_outliers.png')
-plt.show()
+#plt.show()
 plt.close()
-exit()
+
+"""
+CORRELATION BETWEEN TEMP AND HUMIDITY FOR ALL DATA
+"""
+# Pivote three_days
+pivote_df = df_three.pivot_table(index=['time', 'station_name'], columns='parameter', values='value').reset_index()
+
+
+sns.pairplot(pivote_df, hue='station_name')
+plt.subplots_adjust(top=0.9)
+plt.suptitle("Parvisa relationer mellan temperatur och luftfuktighet", fontsize=10, y=0.95)
+plt.savefig("img/regression/param_param.png")
+#plt.show()
+plt.close()
+
 """
 CORRELATION MATRIX FOR 6 PARAMETERS
 """
 # Combine data for all parameters, with station names included
 combined_data = pd.DataFrame()
-column_name1 = "TEMPERATUR_Umeå Flygplats"
-column_name2 = "LUFTFUKTIGHET_Umeå Flygplats" 
 for param_key, dataset in three_days.items():
     param_name = PARAMS[param_key][0]  # Parameter name (e.g., Temperature, Humidity)
     df = pd.DataFrame(dataset)
     
     df.columns = [f"{param_name}_{station}" for station in df.columns]  # Add station to column names
     combined_data = pd.concat([combined_data, df], axis=1)
-# Calculate the correlation matrix
-correlation_matrix = combined_data.corr()
-
-# Plot the heatmap
-plt.figure(figsize=(12, 10))
-ax = sns.heatmap(
-    correlation_matrix, 
-    annot=True,  # Avoid cluttering with too many annotations
-    cmap=LinearSegmentedColormap.from_list("CustomCmap", COLORS, N=256), 
-    cbar=True
-)
-# Adjust font sizes for station names
-ax.tick_params(axis='x', labelsize=8)
-ax.tick_params(axis='y', labelsize=8)
-plt.title("Correlation Matrix for All Parameters and Stations", fontsize=14)
-plt.tight_layout()
-plt.savefig('img/correlations/all_correlations.png')
-plt.show()
-plt.close()
 
 # Pairplot 
-f = sns.pairplot(combined_data, height=1.8, diag_kind='kde')
-# Adjust font size and axis
-for ax in f.axes.flatten():
+fig = sns.pairplot(combined_data, height=1.8, diag_kind='kde')
+# Adjust igont size and axis
+for ax in fig.axes.flatten():
     # Get current x and y axis labels
     xlabel = ax.get_xlabel()
     ylabel = ax.get_ylabel()
@@ -388,21 +382,45 @@ for ax in f.axes.flatten():
     ax.set_xlabel(xlabel, fontsize=6)
     ax.set_ylabel(ylabel, fontsize=6)
     
-    ax.set_ylabel(ylabel.replace("LUFTFUKTIGHET_", "%, FUKT_").strip(), fontsize=6)
-    
     # Set font size for tick labels
     ax.tick_params(axis='x', labelsize=5)  # X-axis tick labels
     ax.tick_params(axis='y', labelsize=5)  # Y-axis tick labels
 
-plt.suptitle("Pairwise Relationships for Parameters and Stations", y=0.99, fontsize=16)  # Title for the plot
+plt.suptitle("Parvisa relationer för parametrar och stationer", y=0.99, fontsize=16)  # Title for the plot
 plt.subplots_adjust(hspace=0.2, wspace=0.2, top=0.9) # Ajust spase between subplots
 plt.savefig('img/regression/all_pairwise_relationships.png')
-plt.show()
+#plt.show()
 plt.close()
 
 """
-Calculate regression for FUKT dependently on TEMP in UMEÅ
+CORRELATION COEFFITIENTS
 """
+# Calculate the correlation matrix
+correlation_matrix = combined_data.corr()
+
+# Plot the heatmap
+plt.figure(figsize=(12, 10))
+ax = sns.heatmap(
+    correlation_matrix, 
+    annot=True,  # Avoid cluttering with too many annotations
+    cmap=LinearSegmentedColormap.from_list("CustomCmap", COLORS, N=256), 
+    cbar=True
+)
+# Adjust font sizes for station names
+ax.tick_params(axis='x', labelsize=8)
+ax.tick_params(axis='y', labelsize=8)
+plt.title("Korrelationsmatris för alla parametrar och stationer", fontsize=14)
+plt.tight_layout()
+plt.savefig('img/correlations/all_correlations.png')
+#plt.show()
+plt.close()
+
+"""
+REGRESSION
+"""
+#Calculate regression for FUKT dependently on TEMP in UMEÅ
+column_name1 = "TEMPERATUR_Umeå Flygplats"
+column_name2 = "LUFTFUKTIGHET_Umeå Flygplats" 
 # X (independent variable) and y (dependent variable)
 X = combined_data[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
 y = combined_data[column_name2].values
@@ -418,7 +436,7 @@ slope = model.coef_[0] # =b
 intercept = model.intercept_ # =a
 
 # Print the regression equation
-print(f"Regression Equation: y = {slope:.2f} * X + {intercept:.2f}")
+equation = f"Regression Equation: y = {slope:.2f} * X + {intercept:.2f}"
 
 # Plot the data and regression line
 plt.scatter(X, y, color='blue', label='Data Points')  # Plot the data points
@@ -427,10 +445,11 @@ plt.plot(X, model.predict(X), color='red', label='Regression Line')  # Plot the 
 # Customize the plot
 plt.xlabel(column_name1)
 plt.ylabel(column_name2)
-plt.title(f"Linear regression model.\nPrediktion av relativt luftfuktighet på grund of temperatur i Umeå")
+plt.title(f"Linear regression model.\nPrognos av relativt luftfuktighet på grund of temperatur i Umeå")
 
 # label for the plot
-sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter_kws={'s': 10}, line_kws={'color': 'red', 'label': f'Y = {slope:.2f}X + {intercept:.2f}'})
+line_kws={'color': 'red', 'label': f'Y = {slope:.2f}X + {intercept:.2f}'}
+sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter_kws={'s': 10}, line_kws=line_kws)
 # get variables to chage legend
 handles, labels = plt.gca().get_legend_handles_labels()
 
@@ -483,7 +502,7 @@ y_pred = model.predict(X_test)
 plt.plot(X_test, y_pred, color='green', label='Test Data Prediction', linewidth=2)
 
 plt.legend()
-plt.title(f"Prediktioner av luftfuktighet på temperatur i Umeå\nMean squared error: {mse}" + 
+plt.title(f"Prognos av luftfuktighet på temperatur i Umeå\nMean squared error: {mse}" + 
         f"\nFraktion: {fraktion}")
 plt.xlabel("Temperatur, °C")
 plt.ylabel("Relativt Luftfuktighet, %")
@@ -600,11 +619,11 @@ plt.scatter(X_train_log, y_train, label='Träningsdata')
 plt.scatter(X_test_log_filtered, y_test_filtered, label='Test data')
 plt.plot(x_log, draw_exp_model, label='Linjär regression, log transformerad i x', color='c', linewidth=3)
 plt.legend()
-plt.title("Prediktioner av relativt luftfuktighet (log transformerad)")
+plt.title("Prognos av relativt luftfuktighet (log transformerad)")
 plt.xlabel("Temperatur [log( °C)]")
 plt.ylabel("Relativt luftfuktighet, %")
 plt.savefig('img/regression/prediction_log_data_filtered.png')
-plt.show()
+#plt.show()
 plt.close()
 
 # Calculate residuals of test data
@@ -625,7 +644,7 @@ mse_text = (f"Mean squared error liniar regression: {mse:.2f}\n"
 plt.text(X_test[17], residual[17], mse_text, color="red", fontsize=8)
 plt.ylabel("Residual")
 plt.savefig('img/regression/residuals_filtrerad_LOGtemp_fukt_UME.png')
-plt.show()
+#plt.show()
 plt.close()
 
 # Show histogram of the residuals of the test data
@@ -634,7 +653,7 @@ plt.title("Histogram av residualer av log_temperatur prediction av luftfuktighet
 plt.xlabel("Residual")
 plt.ylabel("Frekvens")
 plt.savefig('img/regression/residuals_filtrerad_hist_LOGtemp_fukt_UME.png')
-plt.show()
+#plt.show()
 plt.close() 
 
 # Transform back model
@@ -642,9 +661,9 @@ plt.scatter(X_train, y_train, label='Träningsdata')
 plt.scatter(X_test, y_test, label='Test data')
 plt.plot(np.exp(x_log) - shift_value, draw_exp_model, label='Linjär regression, exponentiell i x', color='c', linewidth=3)
 plt.legend()
-plt.title("Prediktioner av relativt luftfuktighet exponentiell modell")
-plt.xlabel("Temperatur, °C")
-plt.ylabel("Relativt luftfuktighet, %")
+plt.title("Prognos av relativt luftfuktighet exponentiell modell")
+plt.xlabel("temperatur, °C")
+plt.ylabel("relativt luftfuktighet, %")
 plt.savefig('img/regression/transform_back.png')
 #plt.show()
 plt.close()
@@ -675,11 +694,11 @@ plt.scatter(X_train, y_train_log, label='Träningsdata')
 plt.scatter(X_test, y_test_log, label='Test data')
 plt.plot(x, y_log, label='Linjär regression log domän', color='g', linewidth=3)
 plt.legend()
-plt.title("Prediktioner av relativt luftfuktighet (log transformerad y, %)")
+plt.title("Prognos av relativt luftfuktighet (log transformerad y, %)")
 plt.xlabel("Temperatyr")
 plt.ylabel("Relativt luftfuktighet [log %]")
 plt.savefig('img/regression/log_transform_FUKT_Umeå.png')
-plt.show()
+#plt.show()
 plt.close()
 
 # Calculate residualer
@@ -696,11 +715,11 @@ plt.scatter(X_train, y_train, label='Träningsdata')
 plt.scatter(X_test, y_test, label='Test data')
 plt.plot(x, np.exp(y_log), label='Linjär regression exponentiell i y', color='g', linewidth=3)
 plt.legend()
-plt.title("Prediktioner av luftfuktighet (exponentiell modell i y)")
+plt.title("Prognos av relativt luftfuktighet (exponentiell modell i y)")
 plt.xlabel("Relativt lutfuktighet %")
 plt.ylabel("Temperatur, °C")
 plt.savefig('img/regression/Y_LOG_transform_model_Umeå.png')
-plt.show()
+#plt.show()
 plt.close()
 
 #ALLA MODELLER PÅ EN PLOT
@@ -709,10 +728,11 @@ plt.scatter(X_test, y_test, label='Test data')
 plt.plot(x, np.exp(y_log), label='Linjär regression exponentiell i y', color='orange', linewidth=3)
 plt.plot(np.exp(x_log) - shift_value, draw_exp_model, label='Linjär regression, exponentiell i x', color='red', linewidth=3)
 plt.plot(X_test, y_pred, color='green', label='Test Data Prediction', linewidth=2)
-plt.title("Prediktioner av luftfuktighet av alla modeller")
+plt.title("Prognos av relativt luftfuktighet med alla modeller")
 plt.ylabel("Relativt lutfuktighet %")
 plt.xlabel("Temperatur, °C")
 plt.legend(loc='best', frameon=True, fontsize=10, title="Modeller och data", title_fontsize=10)
 plt.tight_layout()
 plt.savefig('img/regression/alla_modeller_Umeå.png')
-plt.show()
+#plt.show()
+plt.close()
