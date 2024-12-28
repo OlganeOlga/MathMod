@@ -581,9 +581,9 @@ Jag skaffar regressions modell med hjälp av maskinlearning. 50% av data använd
     plt.show()
  
 ```
-#### Figure 5a. ![Linjäreggresion för relativt luftfuktighet i Umeå flygplats](img/regression/regr_prediction_Umea_temp_luft_0.5.png)
+#### Figur 5a. ![Linjäreggresion för relativt luftfuktighet i Umeå flygplats](img/regression/regr_prediction_Umea_temp_luft_0.5.png)
 
-##### Förklating till figuren 5a. 
+##### Förklaring till figuren 5a. 
 Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfuktighet på Umeå flygplats på grund av temperatur. X-axeln visar temperatur i Celciumgrader, Y-axeln visar relativ luftfuktighet i procent. Orange punkter visar data som använts för att ta fram prediktionsmodellen, blå punkter visar data som använts för att testa prediktionsmodellen. Röd linje representerar prediktionsmodellen och grön linje representerar den modell som skulle erhållas med testdataset. Ekvationen för prediktionsmodellen visas i röd text. 
 
 
@@ -622,7 +622,7 @@ Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfukt
     slope_ci = conf_int_params[1]  # Andra raden: Lutning
 
     # Print regression parameters and confidens interval
-    print(f"Regression Equation: y = {linear_slope:.2f} * X + {linear_intercept:.2f}")
+    print(f"Regression Equation: y = {linear_intercept:.2f} + {linear_slope:.2f} * X")
     print(f"95% Confidence Interval for Intercept (a): {intercept_ci}")
     print(f"95% Confidence Interval for Slope (b): {slope_ci}")
     print(f"Mean Squared Error (MSE): {mse:.2f}")
@@ -632,22 +632,18 @@ Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfukt
     plt.scatter(X_train, y_train, color="orange", label='Träningsdata', alpha=0.6)
     # Test data
     plt.scatter(X_test, y_test, color="blue", label='Testdata', alpha=0.6)
-
     # Title
     sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter=False, 
                 line_kws={'color': 'red', 'label': f'Y = {linear_slope:.2f}X + {linear_intercept:.2f}'}, ci=95)
-
     # Regression line for predictions (testdata)
     y_pred = model.predict(X_test)
     plt.plot(X_test, y_pred, color='green', label='Test Data Prediction', linewidth=2)
-
     # show Regression equation and confidence interval
     plt.text(0.5, 0.89, 
             f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}\n'
             f'95% CI for Intercept: [{intercept_ci[0]:.2f}, {intercept_ci[1]:.2f}]\n'
             f'95% CI for Slope: [{slope_ci[0]:.2f}, {slope_ci[1]:.2f}]', 
             ha='center', va='center', transform=plt.gca().transAxes, fontsize=10, color='red')
-
     plt.title(f"Prognos av luftfuktighet baserat på temperatur i Umeå\nMean squared error: {mse:.2f}\nFraktion: {fraktion}")
     plt.xlabel("Temperatur, °C")
     plt.ylabel("Relativt Luftfuktighet, %")
@@ -655,15 +651,10 @@ Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfukt
     plt.savefig(f'img/regression/Conf_int_regr_prediction_Umea_temp_luft.png')
     plt.show()
 ```
-### Figur 6 
-![Temperatur- luftfuktighet regression](img/regression/Conf_int_regr_prediction_Umea_temp_luft.png)
-
-*Utför en linjärregression av minst en av variablerna och ett tillhörande 95% konfidensintervall. 
-Rapportera variablerna 𝑎  och 𝑏  i sambandet 𝑦 = 𝑎 + 𝑏 ∙ 𝑥  samt punktskattningens 
-konfidensintervall av dessa. Visualisera detta i en graf med den linjära modellen, konfidensintervallet 
-och originaldata i samma figur.*
-
-Jag räknar ut residualer och visa de på plottar:
+#### Figur 5b. ![Modellen som progniserar relativt luftfuktighet på grund av temperatyr i Umeå Flygplats](img/regression/Conf_int_regr_prediction_Umea_temp_luft.png)
+##### Forklaring till figuren 5b.
+Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfuktighet på Umeå flygplats på grund av temperatur. X-axeln visar temperatur i Celciumgrader, Y-axeln visar relativ luftfuktighet i procent. Orange punkter visar data som använts för att ta fram prediktionsmodellen, blå punkter visar data som använts för att testa prediktionsmodellen. Röd linje representerar prediktionsmodellen och grön linje representerar den modell som skulle erhållas med testdataset. Ekvationen för prediktionsmodellen visas i röd text. Grön linja visar korrelation model som skulle skappas om test dataset skulle användas i stället av trainings dataset.
+<!-- Jag räknar ut residualer och visa de på plottar:
 
 ```python
     # Beräkna residualen för test data
@@ -699,17 +690,16 @@ Jag räknar ut residualer och visa de på plottar:
 Resultat visas på Figur 6a:
 
 ![#### Figur 6a](img/regression/residuals_temp_fukt_UME.png)
-![#### Figur 6b](img/regression/residuals_hist_temp_fukt_UME.png)
+![#### Figur 6b](img/regression/residuals_hist_temp_fukt_UME.png) -->
 
 ## Uppgift 5: Transformera data
-Jag först transformera temperatur:
+
+Jag testar om logoritmisk transformation av temperatur skulle ge bättre modellen. Temeratur i Umeå har negativa värde. För att göra logaritmisk transormation behöver jag höja alla temperaturvärde, så att värde blir högrä än 0.
 
 ```python
-     Jag kan inte använda direkt logaritmisk transformation för temperatur, pga negativa value 
-
     X_combined = combined_data[column_name1].values
-
-    shift_value = abs(X_combined.min()) + 1e-5  # Ensure no zero values
+    # shift all values above zero, 1e-5 ensure that no values are zero
+    shift_value = abs(X_combined.min()) + 1e-5 
 
     X_train_log = np.log(X_train + shift_value)
     X_test_log = np.log(X_test + shift_value)

@@ -21,6 +21,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+import statsmodels.api as sm
 import re  # Import regular expression module
 from sklearn.metrics import r2_score, mean_squared_error
 ## own functions
@@ -436,7 +437,7 @@ slope = model.coef_[0] # =b
 intercept = model.intercept_ # =a
 
 # Print the regression equation
-equation = f"Regression Equation: y = {slope:.2f} * X + {intercept:.2f}"
+equation = f"Regression Equation: y = {intercept:.2f} + {slope:.2f} * X"
 
 # Plot the data and regression line
 plt.scatter(X, y, color='blue', label='Data Points')  # Plot the data points
@@ -448,7 +449,7 @@ plt.ylabel(column_name2)
 plt.title(f"Linear regression model.\nPrognos av relativt luftfuktighet på grund of temperatur i Umeå")
 
 # label for the plot
-line_kws={'color': 'red', 'label': f'Y = {slope:.2f}X + {intercept:.2f}'}
+line_kws={'color': 'red', 'label': f'Y = {intercept:.2f} + {slope:.2f}X'}
 sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter_kws={'s': 10}, line_kws=line_kws)
 # get variables to chage legend
 handles, labels = plt.gca().get_legend_handles_labels()
@@ -499,9 +500,9 @@ intercept_ci = conf_int_params[0]  # Första raden: Intercept
 slope_ci = conf_int_params[1]  # Andra raden: Lutning
 
 # Print regression parameters and confidens interval
-print(f"Regression Equation: y = {linear_slope:.2f} * X + {linear_intercept:.2f}")
-print(f"95% Confidence Interval for Intercept (a): {intercept_ci}")
-print(f"95% Confidence Interval for Slope (b): {slope_ci}")
+print(f"Regression Equation: y ={linear_intercept:.2f} + {linear_slope:.2f} * X")
+print(f"95% Confidence Interval for a: {intercept_ci}")
+print(f"95% Confidence Interval for b: {slope_ci}")
 print(f"Mean Squared Error (MSE): {mse:.2f}")
 
 plt.figure(figsize=(10, 6))
@@ -512,17 +513,17 @@ plt.scatter(X_test, y_test, color="blue", label='Testdata', alpha=0.6)
 
 # Title
 sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter=False, 
-            line_kws={'color': 'red', 'label': f'Y = {linear_slope:.2f}X + {linear_intercept:.2f}'}, ci=95)
+            line_kws={'color': 'red', 'label': f'Y = {linear_intercept:.2f} + {linear_slope:.2f} * X'}, ci=95)
 
 # Regression line for predictions (testdata)
 y_pred = model.predict(X_test)
-plt.plot(X_test, y_pred, color='green', label='Test Data Prediction', linewidth=2)
+plt.plot(X_test, y_pred, color='g', label='Test Data Prediction', linewidth=2)
 
 # show Regression equation and confidence interval
 plt.text(0.5, 0.89, 
-         f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}\n'
-         f'95% CI for Intercept: [{intercept_ci[0]:.2f}, {intercept_ci[1]:.2f}]\n'
-         f'95% CI for Slope: [{slope_ci[0]:.2f}, {slope_ci[1]:.2f}]', 
+         f'Lineärmodel: y ={linear_intercept:.2f} +  {linear_slope:.2f}* X\n'
+         f'95% konfidens interval för a: [{intercept_ci[0]:.2f}, {intercept_ci[1]:.2f}]\n'
+         f'95% konfidens interval för b: [{slope_ci[0]:.2f}, {slope_ci[1]:.2f}]', 
          ha='center', va='center', transform=plt.gca().transAxes, fontsize=10, color='red')
 
 plt.title(f"Prognos av luftfuktighet baserat på temperatur i Umeå\nMean squared error: {mse:.2f}\nFraktion: {fraktion}")
