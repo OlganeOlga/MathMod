@@ -346,7 +346,7 @@ pivote_df = df_three.pivot_table(index=['time', 'station_name'], columns='parame
 sns.pairplot(pivote_df, hue='station_name')
 plt.subplots_adjust(top=0.9)
 plt.suptitle("Parvisa relationer mellan temperatur och luftfuktighet", fontsize=10, y=0.95)
-plt.savefig("img/regression/param_param.png")
+plt.savefig("img/correlations/param_param.png")
 #plt.show()
 plt.close()
 
@@ -388,7 +388,7 @@ for ax in fig.axes.flatten():
 
 plt.suptitle("Parvisa relationer för parametrar och stationer", y=0.99, fontsize=16)  # Title for the plot
 plt.subplots_adjust(hspace=0.2, wspace=0.2, top=0.9) # Ajust spase between subplots
-plt.savefig('img/regression/all_pairwise_relationships.png')
+plt.savefig('img/correlations/all_pairwise_relationships.png')
 #plt.show()
 plt.close()
 
@@ -463,51 +463,75 @@ plt.savefig('img/regression/Umea_temp_fukt_relation.png')
 plt.close()
 
 """
-Regression for FUKT dependently on TEMP in UMEÅ
-with train and test data
+LINIAR REGRESSION MODEL
 """
-# Get training ang testing datasets
+# Fraction of data to train
 fraktion = 0.5
 train = combined_data.sample(frac=fraktion, random_state=1)
 test = combined_data.drop(train.index)
 
-# # Extract X (independent variable) and y (dependent variable) from the dataframe
-X_train = train[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
-y_train = train[column_name2].values  # Dependent variable (y)
-X_test = test[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
-y_test = test[column_name2].values  # Dependent variable (y)
+# Name of columns
+column_name1 = "TEMPERATUR_Umeå Flygplats"
+column_name2 = "LUFTFUKTIGHET_Umeå Flygplats"
 
+# Extract X (independent variable) and y (dependent variable)
+X_train = train[column_name1].values.reshape(-1, 1)
+y_train = train[column_name2].values
+X_test = test[column_name1].values.reshape(-1, 1)
+y_test = test[column_name2].values
+
+# Trainings model
 model = LinearRegression().fit(X_train, y_train)
 pred = model.predict(X_test)
 
-# Calculate MSE
-mse = np.mean((pred - y_test)**2)
+# MSE of test data
+mse = np.mean((pred - y_test) ** 2)
 linear_slope = model.coef_[0]
 linear_intercept = model.intercept_
 
-plt.figure(figsize=(10,6))
-# Add linear regression parameters to the plot
-plt.text(0.5, 0.95, f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}',
-        ha='center', va='center', transform=plt.gca().transAxes, fontsize=12, color='red')
-# Visulisera prediktioner
-plt.scatter(X_train, y_train, color="orange", label='Träningsdata', alpha=0.6)
-plt.scatter(X_test, y_test, color="blue", label='Test data', alpha=0.6)
-# Create the regression plot with a confidence interval (95%)
-sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter=False, 
-            line_kws={'color': 'red', 'label': f'Y = {linear_slope:.2f}X + {linear_intercept:.2f}'}, 
-            ci=95)
-# Add regression line from the model's predictions (for test data)
-y_pred = model.predict(X_test)
+# Use statsmodel for confidens interval
+X_train_with_const = sm.add_constant(X_train)  # Lägg till konstant för intercept
+ols_model = sm.OLS(y_train, X_train_with_const).fit()
+conf_int_params = ols_model.conf_int(alpha=0.05)  # 95% konfidensintervall
 
+# calculate confidens interval
+intercept_ci = conf_int_params[0]  # Första raden: Intercept
+slope_ci = conf_int_params[1]  # Andra raden: Lutning
+
+# Print regression parameters and confidens interval
+print(f"Regression Equation: y = {linear_slope:.2f} * X + {linear_intercept:.2f}")
+print(f"95% Confidence Interval for Intercept (a): {intercept_ci}")
+print(f"95% Confidence Interval for Slope (b): {slope_ci}")
+print(f"Mean Squared Error (MSE): {mse:.2f}")
+
+plt.figure(figsize=(10, 6))
+# Train data
+plt.scatter(X_train, y_train, color="orange", label='Träningsdata', alpha=0.6)
+# Test data
+plt.scatter(X_test, y_test, color="blue", label='Testdata', alpha=0.6)
+
+# Title
+sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter=False, 
+            line_kws={'color': 'red', 'label': f'Y = {linear_slope:.2f}X + {linear_intercept:.2f}'}, ci=95)
+
+# Regression line for predictions (testdata)
+y_pred = model.predict(X_test)
 plt.plot(X_test, y_pred, color='green', label='Test Data Prediction', linewidth=2)
 
-plt.legend()
-plt.title(f"Prognos av luftfuktighet på temperatur i Umeå\nMean squared error: {mse}" + 
-        f"\nFraktion: {fraktion}")
+# show Regression equation and confidence interval
+plt.text(0.5, 0.89, 
+         f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}\n'
+         f'95% CI for Intercept: [{intercept_ci[0]:.2f}, {intercept_ci[1]:.2f}]\n'
+         f'95% CI for Slope: [{slope_ci[0]:.2f}, {slope_ci[1]:.2f}]', 
+         ha='center', va='center', transform=plt.gca().transAxes, fontsize=10, color='red')
+
+plt.title(f"Prognos av luftfuktighet baserat på temperatur i Umeå\nMean squared error: {mse:.2f}\nFraktion: {fraktion}")
 plt.xlabel("Temperatur, °C")
 plt.ylabel("Relativt Luftfuktighet, %")
-plt.savefig(f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png')
-plt.close() 
+plt.legend(loc='best')
+plt.savefig(f'img/regression/Conf_int_regr_prediction_Umea_temp_luft.png')
+plt.show()
+exit()
 
 # Calculate residuals of test data
 residual = y_test - pred

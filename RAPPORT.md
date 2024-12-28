@@ -456,9 +456,7 @@ Figur 3a visar om extrema värde tas bort, då närmar dataset sig normalfördel
 
 För att ser med vilka data ska jag arbeta vill jag först titta på hur data korrelerrar med varandra. Därför skaffar jag några plottar, som visas på Figur 4.
 
-#### Figur 4a
-##### Parvisa relationer mellan relativt luftfuktighet och temperatur
-![](img/regression/param_param.png)
+#### Figur 4a. ![Parvisa relationer mellan relativt luftfuktighet och temperatur](img/correlation/param_param.png)
 
 Figuren visar att temperatur och luftfuktighet i Umeå flugplats korrelerar, men det kan inte sägas att luftfuktighet och temperatur korrelerar i två andra stationer. Plot var skaffat med förljande kod:
 
@@ -470,7 +468,7 @@ Figuren visar att temperatur och luftfuktighet i Umeå flugplats korrelerar, men
     sns.pairplot(pivote_df, hue='station_name')
     plt.subplots_adjust(top=0.9)
     plt.suptitle("Parvisa relationer mellan temperatur och luftfuktighet", fontsize=10, y=0.95)
-    plt.savefig("img/regression/param_param.png")
+    plt.savefig("img/correlation/param_param.png")
     plt.show()
     plt.close()
 ```
@@ -506,12 +504,12 @@ Jag skaffar även ett annat plot, som visar mera detaljer:
 
     plt.suptitle("Pairwise Relationships for Parameters and Stations", y=0.99, fontsize=16)  # Title for the plot
     plt.subplots_adjust(hspace=0.2, wspace=0.2, top=0.9) # Ajust spase between subplots
-    plt.savefig('img/regression/all_pairwise_relationships.png')
+    plt.savefig('img/correlation/all_pairwise_relationships.png')
     plt.show()
     plt.close()
 ```
 
-#### Figur 4b. ![Alla mojliga parade relationer mellan stationer och parametrar](img/regression/all_pairwise_relationships.png)
+#### Figur 4b. ![Alla mojliga parade relationer mellan stationer och parametrar](img/correlatin/all_pairwise_relationships.png)
 
 Detta plot visar igen, att det kan finnas direkt samband mellan relativt luftfuktighet och temperatur i Umeå.
 Jag skapar också matris som visar hur korrelerrar en parameter från en station med alla andra parameter-station kombinationer.
@@ -540,9 +538,11 @@ Jag skapar också matris som visar hur korrelerrar en parameter från en station
 ```
 #### Figur 4c. ![Korrelation matris](img/correlations/all_correlations.png)
 ##### Förklaring till Figur 4c.
-I figur visas korrelations koeffitienter mellan olika dataset.
+I figur visas korrelations koeffitienter mellan olika dataset. På axlar visas olika parameter-station kombiantioner. Samma kombinatiner visas på båda axlarna. Korrelationskoefitientar mellan parar visas med text i färgade kvadrater. Färgskala visas till höger. Färgskalan hjälper till visuelt bedömningen.
 
-Korrelationmatrisen visar samma som  tidigare två figurer. Den enda tydliga korrelation finns mellan relativt luftfuktighet och temperatur i Umeå flugplats. Därför väljer jag att utförska samband mellan relativt luftfuktighet och temperatur bara i Umeå.
+Korrelationmatrisen visar samma som två figurer innan (Figur 4a och Figur 4b).Ttydlig korrelation finns bara mellan relativt luftfuktighet och temperatur i Umeå flugplats. Därför väljer jag att utförska samband mellan relativt luftfuktighet och temperatur bara i Umeå vidare.
+
+Jag skaffar regressions modell med hjälp av maskinlearning. 50% av data används som tanings dataset de resterande 50% används som testdataset.
 
 ```python
     # Get training ang testing datasets
@@ -581,58 +581,82 @@ Korrelationmatrisen visar samma som  tidigare två figurer. Den enda tydliga kor
     plt.show()
  
 ```
-#### Figure 5a. Linjäreggresion mellan temperatur och relativt luftfuktighet i Umeå
-![fig](img/regression/regr_prediction_Umea_temp_luft_0.5.png)
+#### Figure 5a. ![Linjäreggresion för relativt luftfuktighet i Umeå flygplats](img/regression/regr_prediction_Umea_temp_luft_0.5.png)
+
+##### Förklating till figuren 5a. 
+Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfuktighet på Umeå flygplats på grund av temperatur. X-axeln visar temperatur i Celciumgrader, Y-axeln visar relativ luftfuktighet i procent. Orange punkter visar data som använts för att ta fram prediktionsmodellen, blå punkter visar data som använts för att testa prediktionsmodellen. Röd linje representerar prediktionsmodellen och grön linje representerar den modell som skulle erhållas med testdataset. Ekvationen för prediktionsmodellen visas i röd text. 
+
+
 ```python
-    # Get training ang testing datasets
+    # Fraction of data to train
     fraktion = 0.5
     train = combined_data.sample(frac=fraktion, random_state=1)
     test = combined_data.drop(train.index)
 
-    # # Extract X (independent variable) and y (dependent variable) from the dataframe
-    X_train = train[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
-    y_train = train[column_name2].values  # Dependent variable (y)
-    X_test = test[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
-    y_test = test[column_name2].values  # Dependent variable (y)
+    # Name of columns
+    column_name1 = "TEMPERATUR_Umeå Flygplats"
+    column_name2 = "LUFTFUKTIGHET_Umeå Flygplats"
 
+    # Extract X (independent variable) and y (dependent variable)
+    X_train = train[column_name1].values.reshape(-1, 1)
+    y_train = train[column_name2].values
+    X_test = test[column_name1].values.reshape(-1, 1)
+    y_test = test[column_name2].values
 
+    # Trainings model
     model = LinearRegression().fit(X_train, y_train)
     pred = model.predict(X_test)
 
-    # Räkna ut MSE
-    mse = np.mean((pred - y_test)**2)
+    # MSE of test data
+    mse = np.mean((pred - y_test) ** 2)
     linear_slope = model.coef_[0]
     linear_intercept = model.intercept_
 
-    plt.figure(figsize=(10,6))
-    # Add linear regression parameters to the plot
-    plt.text(0.5, 0.95, f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}',
-            ha='center', va='center', transform=plt.gca().transAxes, fontsize=12, color='red')
-    # Visulisera prediktioner
+    # Use statsmodel for confidens interval
+    X_train_with_const = sm.add_constant(X_train)  # Lägg till konstant för intercept
+    ols_model = sm.OLS(y_train, X_train_with_const).fit()
+    conf_int_params = ols_model.conf_int(alpha=0.05)  # 95% konfidensintervall
+
+    # calculate confidens interval
+    intercept_ci = conf_int_params[0]  # Första raden: Intercept
+    slope_ci = conf_int_params[1]  # Andra raden: Lutning
+
+    # Print regression parameters and confidens interval
+    print(f"Regression Equation: y = {linear_slope:.2f} * X + {linear_intercept:.2f}")
+    print(f"95% Confidence Interval for Intercept (a): {intercept_ci}")
+    print(f"95% Confidence Interval for Slope (b): {slope_ci}")
+    print(f"Mean Squared Error (MSE): {mse:.2f}")
+
+    plt.figure(figsize=(10, 6))
+    # Train data
     plt.scatter(X_train, y_train, color="orange", label='Träningsdata', alpha=0.6)
-    plt.scatter(X_test, y_test, color="blue", label='Test data', alpha=0.6)
-    # Create the regression plot with a confidence interval (95%)
+    # Test data
+    plt.scatter(X_test, y_test, color="blue", label='Testdata', alpha=0.6)
+
+    # Title
     sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter=False, 
-                line_kws={'color': 'red', 'label': f'Y = {linear_slope:.2f}X + {linear_intercept:.2f}'}, 
-                ci=95)  # 'ci' specifies the confidence interval
-    #plt.plot(X_test, pred, label='Linjär regression', color='g', linewidth=3)
-    #plt.plot(X_test, pred, label=f'Linear Regression: y = {linear_slope:.2f}x + {linear_intercept:.2f}', color='green', linewidth=2)
+                line_kws={'color': 'red', 'label': f'Y = {linear_slope:.2f}X + {linear_intercept:.2f}'}, ci=95)
 
-    # Add regression line from the model's predictions (for test data)
+    # Regression line for predictions (testdata)
     y_pred = model.predict(X_test)
-
     plt.plot(X_test, y_pred, color='green', label='Test Data Prediction', linewidth=2)
 
-    plt.legend()
-    plt.title(f"Prediktioner av luftfuktighet på temperatur i Umeå\nMean squared error: {mse}" + 
-            f"\nFraktion: {fraktion}")
-    plt.xlabel("Temperatur")
-    plt.ylabel("Relativt Luftfuktighet")
-    plt.savefig(f'img/regression/regr_prediction_Umea_temp_luft_{fraktion}.png')
-    plt.close() 
+    # show Regression equation and confidence interval
+    plt.text(0.5, 0.89, 
+            f'Linear Model: y = {linear_slope:.2f}x + {linear_intercept:.2f}\n'
+            f'95% CI for Intercept: [{intercept_ci[0]:.2f}, {intercept_ci[1]:.2f}]\n'
+            f'95% CI for Slope: [{slope_ci[0]:.2f}, {slope_ci[1]:.2f}]', 
+            ha='center', va='center', transform=plt.gca().transAxes, fontsize=10, color='red')
+
+    plt.title(f"Prognos av luftfuktighet baserat på temperatur i Umeå\nMean squared error: {mse:.2f}\nFraktion: {fraktion}")
+    plt.xlabel("Temperatur, °C")
+    plt.ylabel("Relativt Luftfuktighet, %")
+    plt.legend(loc='best')
+    plt.savefig(f'img/regression/Conf_int_regr_prediction_Umea_temp_luft.png')
+    plt.show()
 ```
 ### Figur 6 
-![Temperatur- luftfuktighet regression](img/regression/regr_prediction_Umea_temp_luft_0.5.png)
+![Temperatur- luftfuktighet regression](img/regression/Conf_int_regr_prediction_Umea_temp_luft.png)
 
 *Utför en linjärregression av minst en av variablerna och ett tillhörande 95% konfidensintervall. 
 Rapportera variablerna 𝑎  och 𝑏  i sambandet 𝑦 = 𝑎 + 𝑏 ∙ 𝑥  samt punktskattningens 
