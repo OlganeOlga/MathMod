@@ -511,7 +511,7 @@ Jag skaffar även ett annat plot, som visar mera detaljer:
     plt.close()
 ```
 
-#### Figur 4b. [Alla mojliga parade relationer mellan stationer och parametrar](img/regression/all_pairwise_relationships.png)
+#### Figur 4b. ![Alla mojliga parade relationer mellan stationer och parametrar](img/regression/all_pairwise_relationships.png)
 
 Detta plot visar igen, att det kan finnas direkt samband mellan relativt luftfuktighet och temperatur i Umeå.
 Jag skapar också matris som visar hur korrelerrar en parameter från en station med alla andra parameter-station kombinationer.
