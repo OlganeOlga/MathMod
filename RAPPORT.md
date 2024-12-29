@@ -195,7 +195,7 @@ Det är svårt att säga om data är normalfördelat enbart från resultater av 
 Beskrivande statistik kan visualiseras med hjälp av ladogrammar, som visar medelvärde, kvariler, 95% spridningen och avvikande värde i urvalet.
 
 ## Uppgift 3. Beskrivande plottar
-Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde att göra Shapiro-Wilk test och visualisera resultat på ladogrammer, ([Figur 2.](#### Figur 2.)).
+Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde att göra Shapiro-Wilk test och visualisera resultat på ladogrammer, ([Figur 2.](Figur 2.)).
 [Shapiro-Wilk test](https://academic.oup.com/biomet/article-abstract/52/3-4/591/336553?redirectedFrom=fulltext) en av mest användda tester för att jamföra urvalet med normalfordelninen. p-värde mindre än 5% tillåter säga att det är ossannolikt att urvalets data normalfördelade. 
 
 ```python
@@ -259,8 +259,7 @@ Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde 
 
 ```
 
-#### Figur 1.
-![Ladogrammar](img/box_plot/all.png)
+#### Figur 1. ![Ladogrammar](img/box_plot/all.png)
 ##### Förklaring till Figur 2.
 Figuren visar boxplottar för olika stationer och parametrar. De parametrar som visas och respectiva stationer skriven under varje subplot. Motsvarande enheter anges med etiketter till y-axes. Boxplottarna visar fördelningen av värden för varje station, där den horisontal linjen representerar medianen, boxarna visar det interkvartila intervallet (IQR) och morrhåren sträcker sig till minimi- och maximivärdena inom 1,5 * IQR. Små sirklar visar avvikande värde.
 För varje boxplott anges ett resultat från Shapiro-Wilk-testetm, den hjälper att bedöma om data följer en normalfördelning. Ett p-värde under 0,05 indikerar att data inte följer en normalfördelning, och detta markeras med rött i diagrammet.
@@ -373,8 +372,7 @@ Det finns ett annat sät att visualisera avvikelse från eller liknande till nor
 
 REsultat visas på Figur 3.
 
-#### Figur 3
-![Kvanti_kventil plottar ](img/q_q_plot/all.png)
+#### Figur 3. ![Kvanti_kventil plottar ](img/q_q_plot/all.png)
 ##### Förklaring av Quantile-Quantile fördelning plottar
 
  På plottar jämförs dataset från olika stationer och parametrar mot den teoretiska normalfördelningen. En Q-Q plot (Quantile-Quantile plot) jämför de empiriska kvantilerna från den faktiska datan med de teoretiska kvantilerna från en normalfördelning. Syftet med denna figur är att visuellt bedöma hur väl datan följer en normalfördelning. Varje plot visar fördelningen av en dataset. I På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
@@ -444,7 +442,7 @@ Här är exampel kod:
     plt.close()
 ```
 I Figur 3a visas resultat.
-#### Figur 3a
+#### Figur 3a. 
 ![Umeå](img/q_q_plot/Umeå _temperatur_min_4_outliers.png)
 ![Uppsala](img/q_q_plot/Uppsala_temperatur_min_5_outliers.png)
 ![Halmstad](img/q_q_plot/Halmstad_luftfuktighet_min_4_outliers.png)
@@ -654,169 +652,240 @@ Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfukt
 #### Figur 5b. ![Modellen som progniserar relativt luftfuktighet på grund av temperatyr i Umeå Flygplats](img/regression/Conf_int_regr_prediction_Umea_temp_luft.png)
 ##### Forklaring till figuren 5b.
 Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfuktighet på Umeå flygplats på grund av temperatur. X-axeln visar temperatur i Celciumgrader, Y-axeln visar relativ luftfuktighet i procent. Orange punkter visar data som använts för att ta fram prediktionsmodellen, blå punkter visar data som använts för att testa prediktionsmodellen. Röd linje representerar prediktionsmodellen och grön linje representerar den modell som skulle erhållas med testdataset. Ekvationen för prediktionsmodellen visas i röd text. Grön linja visar korrelation model som skulle skappas om test dataset skulle användas i stället av trainings dataset.
-<!-- Jag räknar ut residualer och visa de på plottar:
+Jag räknar ut residualer och visa de på plottar:
 
 ```python
-    # Beräkna residualen för test data
-    residual = y_test - pred
-
-    # Beräkna standardavvikelsen för residualen
-    std_residual = np.std(residual)
-    #print(f"Standardavvikelsen för residualen: {std_residual:.2f}")
-
-    # Visualisera residualen för test data
-    plt.scatter(X_test, residual)
+    # Calculate residuals of test data
+    residuals = pred - y_test
+    # Calculate standarddeviation of residuals
+    std_residual = np.std(residuals)
+    stat, p = sci.shapiro(residuals) # test for normal distribution
+    # Visualise residuals
+    plt.scatter(X_test, residuals)
     plt.axhline(0, color='r', linestyle='--')
     plt.title("Residualer av relativt luftfuktighet i Umeå")
-    plt.xlabel("temperatur i Umeå")
-    plt.ylabel("Residualer")
+    plt.xlabel("temperatur i Umeå, °C")
+    plt.ylabel("Residualer av relativt luftfuktighet, %")
+    text = (f"Standard avvikelse för residualer: {std_residual:.2f} %\n"
+            f"Shapiro-Wilk test for residualernas spridning: p = {p:.3f}, \nstatistics={stat:.3f}\n"
+            f"Som visar att resudualernas spridning kan inte bearbetas som normal.")
     # Place text at a specific location in data coordinates
-    plt.text(X_test[19], residual[19], f"Standard avvikelse för residualer: {std_residual:.2f}", 
+    plt.text(-20.0, 4.5, text, 
             color="green", fontsize=8, ha='left', va='bottom')
-    # plt.savefig('img/regression/residuals_temp_fukt_UME.png')
-    # plt.show()
+    plt.savefig('img/regression/residuals_temp_fukt_UME.png')
+    #plt.show()
     plt.close()
 
-    # Visa histogram av residualen för test data
-    plt.hist(residual, bins=24, edgecolor='white', alpha=1.0)
-    plt.title("Histogram av residualer av luftfuktighet i Umeå")
+        # Show histogram av residualen för test data
+    plt.hist(residuals, bins=24, edgecolor='white', alpha=1.0)
+    plt.title("Histogram av residualer av luftfuktighet i Umeå", fontsize=10)
     plt.xlabel("Residuals")
     plt.ylabel("Frekvens")
-    path = f'img/regression/residuals_hist_temp_fukt_UME.png'
-    plt.savefig(path)
-    plt.show()
+    plt.savefig('img/regression/residuals_hist_temp_fukt_UME.png')
+    #plt.show()
     plt.close() 
 ```
-Resultat visas på Figur 6a:
 
-![#### Figur 6a](img/regression/residuals_temp_fukt_UME.png)
-![#### Figur 6b](img/regression/residuals_hist_temp_fukt_UME.png) -->
+Resultat visas på Figur 6a och 6b:
+#### Figur 6a.![Spridning av liniarregressions residualerna](img/regression/residuals_temp_fukt_UME.png)
+
+#### Figur 6b. ![Stapeldiagram för spriding av liniarregressions residualerna](img/regression/residuals_hist_temp_fukt_UME.png)
+Båda figurer visar att fordelningen är inte normal. Det kan betyda att variablerna är beroende av varandra.
 
 ## Uppgift 5: Transformera data
 
 Jag testar om logoritmisk transformation av temperatur skulle ge bättre modellen. Temeratur i Umeå har negativa värde. För att göra logaritmisk transormation behöver jag höja alla temperaturvärde, så att värde blir högrä än 0.
 
 ```python
+    # Log transformation
+    # I cannot use direct log-transformaton due to negative values of the tempture
+    # I want to shift all values that the lowest is just above zero
     X_combined = combined_data[column_name1].values
     # shift all values above zero, 1e-5 ensure that no values are zero
-    shift_value = abs(X_combined.min()) + 1e-5 
+    shift_value = abs(X_combined.min()) + 1e-5
+    def log_stat_plot(x_tr, x_te, y_tr, y_te, name, title=""):
+        X_train_log = np.log(x_tr + shift_value)
+        X_test_log = np.log(x_te + shift_value)
 
-    X_train_log = np.log(X_train + shift_value)
-    X_test_log = np.log(X_test + shift_value)
+        # Visualise log transformation
+        plt.figure(figsize=(12, 6))
+        # Show original data on subplot 1
+        plt.subplot(1, 2, 1)
+        plt.scatter(x_tr, y_tr, label='Träningsdata')
+        plt.scatter(x_te, y_te, label='Test data')
+        plt.legend()
+        plt.xlabel("Temperatur, °C", fontsize=8)
+        plt.ylabel("Relativt luftfuktighet; %", fontsize=8)
+        plt.title("Skatterplot med originala x-värde", fontsize=10)
 
-    # Visualisera logaritmisk transformation
-    plt.figure(figsize=(12, 6))
-
-    # Visa original data i subplot 1
-    plt.subplot(1, 2, 1)
-    plt.scatter(X_train, y_train, label='Träningsdata')
-    plt.scatter(X_test, y_test, label='Test data')
-    plt.legend()
-    plt.title("Original data")
-    plt.xlabel("Temperatur")
-    plt.ylabel("Relativt luftfuktighet")
-
-    # Visa logaritmisk transformation i subplot 2
-    plt.subplot(1, 2, 2)
-    plt.scatter(X_train_log, y_train, label='Träningsdata')
-    plt.scatter(X_test_log, y_test, label='Test data')
-    plt.legend()
-    plt.title("Logaritmisk transformation")
-    plt.xlabel("Temperatur, log(value - min - 0.00001 )")
-    plt.ylabel("Relativt luftfuktighet")
-    plt.savefig(f'img/regression/log_data.png')
-    #plt.show()
-    plt.close()
-
-    # Bygg linjär regression med logaritmerad temperatur
-    log_model = LinearRegression()
-    log_model.fit(X_train_log, y_train)
-
-    # Prediktera med test data
-    pred_log = log_model.predict(X_test_log)
-
-    x_log = np.linspace(-0.2, 3.0, 100)
-    draw_exp_model = log_model.predict(x_log.reshape(-1, 1))
-
-    # Räkna ut MSE
-    mse_log = np.mean((pred_log - X_test_log)**2)
-    print("Mean squared error log transformerad:", mse_log)
-    # Transform predictions back to the original scale
-    pred_original = np.exp(pred_log) - shift_value
-
-    # Calculate MSE in the original domain
-    mse_original = np.mean((pred_original - X_test)**2)
-    print("Mean squared error original domain:", mse_original)
-    #print("Mean squared error linjär regression:", mse)
-
-    # Visalisera prediktioner
-    plt.scatter(X_train_log, y_train, label='Träningsdata')
-    plt.scatter(X_test_log, y_test, label='Test data')
-    plt.plot(x_log, draw_exp_model, label='Linjär regression, log transformerad i x', color='c', linewidth=3)
-    plt.legend()
-    plt.title("Prediktioner av relativt luftfuktighet (log transformerad)")
-    plt.xlabel("Temperatur [log]")
-    plt.ylabel("Relativt luftfuktighet")
-    plt.savefig(f'img/regression/residuals_log_data.png')
-    #plt.show()
-    plt.close()
+        # Show log transformation on subplot 2
+        plt.subplot(1,2,2)
+        plt.scatter(X_train_log, y_tr, label='Träningsdata')
+        plt.scatter(X_test_log, y_te, label='Test data')
+        plt.legend()
+        plt.xlabel("Temperatur, log(value - min - 0.00001 )", fontsize=8)
+        plt.ylabel("Relativt luftfuktighet; %", fontsize=8)
+        plt.title("Skatterplot med log-transformerade x-värde", fontsize=10)
+        plt.suptitle(title, fontsize=12)
+        plt.savefig(f'img/regression/{name}.png')
+        plt.show()
+        plt.close()
+        return X_train_log, X_test_log
+    X_train_log, X_test_log = log_stat_plot(x_tr=X_train,
+                                            x_te=X_test,
+                                            y_tr=y_train,
+                                            y_te=y_test, 
+                                            name='residuals_log_data',
+                                            title="Öforändrade data"
+                                            )
 
 ```
 
-#### Figur 7
-![Regression med log-transormerad temperatur](img/regression/original_and_log_data.png)
+#### Figur 7a.![Regression med log-transormerad temperatur](img/regression/original_and_log_data.png)
 
-Eftersom det finns en outlier i testdata, jag filtrerar testdata med följande code:
+Det finns en tydligt avvikande värde i testdata, desuttom i [Q_Q plottar](#### Figur 3) jag ser att det skull finnas två avvikande temperaturvärde med högst temperatur. Därför tar jag bort data med två högsta och två lägsta temperaturvärde med hjälp av förljnde kode:
 
 ```python
-    # Sort the log-transformed values to identify outliers and track original indices
-    sorted_log = np.sort(X_test_log, axis=0)  # Sort along axis 0 (values)
-    sorted_log_indices = np.argsort(X_test_log, axis=0)  # Get the sorted indices
+    # Sort the values to identify outliers along axis 0 (values)
+    X_combined_sotred = np.sort(X_combined, axis=0)
 
-    # Now filter the sorted values (e.g., remove the first and last elements)
-    filtered_sorted_log = sorted_log[1:]  # Remove the smallest and largest elements
-    filtered_sorted_indices = sorted_log_indices[1:]  # Corresponding indices after filtering
+    # Create array of values that sould be removed
+    X_to_remove = X_combined_sotred[:2].tolist() + X_combined_sotred[-2:].tolist()
+    X_to_remove = set(X_to_remove)
+    # fined what rows should be removed
+    rows_to_remove = combined_data[column_name1].apply(lambda x: any(np.isclose(x, value) for value in X_to_remove))
+    # Filter this rows away
+    filtered_data = combined_data.loc[~rows_to_remove]
+    train_filt = filtered_data.sample(frac=fraktion, random_state=1)
+    test_filt = filtered_data.drop(train_filt.index)
 
-    # Now, map the filtered data back to their original indices
-    X_test_log_filtered = np.copy(X_test_log)
-    y_test_filtered = np.copy(y_test)
-
-    # Set the outlier values (smallest and largest) to NaN (or any other replacement value)
-    X_test_log_filtered[sorted_log_indices[0]] = np.nan  # Remove the smallest value
-    X_test_log_filtered[sorted_log_indices[-1]] = np.nan  # Remove the largest value
-
-    # Remove corresponding values from y_test
-    y_test_filtered[sorted_log_indices[0]] = np.nan  # Remove corresponding y_test value
-    y_test_filtered[sorted_log_indices[-1]] = np.nan  # Remove corresponding y_test value
+    # Create new train and test dataset:
+    X_train_f = train_filt[column_name1].values.reshape(-1, 1)
+    y_train_f = train_filt[column_name2].values
+    X_test_f = test_filt[column_name1].values.reshape(-1, 1)
+    y_test_f = test_filt[column_name2].values
 ```
-Då blir resultat mera jamförbara
-![### Figut 7a. Filtrerade data från logaritmisk transformation av temp](img/regression/original_and_log_data_filter.png)
 
-#### Figur 7b. Prediction line
+Sedan skaffar jag plottar igen. Resultater visas på [Figur 7b](#### Figur 7b.). 
+
+```python
+    X_train_f_log, X_test_f_log = log_stat_plot(X_train_f,
+                                                X_test_f,
+                                                y_train_f,
+                                                y_test_f,
+                                                'residuals_log_data_filtered',
+                                                title="Data utan två tidspunkter med de högsta och\ntva" + 
+                                                    "tidpunkter med de lägsta temperaturvärde"
+                                                )
+```
+
+#### Figur 7b. [Filtrerade data från logaritmisk transformation av temp](img/regression/original_and_log_data_filter.png)
+##### Förklaring till Figur 7b 
+
+.........
+Jag fortsätter arbeta med filtrerade data.
+
+Så ser ut skaffa prognoserande linje med hjälp av logoritmisk model
+#### Figur 7c. Prediction line
 ![fig](img/regression/prediction_log_data_filtered.png)
-#### Figut 7d Spridning av residualer
+
+Coden för att ser hur residulaerna sprids: 
+
+```python
+    # Calculate residuals of test data
+    residual = y_test_f - pred_log
+    # this array contain nan becouse of previouse manipulations with data
+    # I want to remove nan elements:
+    data_without_nan = [x for x in residual if not math.isnan(x)]
+    std_residual = np.std(data_without_nan)
+
+    # Sheow residuals of the test data
+    plt.scatter(X_test_f, residual)
+    plt.axhline(0, color='r', linestyle='--')
+    plt.title("Residualer av temperatur i Umeå")
+    plt.xlabel("temperatur i Umeå,  °C")
+    # Add the MSE text to the legend
+    mse_text = (f"Mean squared error liniar regression: {mse:.2f}\n"
+                f"Mean squared error log transformation: {mse_log:.2f}")
+    plt.text(X_test[17], residual[17], mse_text, color="red", fontsize=8)
+    plt.ylabel("Residual")
+    plt.savefig('img/regression/residuals_filtrerad_LOGtemp_fukt_UME.png')
+    plt.show()
+    plt.close()
+
+    # Show histogram of the residuals of the test data
+    plt.hist(residual, bins=10)
+    plt.title("Residualernas histogram för logoritmisk model av luftfuktighet i Umeå", fontsize=10)
+    plt.xlabel("Residual")
+    plt.ylabel("Frekvens")
+    plt.savefig('img/regression/residuals_filtrerad_hist_LOGtemp_fukt_UME.png')
+    plt.show()
+    plt.close() 
+```
+Jag tittar på spridningen av residualer med koden:
+
+```python
+    # Sheow residuals of the test data
+    plt.scatter(X_test_f, residual)
+    plt.axhline(0, color='r', linestyle='--')
+    plt.title("Logmodel predictions residulaer av luftfuktighet vid Umeå flygplats")
+    plt.xlabel("trelativt luftfuktighet,  %")
+    plt.ylabel("Residualer, %")
+    plt.savefig('img/regression/residuals_filtrerad_LOGtemp_fukt_UME.png')
+    plt.show()
+    plt.close()
+
+    # Show histogram of the residuals of the test data
+    plt.hist(residual, bins=10)
+    plt.title("Residualernas histogram för logoritmisk model av luftfuktighet vid Umeå", fontsize=10)
+    plt.xlabel("Residualer av luftfuktighet, %")
+    plt.ylabel("Frekvens")
+    plt.savefig('img/regression/residuals_filtrerad_hist_LOGtemp_fukt_UME.png')
+    plt.show()
+    plt.close()
+```
+
+#### Figut 6b2 Spridning av residualer
 ![fig](img/regression/residuals_filtrerad_LOGtemp_fukt_UME.png)
 
+Residualrenas pridningen är tydligt avviker från normalfördelning.
 
-Sedan applicera jag detta model till originala data:
+Sedan applicera jag detta model till originala data och jamför MSE for liniar och logoritmisk model:
 
 ```python
-    # Transformera tillbaka modellen
+    # get liniar model with the modyfiyed data:
+    # Trainings model
+    lin_model_f = LinearRegression().fit(X_train_f, y_train_f)
+    lin_pred_f = model.predict(X_test_f)
+
+    # MSE of test data
+    mse_lin_f = np.mean((lin_pred_f - y_test_f) ** 2)
+    # Transform back model
     plt.scatter(X_train, y_train, label='Träningsdata')
     plt.scatter(X_test, y_test, label='Test data')
     plt.plot(np.exp(x_log) - shift_value, draw_exp_model, label='Linjär regression, exponentiell i x', color='c', linewidth=3)
     plt.legend()
-    plt.title("Prediktioner av relativt luftfuktighet exponentiell modell")
-    plt.xlabel("Temperatur")
-    plt.ylabel("Relativt luftfuktighet")
-    plt.savefig('img/regression/transform_back.png')
-    #plt.show()
+    plt.title("Prognos av relativt luftfuktighet med logaritmisk model", fontsize=10)
+    plt.xlabel("temperatur, °C", fontsize=8)
+    plt.ylabel("relativt luftfuktighet, %", fontsize=8)
+
+    text = (f"MSE(mean squared error) för liniarregressoin : {mse:.2f}\n"
+        f"MSE(mean squared error) för liniarregressoin\n"
+        f"{'utan avvikande värde:'.rjust(60)} {mse_lin_f:.2f}\n"
+        f"MSE för logoritmisk model utan avvikande värde: {mse_log:.2f}")
+    plt.text(-15.0, 80.8, text, color="red", fontsize=8)
+    plt.savefig('img/regression/log_transform_back.png')
+    plt.show()
     plt.close()
 ```
-#### Figur 7b
+#### Figur 6c
 ![Applicer model till originala data](img/regression/transform_back.png)
+##### Förklaring till Figur 6c.
+.......
+Liniar model har mindre MCE i jamförelse till logoritmisk model, när både moeller appliceras till samma dataset. 
 
-Jag dör samma såk mot relativt luftfuktighet:
+För att se om logoritmisk modifiering av relativt luftfuktighet kan hjälpa att skappa bättre model logaritmerar jag dessa värde. Eftersom relativtluftfuktighet är alltid positivt, behöver jag inte anpassa värde. Men jag använder dock dataset utan störstavvikande temperatyrvärde för att kunna jamföra resultat.
+
 ```python
     # Regression med logaritmerad relativt luft fuktighet
     # Relativt luftfuktighet är alltid pozitivt
@@ -856,5 +925,8 @@ Jag dör samma såk mot relativt luftfuktighet:
     residual_log_y = y_test - np.exp(pred_log_y)
 ```
 ![Här visas resultat av detta transformation:](img/regression/Y_LOG_transform_model_Umeå.png)
+
+# Förstå vad gör jag fel med y-log transformation!
+
 #### Fig 8. ![Alla modeller](img/regression/alla_modeller_Umeå.png)
 
