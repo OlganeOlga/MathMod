@@ -925,7 +925,7 @@ För att se om logoritmisk modifiering av relativt luftfuktighet kan hjälpa att
     residual_log_y = y_test - np.exp(pred_log_y)
 ```
 #### FIG 7d. ![Här visas model prediktion med transformerade y-värde:](img/regression/log_transform_FUKT_Umeå.png)
-[och med originala relativt-lyftfuktighets värde](img/regression/back_log_transform_FUKT_Umeå.png)
+![och med originala relativt-lyftfuktighets värde](img/regression/back_log_transform_FUKT_Umeå.png)
 
 # Förstå vad gör jag fel med y-log transformation!
 
