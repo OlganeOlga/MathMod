@@ -611,7 +611,7 @@ plt.plot(x_log, draw_x_log_model, label='Linjär regression, log transformerad i
 plt.text(-0.7, 90.0, f"y = {log_a:.2f} + {log_b:.2f}*log(x)", fontsize=8, color="r")
 plt.legend()
 plt.title("Prognos av relativt luftfuktighet med logaritmisk model (x är log transformerad)", fontsize=10)
-plt.xlabel("Temperatur [log( °C)]", fontsize=8)
+plt.xlabel("log(temperatur - min(temperatur) + 0.00001, °C)", fontsize=8)
 plt.ylabel("Relativt luftfuktighet, %", fontsize=8)
 plt.savefig('img/regression/prediction_log_data.png')
 #plt.show()
@@ -660,7 +660,8 @@ plt.title("Prognos av relativt luftfuktighet med logaritmisk model", fontsize=10
 plt.xlabel("temperatur, °C", fontsize=8)
 plt.ylabel("relativt luftfuktighet, %", fontsize=8)
 
-text = (f"MSE(mean squared error) för liniarregressoin : {mse:.2f}\n"
+text = ( f"y = exp({log_a:.2f} + {log_b:.2f}*log(x))\n\n"
+    f"MSE(mean squared error) för liniarregressoin : {mse:.2f}\n"
     f"MSE för liniarregressoin utan avvikande värde:'.rjust(60): {mse_lin_f:.2f}\n"
     f"MSE för logoritmisk model utan avvikande värde: {mse_log:.2f}")
 plt.text(-15.0, 80.8, text, color="red", fontsize=8)
@@ -694,10 +695,10 @@ drow_y_log_model = log_y_model.predict(x_plot)
 
 # Calculate MSE
 mse_log_y = np.mean((np.exp(pred_log_y) - y_test_f)**2)
-plot_text= (f"MSE linjär regression: {mse:.2f}\n"
-            f"MSE för liniarregressoin utan avvikande värde: {mse_lin_f:.2f}\n"
-            f"MSE logtransformerad x: {mse_log:.2f}\n"
-            f"MSE logtransformerad y: {mse_log_y:.5f}")
+plot_text= (f"MSE liniarregressoin, original dataset: {mse:.2f}\n"
+            f"MSE liniarregressoin, dataset utan avvikande värde: {mse_lin_f:.2f}\n"
+            f"MSE logtransformerad x, dataset utan avvikande värde: {mse_log:.2f}\n"
+            f"MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.5f}")
 
 
 plt.scatter(X_train_f, y_train_log, label='Träningsdata')
@@ -728,7 +729,7 @@ plt.scatter(X_test_f, y_test_f, label='Test data (original scale)')
 plt.plot(x_plot, drow_y_log_model_exp, label='Log-y-transformerad regression i original domän', color='g', linewidth=3)
 
 plt.legend(fontsize=8)
-plt.text(-20, 92, f"y = exp({a_Y_log:.2f} + {b_Y_log:.2f} * X)\n" + plot_text, fontsize=8, color="red")
+plt.text(-20, 92, f"y = exp({a_Y_log:.2f} + {b_Y_log:.2f} * X)", fontsize=8, color="red")
 plt.title("Prognos av relativt luftfuktighet\nmodel är skapad med logtransformerad y och transformerad tillbacka")
 plt.xlabel("temperatur, °C")
 plt.ylabel("relativt luftfuktighet [%]")
@@ -742,7 +743,7 @@ plt.scatter(X_test, y_test, label='Test data')
 plt.plot(x_plot, drow_y_log_model_exp, label='Linjär regression exponentiell i y', color='orange', linewidth=3)
 plt.plot(np.exp(x_log) - shift_value, draw_x_log_model, label='Linjär regression, exponentiell i x', color='red', linewidth=3)
 plt.plot(x_plot, draw_plot, color='green', label='Test Data Prediction', linewidth=2)
-plt.text(-20, 92, plot_text, fontsize=8, color="red")
+plt.text(-20, 94, plot_text, fontsize=8, color="red")
 plt.title("Prognos av relativt luftfuktighet med alla modeller")
 plt.ylabel("Relativt lutfuktighet %")
 plt.xlabel("Temperatur, °C")

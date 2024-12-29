@@ -619,12 +619,6 @@ Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfukt
     intercept_ci = conf_int_params[0]  # Första raden: Intercept
     slope_ci = conf_int_params[1]  # Andra raden: Lutning
 
-    # Print regression parameters and confidens interval
-    print(f"Regression Equation: y = {linear_intercept:.2f} + {linear_slope:.2f} * X")
-    print(f"95% Confidence Interval for Intercept (a): {intercept_ci}")
-    print(f"95% Confidence Interval for Slope (b): {slope_ci}")
-    print(f"Mean Squared Error (MSE): {mse:.2f}")
-
     plt.figure(figsize=(10, 6))
     # Train data
     plt.scatter(X_train, y_train, color="orange", label='Träningsdata', alpha=0.6)
@@ -787,7 +781,7 @@ Jag fortsätter arbeta med filtrerade data.
 
 Så ser ut skaffa prognoserande linje med hjälp av logoritmisk model
 #### Figur 7c. Prediction line
-![fig](img/regression/prediction_log_data_filtered.png)
+![fig](img/regression/prediction_log_data.png)
 
 Coden för att ser hur residulaerna sprids: 
 
@@ -869,7 +863,7 @@ Sedan applicera jag detta model till originala data och jamför MSE for liniar o
     plt.xlabel("temperatur, °C", fontsize=8)
     plt.ylabel("relativt luftfuktighet, %", fontsize=8)
 
-    text = (f"MSE(mean squared error) för liniarregressoin : {mse:.2f}\n"
+    text = (f"MSE(mean squared error) för liniarregressoin av original dataset : {mse:.2f}\n"
         f"MSE(mean squared error) för liniarregressoin\n"
         f"{'utan avvikande värde:'.rjust(60)} {mse_lin_f:.2f}\n"
         f"MSE för logoritmisk model utan avvikande värde: {mse_log:.2f}")
@@ -879,12 +873,13 @@ Sedan applicera jag detta model till originala data och jamför MSE for liniar o
     plt.close()
 ```
 #### Figur 6c
-![Applicer model till originala data](img/regression/transform_back.png)
+![Applicer model till originala data](img/regression/log_transform_back.png)
 ##### Förklaring till Figur 6c.
+På figur visas skatterplottar av treningsdataset (blåa pynkter) och testdataset (oranga punkter), linjen visar prediktionskurvan för relativt luftfuktighet från temperatur med reela temperatur värde (grön linjen). Ekvation som bestämmer prediktionskurvan skriven med röd på plotten. Det finns också mean square error för liniarregressions model, för liniarregressions model som skaffas på dataset utan avvikande värde och för regressionsmodel med logtransformerade temperaturvärde. På x-axel visas temperatur och på y-axel visas relativt luftfuktighet. 
 .......
-Liniar model har mindre MCE i jamförelse till logoritmisk model, när både moeller appliceras till samma dataset. 
+Liniar model som skaffas med dataset utamavvikande värde har mindre MCE i jamförelse till logoritmisk model. I andra ord liniar model predikterar bättre relativt luftfuktighet i jamförelse med logaritmisk model.
 
-För att se om logoritmisk modifiering av relativt luftfuktighet kan hjälpa att skappa bättre model logaritmerar jag dessa värde. Eftersom relativtluftfuktighet är alltid positivt, behöver jag inte anpassa värde. Men jag använder dock dataset utan störstavvikande temperatyrvärde för att kunna jamföra resultat.
+För att se om logmodifiering av relativt luftfuktighet kan hjälpa att skappa bättre model logaritmerar jag dessa värde. Relativtluftfuktighet är alltid positivt, därför modifiering kan göras direkt. För detta model anväder jag samma dataset som för model med logtransformetade temperatur. Det gör jag för att kunna jamföra modellens predikterande värde.
 
 ```python
     # Regression med logaritmerad relativt luft fuktighet
@@ -902,9 +897,6 @@ För att se om logoritmisk modifiering av relativt luftfuktighet kan hjälpa att
 
     # Räkna ut MSE
     mse_log_y = np.mean((pred_log_y - y_test_log)**2)
-    print("Mean squared error log transformerad y:", mse_log_y)
-    print("Mean squared error log transformerad x:", mse_log)
-    #print("Mean squared error linjär regression:", mse)
 
     # Visalisera prediktioner
     x = np.linspace(-21, -0.5, 100)
@@ -924,10 +916,11 @@ För att se om logoritmisk modifiering av relativt luftfuktighet kan hjälpa att
     # Beräkna residualer
     residual_log_y = y_test - np.exp(pred_log_y)
 ```
-#### FIG 7d. ![Här visas model prediktion med transformerade y-värde:](img/regression/log_transform_FUKT_Umeå.png)
-![och med originala relativt-lyftfuktighets värde](img/regression/back_log_transform_FUKT_Umeå.png)
+#### Figur 7d. ![Här visas model prediktion med transformerade y-värde:](img/regression/log_transform_FUKT_Umeå.png)
+##### Förklaring för Figuren 7d.
+#### Figur 7e.![och med originala relativt-lyftfuktighets värde](img/regression/back_log_transform_FUKT_Umeå.png)
+##### Förklaring för Figuren 7e.
 
-# Förstå vad gör jag fel med y-log transformation!
 
 #### Fig 8. ![Alla modeller](img/regression/alla_modeller_Umeå.png)
 
