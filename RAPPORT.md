@@ -742,6 +742,266 @@ I projektet jag analyserad data från tre meteorologiska stationer i Sverige. Pr
 
 Jag analyserade temperatur och relativt lyftfuktighet från tre dagar (72 timmar). Jag analyserade fördelningen av data och kom tll slutsats att den liknar inte normalfördelningen. Jag analyserade korrelation mellan olika dataset och kom till slutsats att luftfuktighet för det mesta korrellerar inte liniart med temperatur. Det enda starka korrelation fanns mellan relativt lyftfyúktighet och temperatur i Umeå. Jag skapade två olika regressionsmodeller: direkt liniarregression och liniarregression med logaritmerad relativt lyftfuktighet. Den andra modellen är mera "grundande" eftersom fördelning av residualerna kan räknas som normalt. Visualisering av modeller visar att de liknar varandra. Däerför kan första modellen anvädndas lika vrå som den andra. Direkt liniar regression kan vara mera preferabel, eftersom den är enklare. 
 
+## Regressioner med log-transormerade temperaturvärde.
+Det är extra del. 
+Temperaturvärde från Umeå är negativa desuttom resultat visade att logoritmisk transformeting av temperatur ledar inte till bättre modelen. Dock jag har utförskat även detta möjlighet.
+
+Eftersom temperatur har negativa värde skjuttar jag alla värde upp, så att de blir högre än null.
+Jag vär även tvungna att ta bort två mest högsta och två mest lägsta värde.
+Koden som jag användade:
+
+```pyhon
+    # Log transformation
+    # I cannot use direct log-transformaton due to negative values of the tempture
+    # I want to shift all values that the lowest is just above zero
+    X_combined = combined_data[column_name1].values
+    # shift all values above zero, 1e-5 ensure that no values are zero
+    shift_value = abs(X_combined.min()) + 1e-5
+    def log_stat_plot(x_tr, x_te, y_tr, y_te, name, title=""):
+        X_train_log = np.log(x_tr + shift_value)
+        X_test_log = np.log(x_te + shift_value)
+
+        # Visualise log transformation
+        plt.figure(figsize=(12, 6))
+        # Show original data on subplot 1
+        plt.subplot(1, 2, 1)
+        plt.scatter(x_tr, y_tr, label='Träningsdata')
+        plt.scatter(x_te, y_te, label='Test data')
+        plt.legend()
+        plt.xlabel("Temperatur, °C", fontsize=8)
+        plt.ylabel("Relativt luftfuktighet; %", fontsize=8)
+        plt.title("Skatterplot med originala x-värde", fontsize=10)
+
+        # Show log transformation on subplot 2
+        plt.subplot(1,2,2)
+        plt.scatter(X_train_log, y_tr, label='Träningsdata')
+        plt.scatter(X_test_log, y_te, label='Test data')
+        plt.legend()
+        plt.xlabel("Temperatur, log(value - min - 0.00001 )", fontsize=8)
+        plt.ylabel("Relativt luftfuktighet; %", fontsize=8)
+        plt.title("Skatterplot med log-transformerade x-värde", fontsize=10)
+        plt.suptitle(title, fontsize=12)
+        plt.savefig(f'img/regression/{name}.png')
+        #plt.show()
+        plt.close()
+        return X_train_log, X_test_log
+    X_train_log, X_test_log = log_stat_plot(x_tr=X_train,
+                                            x_te=X_test,
+                                            y_tr=y_train,
+                                            y_te=y_test, 
+                                            name='residuals_log_data',
+                                            title="Öforändrade data"
+                                            )
+    """
+    MODIFY DATASET BY REMOVING OUTLIERS
+    """
+    # Sort the values to identify outliers along axis 0 (values)
+    X_combined_sotred = np.sort(X_combined, axis=0)
+
+    # Create array of values that sould be removed
+    X_to_remove = X_combined_sotred[:2].tolist() + X_combined_sotred[-2:].tolist()
+    X_to_remove = set(X_to_remove)
+    # fined what rows should be removed
+    rows_to_remove = combined_data[column_name1].apply(lambda x: any(np.isclose(x, value) for value in X_to_remove))
+    # Filter this rows away
+    filtered_data = combined_data.loc[~rows_to_remove]
+    train_filt = filtered_data.sample(frac=fraktion, random_state=1)
+    test_filt = filtered_data.drop(train_filt.index)
+
+    # Create new train and test dataset:
+    X_train_f = train_filt[column_name1].values.reshape(-1, 1)
+    y_train_f = train_filt[column_name2].values
+    X_test_f = test_filt[column_name1].values.reshape(-1, 1)
+    y_test_f = test_filt[column_name2].values
+    X_train_f_log, X_test_f_log = log_stat_plot(X_train_f,
+                                                X_test_f,
+                                                y_train_f,
+                                                y_test_f,
+                                                'residuals_log_data_filtered',
+                                                title="Data utan två tidspunkter med de högsta och\ntva" + 
+                                                    "tidpunkter med de lägsta temperaturvärde"
+                                                )
+
+    # Use filtered data to create the regression with log tempture
+    log_model = LinearRegression()
+    log_model.fit(X_train_f_log, y_train_f)
+
+    log_a = log_model.coef_[0]
+    log_b = log_model.intercept_
+
+    # Make prediction with test data
+    pred_log = log_model.predict(X_test_f_log)
+
+    x_log = np.linspace(-1.0, 3.01, 100)
+    draw_x_log_model = log_model.predict(x_log.reshape(-1, 1))
+
+    # Calculate MSE for logarithmik transformation
+    mse_log = np.mean((pred_log - y_test_f)**2)
+
+    # Transform predictions back to the original scale
+    pred_original = np.exp(pred_log) - shift_value
+
+    # Calculate MSE in the original domain
+    mse_original = np.mean((pred_original - X_test_f)**2)
+
+    # Show prediktions
+    plt.scatter(X_train_f_log, y_train_f, label='Träningsdata')
+    plt.scatter(X_test_f_log, y_test_f, label='Test data')
+    plt.plot(x_log, draw_x_log_model, label='Linjär regression, log transformerad i x', color='c', linewidth=3)
+    plt.text(-0.7, 90.0, f"y = {log_a:.2f} + {log_b:.2f}*log(x)", fontsize=8, color="r")
+    plt.legend()
+    plt.title("Prognos av relativt luftfuktighet med logaritmisk model (x är log transformerad)", fontsize=10)
+    plt.xlabel("log(temperatur - min(temperatur) + 0.00001, °C)", fontsize=8)
+    plt.ylabel("Relativt luftfuktighet, %", fontsize=8)
+    plt.savefig('img/regression/prediction_log_data.png')
+    #plt.show()
+    plt.close()
+
+    # Calculate residuals of test data
+    residual = y_test_f - pred_log
+    # this array contain nan becouse of previouse manipulations with data
+    # I want to remove nan elements:
+    data_without_nan = [x for x in residual if not math.isnan(x)]
+    std_residual = np.std(data_without_nan)
+    # Show residuals of the test data
+    plt.scatter(X_test_f, residual)
+    plt.axhline(0, color='r', linestyle='--')
+    plt.title("Logmodel predictions residulaer av luftfuktighet vid Umeå flygplats")
+    plt.xlabel("trelativt luftfuktighet,  %")
+    plt.ylabel("Residualer, %")
+    plt.savefig('img/regression/residuals_filtrerad_LOGtemp_fukt_UME.png')
+    #plt.show()
+    plt.close()
+
+    # Show histogram of the residuals of the test data
+    plt.hist(residual, bins=10)
+    plt.title("Residualernas histogram för logoritmisk model av luftfuktighet vid Umeå", fontsize=10)
+    plt.xlabel("Residualer av luftfuktighet, %")
+    plt.ylabel("Frekvens")
+    plt.savefig('img/regression/residuals_filtrerad_hist_LOGtemp_fukt_UME.png')
+    #plt.show()
+    plt.close() 
+
+    """_summary_
+    """
+    # get liniar model with the modyfiyed data:
+    # Trainings model
+    lin_model_f = LinearRegression().fit(X_train_f, y_train_f)
+    lin_pred_f = model.predict(X_test_f)
+
+    # MSE of test data
+    mse_lin_f = np.mean((lin_pred_f - y_test_f) ** 2)
+    # Transform back model
+
+    plt.scatter(X_train, y_train, label='Träningsdata')
+    plt.scatter(X_test, y_test, label='Test data')
+    plt.plot(x_plot, drow_y_log_model_exp, label='Linjär regression exponentiell i log(y)', color='green', linewidth=3)
+    plt.plot(x_plot, draw_plot, label='Linjär regression originela data', color="red", linewidth=3)
+    #plt.plot(np.exp(x_log) - shift_value, draw_x_log_model, label='Linjär regression, exponentiell i x', color='c', linewidth=3)
+    plt.legend()
+    plot_text= (f"MSE liniarregressoin, original dataset: {mse:.2f}\n"
+                f"MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.2f}")
+    plt.title("Två modeller i en plot", fontsize=10)
+    plt.xlabel("temperatur, °C", fontsize=8)
+    plt.ylabel("relativt luftfuktighet, %", fontsize=8)
+    plt.text(-15.0, 80.8, plot_text, color="red", fontsize=8)
+    plt.savefig('img/regression/tva_modeller.png')
+    plt.show()
+    plt.close()
+
+    """
+    Y_LOG
+    """
+    # Regression with log relativt humidity
+    # Relative humidity is always pozitiv
+    y_train_log = np.log(y_train_f)
+    y_test_log = np.log(y_test_f)
+
+    # create liniar regression pf the log data
+    log_y_model = LinearRegression()
+    log_y_model.fit(X_train_f, y_train_log)
+
+    # Make prediction of the test data
+    #x_for_log_y = np.linspace(-1.0, 3.01, 100)
+    pred_log_y = log_y_model.predict(X_test_f)
+    pred_y_by_log = np.exp(pred_log_y)
+
+    b_Y_log = log_y_model.coef_[0]
+    a_Y_log = log_y_model.intercept_
+
+    # Create model line use x_plot for prediction
+    #x_for_log_y = np.linspace(-25,-3, 100)
+    drow_y_log_model = log_y_model.predict(x_plot)
+
+    # Calculate MSE
+    mse_log_y = np.mean((np.exp(pred_log_y) - y_test_f)**2)
+    plot_text= (f"MSE liniarregressoin, original dataset: {mse:.2f}\n"
+                f"MSE liniarregressoin, dataset utan avvikande värde: {mse_lin_f:.2f}\n"
+                f"MSE logtransformerad x, dataset utan avvikande värde: {mse_log:.2f}\n"
+                f"MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.5f}")
+
+
+    plt.scatter(X_train_f, y_train_log, label='Träningsdata')
+    plt.scatter(X_test_f, y_test_log, label='Test data')
+    plt.plot(x_plot, drow_y_log_model, label='Linjär regression log domän', color='g', linewidth=3)
+    plt.legend()
+    plt.text(-18.5, 4.51, f"log(Y) = {a_Y_log:.2f} + {b_Y_log:.2f} * X", fontsize=8, color="red")
+    plt.title("Prognos av relativt luftfuktighet (log transformerad y, %)")
+    plt.xlabel("temperatur, °C")
+    plt.ylabel("relativt luftfuktighet [log %]")
+    plt.savefig('img/regression/log_transform_FUKT_Umeå.png')
+    plt.show()
+    plt.close()
+
+    # Create model line in the original domain
+    drow_y_log_model_exp = np.exp(log_y_model.predict(x_plot))
+
+    # Calculate MSE in original domain
+    mse_log_y = np.mean((pred_y_by_log - y_test_f)**2)
+    # Calculate residualer
+    residual_log_y = y_test_f - np.exp(pred_log_y)
+
+    p_log_y, stat_log_y = sci.shapiro(residual_log_y)
+
+    # Plotting
+    plt.scatter(X_train_f, y_train_f, label='Träningsdata (original scale)')
+    plt.scatter(X_test_f, y_test_f, label='Test data (original scale)')
+    plt.plot(x_plot, drow_y_log_model_exp, label='Log-y-transformerad regression i original domän', color='g', linewidth=3)
+
+    plt.legend(fontsize=8)
+    plt.text(-20, 92, f"y = exp({a_Y_log:.2f} + {b_Y_log:.2f} * X)", fontsize=8, color="red")
+    plt.title("Prognos av relativt luftfuktighet\nmodel är skapad med logtransformerad y och transformerad tillbacka")
+    plt.xlabel("temperatur, °C")
+    plt.ylabel("relativt luftfuktighet [%]")
+    plt.savefig('img/regression/back_log_transform_FUKT_Umeå.png')
+    plt.show()
+    plt.close()
+
+    #TREE MODELS ON ONE PLOT
+    plt.scatter(X_train, y_train, label='Träningsdata')
+    plt.scatter(X_test, y_test, label='Test data')
+    plt.plot(x_plot, drow_y_log_model_exp, label='Linjär regression exponentiell i y', color='orange', linewidth=3)
+    plt.plot(np.exp(x_log) - shift_value, draw_x_log_model, label='Linjär regression, exponentiell i x', color='red', linewidth=3)
+    plt.plot(x_plot, draw_plot, color='green', label='Test Data Prediction', linewidth=2)
+    plt.text(-20, 94, plot_text, fontsize=8, color="red")
+    plt.title("Prognos av relativt luftfuktighet med alla modeller")
+    plt.ylabel("Relativt lutfuktighet %")
+    plt.xlabel("Temperatur, °C")
+    plt.legend(loc='best', frameon=True, fontsize=8)
+    plt.tight_layout()
+    plt.savefig('img/regression/alla_modeller_Umeå.png')
+    plt.show()
+    plt.close()
+
+```
+Sammanfattande esultat av transformationer visas på följande plot:
+#### Figur 8 [Tre modeller med transformerade data utan data som innehåller två högsta och två lägsta temperaturvärde](img/regression/alla_modeller_Umeå.png)
+##### Förklaring till Figur 8.
+Figur visar tre modeller som predikterar relativt luftfuktighet med temperatur i Umeå Flugplats.
+För alla tre modeller använddes 68 mätpunkter (data utan två högsta temperaturvärde och två lägsta temperatur vrde).
+Liniarregression visas med grön linjen, model skaffade med log-transformerade luftfuktighetsvärde visas som grön linja och model skaffad med logtransformerade temperaturvärde visas som en röd linja. MSQ för alla modeller visas med röd text. Första MSE värde kommer från liniarregressions modellen som var skaffad på grun av original dataset.
+Det är tydligt att logoritmisk transformation av temperaturvärde hjälper inte skaffa bättre modellen. MSE från sisnämnda modelen är betydligh högre än MSE från två andra modller.
+
 ## Referencer:
 
 1. Wilk, M. B., & Gnanadesikan, R. (1968). Probability plotting methods for the analysis of data. Biometrika, 55(1), 1–17.
