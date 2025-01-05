@@ -22,7 +22,9 @@ Datamängder plockas med följande kod:
     # Dowloads data from three stations and for two parameters
     for key in PARAMS.keys():
         for station, id in STATIONS.items():
-            data_url = f'https://opendata-download-metobs.smhi.se/api/version/1.0/parameter/{key}/station/{id}/period/{PERIOD}/data.json'
+            data_url = (f'https://opendata-download-metobs.smhi.se'
+                        f'/api/version/1.0/parameter/'
+                        f'{key}/station/{id}/period/{PERIOD}/data.json')
             response = requests.get(data_url)
             response.raise_for_status()  # Check if the request succeeded
             
@@ -42,7 +44,11 @@ Som resultat genereras en JSON-fil för varje kombination av station och paramet
     import numpy as np
 
     # variables
-    STATIONS = {'Halmstad flygplats': 62410, 'Uppsala Flygplats': 97530, 'Umeå Flygplats': 140480}
+    STATIONS = {
+                'Halmstad flygplats': 62410,
+                'Uppsala Flygplats': 97530, 
+                'Umeå Flygplats': 140480
+                }
     # parameters to download (parameter_id:parameter_name)
     PARAMS = {1:["TEMPERATUR", "°C"], 6:["LUFTFUKTIGHET", "%"]}
     # Extract the required period (three days) from downloaded data
@@ -54,23 +60,26 @@ Som resultat genereras en JSON-fil för varje kombination av station och paramet
     for param_id, parameter in PARAMS.items():
         three_d_station = {}
         for name, station_id in STATIONS.items():
-            file_path = f"data/{station_id}_{param_id}.json"
+            file_path = f'data/{station_id}_{param_id}.json'
             with open(file_path, 'r') as file:
                 data = json.load(file)
 
             # Sort data by timestamp and select the last N points
             sorted_data = sorted(
                 data.get("value", []),
-                key=lambda x: datetime.fromtimestamp(x["date"] / 1000, tz=pytz.timezone("Europe/Stockholm"))
+                key=lambda x: datetime.fromtimestamp(x["date"] / 1000,
+                tz=pytz.timezone("Europe/Stockholm"))
             )[-measured_points:]
 
             # Prepare station data and append rows for further processing
             stat_set = {}
             for item in sorted_data:
-                new_value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
+                check = item['quality'] in ['G', 'Y']
+                new_value = float(item['value']) if check else np.nan
                 stat_set[item['date']] = new_value
                 data_rows.append({
-                    'time': datetime.fromtimestamp(item['date'] / 1000, tz=pytz.timezone("Europe/Stockholm")),
+                    'time': datetime.fromtimestamp(item['date'] / 1000,     
+                            tz=pytz.timezone("Europe/Stockholm")),
                     'station_name': name,
                     'parameter': PARAMS[param_id][0],
                     'value': new_value
@@ -106,7 +115,7 @@ Värden: För varje station skapas en ordbok där nyckeln är en tidsstämpel oc
 ]
 Sista objektet är lättare att omvandla till pandas <DataFtame> objekt. För att lättare operera med data jag skaffar också kombinerad <DataFrame> objekt ´df_three´.
 
-'''
+```
     import utils # some funktionalitet
     
     # Convert the list of dictionaries into a pandas DataFrame objekt
@@ -115,9 +124,10 @@ Sista objektet är lättare att omvandla till pandas <DataFtame> objekt. För at
 
     # save to markdown file to be able sow in the presentation
     utils.save_to_mdfile(df_three, 'dataframe.md', 'statistics')
-'''
+```
 
 Urval av hämtade datamängd presenteras i Tabel 1. Fullständigt tabell finns på [GitHub](statistics/dataframe.md)
+
 
 #### Tabel 1. [Sammansätta data](statistics/dataframe.md)
 
@@ -125,31 +135,29 @@ Urval av hämtade datamängd presenteras i Tabel 1. Fullständigt tabell finns p
 |----:|:--------------------------|:-------------------|:--------------|--------:|
 |   0 | 2024-12-15 18:00:00+01:00 | Halmstad flygplats | TEMPERATUR    |     7.8 |
 |   1 | 2024-12-15 19:00:00+01:00 | Halmstad flygplats | TEMPERATUR    |     8.1 |
-.............
 | 132 | 2024-12-18 06:00:00+01:00 | Uppsala Flygplats  | TEMPERATUR    |    -3.7 |
-| 133 | 2024-12-18 07:00:00+01:00 | Uppsala Flygplats  | TEMPERATUR    |    -3.2 |
-| 134 | 2024-12-18 08:00:00+01:00 | Uppsala Flygplats  | TEMPERATUR    |    -2.7 |
-...............
+| 133 | 2024-12-18 07:00:00+01:00 | Uppsala Flygplats  | TEMPERATUR    |    -3.2 ||
 | 214 | 2024-12-18 16:00:00+01:00 | Umeå Flygplats     | TEMPERATUR    |    -3.4 |
 | 215 | 2024-12-18 17:00:00+01:00 | Umeå Flygplats     | TEMPERATUR    |    -3.1 |
 | 216 | 2024-12-15 18:00:00+01:00 | Halmstad flygplats | LUFTFUKTIGHET |    98   |
 | 217 | 2024-12-15 19:00:00+01:00 | Halmstad flygplats | LUFTFUKTIGHET |    95   |
-...............
 | 429 | 2024-12-18 15:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    95   |
 | 430 | 2024-12-18 16:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    95   |
 | 431 | 2024-12-18 17:00:00+01:00 | Umeå Flygplats     | LUFTFUKTIGHET |    96   |
 
 För att testa om vissa tidpunkter pa en av stationer saknar av mätningar används följande kode:
 
-'''
+```python
     # Count NaN values per station_name and parameter
-    nan_counts = df_three.groupby(['station_name', 'parameter'])['value'].apply(lambda x: x.isna().sum()).reset_index()
+    nan_counts = df_three.groupby(['station_name', 'parameter'])['value'].apply(
+                                    lambda x: x.isna().sum()
+                                    ).reset_index()
 
     # Give name for columns
     nan_counts.columns = ['station_name', 'parameter', 'Missing values']
     utils.save_to_mdfile(nan_counts, "nan_counts.md", "statistics")
+```
 
-'''
 Resultat visar att inga mätningar saknas (Tabel 2.):
 
 #### Tabel 2. [Missade data för alla parameter: ](statistics/nan_count.md)
@@ -164,14 +172,14 @@ Resultat visar att inga mätningar saknas (Tabel 2.):
 
 
 
-
 ## Uppgift 2. Beskrivande statistik 
 
 För att snabbt räkna ut statistiska egenskaper jag använder [describe()](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.describe.html) metod fär pandas <DateFrame> objekt.
 
-'''
-    descriptive_stats = df_three.groupby(['station_name', 'parameter'])['value'].describe()
-'''
+```
+    descriptive_stats = df_three.
+            groupby(['station_name', 'parameter'])['value'].describe()
+```
 
 Resultat presenterad i Tabel 3:
 
@@ -212,7 +220,13 @@ Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde 
     # Loop over stations and parameters
     for i, parameter in enumerate(parameters):
         for j, station in enumerate(stations):
-            data_filtered = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+            # check stations name
+            condition_station = df_three['station_name'] == station
+            # check parameter
+            condition_parameter = df_three['parameter'] == parameter
+            # mask to filter
+            mask = condition_station & condition_parameter
+            data_filtered = df_three[mask]
             
             # Perform Shwpiro-Wilk normality test
             stat, p_value = sci.shapiro(data_filtered['value'])
@@ -235,15 +249,19 @@ Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde 
                 width=0.3,
                 dodge=False
             )
-            #ax.set_title(f"{station} - {parameter}", fontsize=8)
-            ax.set_ylabel(f"{parameter}, {'°C' if parameter == 'TEMPERATUR' else '%'}", fontsize=8)
+            # y-lables
+            ax.set_ylabel((f'{parameter}'
+                           f'{'°C' if parameter == 'TEMPERATUR' else '%'}'), 
+                            fontsize=8
+                        )
             # Remove the x-axis label
-            ax.set_xlabel("")
+            ax.set_xlabel('')
 
             # Annotate p-value on the plot
             ax.text(
-                0.8, 0.13,  # Position: center-top of the plot
-                f"p={p_value:.5f}",
+                0.8,
+                0.13,
+                (f'p={p_value:.5f}'),
                 transform=ax.transAxes,
                 fontsize=10,
                 ha='center',
@@ -282,26 +300,46 @@ Samma påstående stämmer för relativt lyft fuktighet med undantag för relati
 
 Fördelning av data i urvalet kan visualiseras även med stapeldiagram. Figur med stapeldiagammar skapas med följande koden:
 
-'''
-    plt.figure(figsize=(8, 6)) # initiate figure
+```python
+    # initiate figure
+    plt.figure(figsize=(8, 6)) 
+    
     # Prepare the custom blue square legend handle
-    text = f"Blue color shows samples distribution"
-    blue_square = Line2D([0], [0], marker='s', color='w', markerfacecolor='blue', markersize=8, label=text)
+    text = 'Blue color shows samples distribution'
+    blue_square = Line2D([0], [0],
+                        marker='s',
+                        color='w',
+                        markerfacecolor='blue',
+                        markersize=8,
+                        label=text
+                        )
 
     # Prepare the legend for the normal distribution
-    normal_dist_line = Line2D([0], [0], color='orange', lw=2, label="Normal Distribution")
+    normal_dist_line = Line2D([0], [0],
+                                color='orange',
+                                lw=2,
+                                label="Normal Distribution"
+                                )
 
-    normal_dist_added = False # variable to chose what norm dist line vill be shown in the legend
+    # variable to chose what norm dist line vill be shown in the legend
+    normal_dist_added = False
     # Iterate through all stations and parameters
     for i, station in enumerate(stations):
         for j, parameter in enumerate(parameters):
+            condition_station = df_three['station_name'] == station
+            condition_parameter = df_three['parameter'] == parameter
+            mask = condition_station & condition_parameter
             # filter data for each station and parameter
-            data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+            data = df_three[mask]
 
             # Subplot indexering: 3 rows for 3 stations and 2 columns for 2 parameters
             plt.subplot(3, 2, i * len(parameters) + j + 1) 
             
-            sns.histplot(data['value'], kde=True, bins=24, color="blue", edgecolor="black")
+            sns.histplot(data['value'],
+                         kde=True,
+                         bins=24,
+                         color="blue",
+                         edgecolor="black")
                     
             # Calculate the mean and standard deviation
             mean = data['value'].mean()
@@ -327,18 +365,24 @@ Fördelning av data i urvalet kan visualiseras även med stapeldiagram. Figur me
     # Create a global legend outside the subplots (top)
     fig = plt.gcf()  # Get the current figure
 
-    fig.legend(handles=[blue_square, normal_dist_line], loc='upper center', bbox_to_anchor=(0.5, 0.99), ncol=2, fontsize='small')
+    fig.legend(handles=[blue_square,
+                normal_dist_line],
+                loc='upper center',
+                bbox_to_anchor=(0.5, 0.99),
+                ncol=2,
+                fontsize='small'
+                )
 
     plt.tight_layout()
-    plt.subplots_adjust(top=0.85)  # Adjust top margin to make room for the legend
-
+    plt.subplots_adjust(top=0.85)
     # Save and show the plot
     plt.savefig("img/frekvenser/alla.png")
-'''
+```
 
 Grafiska fördelningar visas i Figur 2.
 
 ![#### Figur 2](img/frekvenser/alla.png)
+
 ##### Förklaring till Figur 2.
 Den här figuren visualiserar frekvensfördelningen av temperatur- och relativ luftfuktighetsdata från flera stationer i Sverige, inklusive Halmstad Flygplats, Uppsala Flygplats och Umeå Flygplats. Fördelningen visas som histogram med Kernel Density Estimation (KDE), och varje subplot motsvarar en kombination av station och parameter.De blå staplarna representerar frekvensfördelningen av mätningarna, där varje stapel representerar ett specifikt värdeintervall. Blå linjän visar Kernel density estimation, eller den uppskattade sannolikhetsdensiteten för mätvärdena. Normalfördelningskurvan är en orange linje. Denna kurva beräknas med hjälp av medelvärdet och standardavvikelsen för värdena i datasetet för varje station och parameter. Normalfördelningen läggs till för att visuellt jämföra hur den faktiska datadistributionen överensstämmer med den teoretiska normalfördelningen.
 
@@ -354,13 +398,17 @@ Det finns ett annat sät att visualisera avvikelse från eller liknande till nor
     # Loopa through all stations and parameters
     for i, station in enumerate(stations):
         for j, parameter in enumerate(parameters):
+            condition_station = df_three['station_name'] == station
+            condition_parameter = df_three['parameter'] == parameter
+            mask = condition_station & condition_parameter
             # Filter for station and oarameter
-            data = df_three[(df_three['station_name'] == station) & (df_three['parameter'] == parameter)]
+            data = df_three[mask]
             numeric_data = data['value'].dropna()
             # Create Q_Q plots
             ax = axes[j, i]
             sci.probplot(numeric_data, dist="norm", plot=ax)
-            ax.set_ylabel(f"{'temperatur, °C' if parameter == 'TEMPERATUR' else 'humidity, %'}", fontsize=8)
+            l_unit = 'temperatur, °C' if parameter == 'TEMPERATUR' else 'humidity, %'
+            ax.set_ylabel(l_unit, fontsize=8)
             # Add titel
             ax.set_title(f"Q-Q plot: {station} - {parameter}", fontsize=8)
             ax.get_lines()[1].set_color('red')  # Give lene for the 
@@ -402,13 +450,15 @@ Här är exampel kod:
     changed_by ='TEMPERATUR'
     # Find the rows with the lowest temperature values
     param_data = station_data[station_data['parameter'] == changed_by]
-    lowest_param = param_data.nsmallest(to_remove, 'value')  # Rows with the lowest parparameter values
+    # Rows with the lowest parparameter values
+    lowest_param = param_data.nsmallest(to_remove, 'value')
     #all_param = lowest_param.nlargest(1, 'value')
     all_param = lowest_param
-    all_param_timestamps = lowest_param['time'].tolist()  # Extract the timestamps as a list
+    # Extract the timestamps as a list
 
+    all_param_timestamps = lowest_param['time'].tolist()
     # Filter out rows with the lowest parameter values timestamps across all parameters
-    filtered_data = station_data[~station_data['time'].isin(all_param_timestamps)]  # Use .isin() for filtering
+    filtered_data = station_data[~station_data['time'].isin(all_param_timestamps)]
 
     # Plot the filtered data
     fig, axes = plt.subplots(1, 2, figsize=(8, 4))
@@ -421,23 +471,31 @@ Här är exampel kod:
 
         # Generate Q-Q plot
         sci.probplot(numeric_data, dist="norm", plot=ax)
-        ax.set_ylabel(f"{'temperatur, °C' if value[0] == 'TEMPERATUR' else 'humidity, %'}", fontsize=8)
+        lable_unit = 'temperatur, °C' if parameter == 'TEMPERATUR' else 'humidity, %'
+        ax.set_ylabel(lable_unit, fontsize=8)
         ax.set_xlabel("teoretiska quantiler")
-        axes[i].text(
-            0.1, 0.9, 
-            f"Shapiro_Wilk test: statistik={stat:.2f},\nsannolikhet för normalspridning={prob:.2f}", 
-            color="red", fontsize=5,
-            transform=ax.transAxes, 
-            verticalalignment='top', 
-            bbox=dict(facecolor='white', alpha=0.5)
-        )
+        axes[i].text(0.1,
+                    0.9, 
+                    (f'Shapiro_Wilk test: statistik={stat:.2f},\n'
+                    f'sannolikhet för normalspridning={prob:.2f}'), 
+                    color="red", fontsize=5,
+                    transform=ax.transAxes, 
+                    verticalalignment='top', 
+                    bbox=dict(facecolor='white', alpha=0.5)
+                )
         # Clear the title
         ax.set_title(value[0].lower())
         # Add line
-        ax.get_lines()[1].set_color('red')  # Color theoretical quantile line red
-    plt.suptitle(f"Q-Q plot: {name} utan {to_remove} tidpunkter\nmed de lägsta {changed_by.lower()} värder", fontsize=12)
+        ax.get_lines()[1].set_color('red')
+    plot_title = (f'Q-Q plot: {name} utan {to_remove} tidpunkter\n'
+                  f'med de lägsta {changed_by.lower()} värder')
+    plt.suptitle(plot_title, fontsize=12)
     plt.tight_layout()
-    plt.savefig(f'img/q_q_plot/{re.sub("(?i)"+re.escape("flygplats"), "", name)}_{changed_by.lower()}_min_{to_remove}_outliers.png')
+    cleaned_name = re.sub("(?i)" + re.escape("flygplats"), "", name)
+    dirs = 'img/q_q_plot/'
+    l_changed = changed_by.lower()
+    file_name = f'{dirs}/{cleaned_name}_{l_changed}_min_{to_remove}_outliers.png'
+    plt.savefig(file_name)
     plt.show()
     plt.close()
 ```
@@ -460,12 +518,16 @@ Figuren visar att temperatur och luftfuktighet i Umeå flugplats korrelerar, men
 
 ```python
     # Pivote three_days
-    pivote_df = df_three.pivot_table(index=['time', 'station_name'], columns='parameter', values='value').reset_index()
+    pivote_df = df_three.pivot_table(index=['time', 'station_name'],
+                                    columns='parameter',
+                                    values='value').reset_index()
 
     # create paired plot
     sns.pairplot(pivote_df, hue='station_name')
     plt.subplots_adjust(top=0.9)
-    plt.suptitle("Parvisa relationer mellan temperatur och luftfuktighet", fontsize=10, y=0.95)
+    plt.suptitle("Parvisa relationer mellan temperatur och luftfuktighet",
+                fontsize=10,
+                y=0.95)
     plt.savefig("img/correlation/param_param.png")
     plt.show()
     plt.close()
@@ -482,13 +544,19 @@ Jag skaffar även ett annat plot, som visar mera detaljer:
         xlabel = ax.get_xlabel()
         ylabel = ax.get_ylabel()
 
-        xlabel = re.sub(r'(?i)flygplats', '', xlabel).strip()  # Remove "flygplats" (case-insensitive)
-        xlabel = xlabel.replace("TEMPERATUR_", "°C, TEMP_").strip()  # Replace "TEMPERATUR_" with "TEMP_"
-        xlabel = xlabel.replace("LUFTFUKTIGHET_", "%, FUKT_").strip()  # Replace "LUFTFUKTIGHET_" with "FUKT_"
+        # Remove "flygplats" (case-insensitive)
+        xlabel = re.sub(r'(?i)flygplats', '', xlabel).strip()
+        # Replace "TEMPERATUR_" with "TEMP_"
+        xlabel = xlabel.replace("TEMPERATUR_", "°C, TEMP_").strip()
+        # Replace "LUFTFUKTIGHET_" with "FUKT_"
+        xlabel = xlabel.replace("LUFTFUKTIGHET_", "%, FUKT_").strip()
         
-        ylabel = re.sub(r'(?i)flygplats', '', ylabel).strip()  # Remove "flygplats" (case-insensitive)
-        ylabel = ylabel.replace("TEMPERATUR_", "°C, TEMP_").strip()  # Replace "TEMPERATUR_" with "TEMP_"
-        ylabel = ylabel.replace("LUFTFUKTIGHET_", "%, FUKT_").strip()  # Replace "LUFTFUKTIGHET_" with "FUKT_"
+        # Remove "flygplats" (case-insensitive)
+        ylabel = re.sub(r'(?i)flygplats', '', ylabel).strip()
+        # Replace "TEMPERATUR_" with "TEMP_"
+        ylabel = ylabel.replace("TEMPERATUR_", "°C, TEMP_").strip()
+        # Replace "LUFTFUKTIGHET_" with "FUKT_"
+        ylabel = ylabel.replace("LUFTFUKTIGHET_", "%, FUKT_").strip()
         
         # Set the modified labels with font size
         ax.set_xlabel(xlabel, fontsize=6)
@@ -497,11 +565,13 @@ Jag skaffar även ett annat plot, som visar mera detaljer:
         ax.set_ylabel(ylabel.replace("LUFTFUKTIGHET_", "%, FUKT_").strip(), fontsize=6)
         
         # Set font size for tick labels
-        ax.tick_params(axis='x', labelsize=5)  # X-axis tick labels
-        ax.tick_params(axis='y', labelsize=5)  # Y-axis tick labels
+        ax.tick_params(axis='x', labelsize=5)
+        ax.tick_params(axis='y', labelsize=5)
 
-    plt.suptitle("Pairwise Relationships for Parameters and Stations", y=0.99, fontsize=16)  # Title for the plot
-    plt.subplots_adjust(hspace=0.2, wspace=0.2, top=0.9) # Ajust spase between subplots
+    plt.suptitle("Pairwise Relationships for Parameters and Stations",
+        y=0.99,
+        fontsize=16)
+    plt.subplots_adjust(hspace=0.2, wspace=0.2, top=0.9)
     plt.savefig('img/correlation/all_pairwise_relationships.png')
     plt.show()
     plt.close()
@@ -549,10 +619,11 @@ Jag skaffar regressions modell med hjälp av maskinlearning. 50% av data använd
     test = combined_data.drop(train.index)
 
     # # Extract X (independent variable) and y (dependent variable) from the dataframe
-    X_train = train[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
-    y_train = train[column_name2].values  # Dependent variable (y)
-    X_test = test[column_name1].values.reshape(-1, 1)  # Reshape for a single feature
-    y_test = test[column_name2].values  # Dependent variable (y)
+    # Title for the plot
+    X_train = train[column_name1].values.reshape(-1, 1)
+    y_train = train[column_name2].values
+    X_test = test[column_name1].values.reshape(-1, 1)
+    y_test = test[column_name2].values
 
 
     model = LinearRegression().fit(X_train, y_train)
@@ -568,9 +639,10 @@ Jag skaffar regressions modell med hjälp av maskinlearning. 50% av data använd
     stat_linjar, p_linjar = sci.shapiro(residuals)
 
     # Use statsmodel for calculating confidens interval
-    X_train_with_const = sm.add_constant(X_train)  # Lägg till konstant för intercept
+     # Lägg till konstant för intercept
+    X_train_with_const = sm.add_constant(X_train)
     ols_model = sm.OLS(y_train, X_train_with_const).fit()
-    conf_int_params = ols_model.conf_int(alpha=0.05)  # 95% konfidensintervall
+    conf_int_params = ols_model.conf_int(alpha=0.05)
 
     # calculate confidens interval
     a_ci = conf_int_params[0]  # Första raden: Intercept
@@ -583,8 +655,12 @@ Jag skaffar regressions modell med hjälp av maskinlearning. 50% av data använd
     plt.scatter(X_test, y_test, color="blue", label='Testdata', alpha=0.6)
 
     # Title
-    sns.regplot(x=column_name1, y=column_name2, data=combined_data, scatter=False, 
-                line_kws={'color': 'red', 'label': f'Y = {a:.2f} + {b:.2f} * X'}, ci=95)
+    sns.regplot(x=column_name1,
+                y=column_name2,
+                data=combined_data,
+                scatter=False,
+                line_kws={'color': 'red', 'label': f'Y = {a:.2f} + {b:.2f} * X'},
+                ci=95)
 
     x_plot = np.linspace(-20, -1, 100).reshape(-1,1)
     draw_plot = model.predict(x_plot)
@@ -594,16 +670,23 @@ Jag skaffar regressions modell med hjälp av maskinlearning. 50% av data använd
 
     # show Regression equation and confidence interval
     plt.text(0.5, 0.89, 
-            f'Lineärmodel: y ={a:.2f} +  {b:.2f}* X\n'
+            (f'Lineärmodel: y ={a:.2f} +  {b:.2f}* X\n'
             f'95% konfidens interval för a: [{a_ci[0]:.2f}, {a_ci[1]:.2f}]\n'
-            f'95% konfidens interval för b: [{b_ci[0]:.2f}, {b_ci[1]:.2f}]', 
-            ha='center', va='center', transform=plt.gca().transAxes, fontsize=10, color='red'
-            f"Shapiro-Wilk test for residualernas spridning: p = {p_linjar:.4f}, \nstatistics={stat_linjar:.4f}\n")
-    plt.title(f"Prognos av luftfuktighet baserat på temperatur i Umeå\nMean squared error: {mse:.2f}\nFraktion: {fraktion}")
+            f'95% konfidens interval för b: [{b_ci[0]:.2f}, {b_ci[1]:.2f}]'), 
+            ha='center',
+            va='center',
+            transform=plt.gca().transAxes,
+            fontsize=10,
+            color='red'
+            ((f'Shapiro-Wilk test for residualernas spridning: p = {p_linjar:.4f},'
+            f'\nstatistics={stat_linjar:.4f}\n'))
+            )
+    plt.title(f'Prognos av luftfuktighet baserat på temperatur i Umeå\n'
+            f'Mean squared error: {mse:.2f}\nFraktion: {fraktion}')
     plt.xlabel("Temperatur, °C")
     plt.ylabel("Relativt Luftfuktighet, %")
     plt.legend(loc='best', fontsize=8)
-    plt.savefig(f'img/regression/Conf_int_regr_prediction_Umea_temp_luft.png')
+    plt.savefig('img/regression/Conf_int_regr_prediction_Umea_temp_luft.png')
     #plt.show()
     plt.close()
  
@@ -649,15 +732,23 @@ För att se om logmodifiering av relativt luftfuktighet kan hjälpa att skappa b
     # Calculate MSE
     mse_log_y = np.mean(np.exp(pred_log_y - y_test_log)**2)
     print(mse_log_y)
-    plot_text= (f"MSE liniarregressoin, original dataset: {mse:.2f}\n"
-                f"MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.5f}")
+    plot_text= ((f'MSE liniarregressoin, original dataset: {mse:.2f}\n'
+                f'MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.5f}'))
 
 
     plt.scatter(X_train, y_train_log, label='Träningsdata')
     plt.scatter(X_test, y_test_log, label='Test data')
-    plt.plot(x_plot, drow_y_log_model, label='Linjär regression log domän', color='g', linewidth=3)
+    plt.plot(x_plot, drow_y_log_model,
+            label='Linjär regression log domän',
+            color='g',
+            linewidth=3
+            )
     plt.legend()
-    plt.text(-18.5, 4.51, f"log(Y) = {a_Y_log:.2f} + {b_Y_log:.2f} * X", fontsize=8, color="red")
+    plt.text(-18.5, 4.51,
+            f"log(Y) = {a_Y_log:.2f} + {b_Y_log:.2f} * X",
+            fontsize=8,
+            color="red"
+            )
     plt.title("Prognos av relativt luftfuktighet (log transformerad y, %)")
     plt.xlabel("temperatur, °C")
     plt.ylabel("relativt luftfuktighet [log %]")
@@ -682,24 +773,45 @@ För att se om logmodifiering av relativt luftfuktighet kan hjälpa att skappa b
     square_sum = sum((X_test[i] - mean_x) ** 2 for i in range(n))[0]
     # standard error för koeffitienter
     se_b = math.sqrt(residual_variance / square_sum)
-    se_a = math.sqrt(residual_variance * (1 / n + mean_x**2 / sum((X_test[i] - mean_x) ** 2 for i in range(n))))
+    # Compute the denominator of the second term (se_a)
+    sum_squared_diffs = sum((X_test[i] - mean_x) ** 2 for i in range(n))
+
+    # Compute the second term in the variance formula
+    variance_term = mean_x**2 / sum_squared_diffs
+
+    # Compute the full variance factor
+    variance_factor = 1 / n + variance_term
+
+    # Compute the standard error
+    se_a = math.sqrt(residual_variance * variance_factor)
 
     # Plotting
     plt.scatter(X_train, y_train, label='Träningsdata (original scale)')
     plt.scatter(X_test, y_test, label='Test data (original scale)')
-    plt.plot(x_plot, drow_y_log_model_exp, label='Log-y-transformerad regression i original domän', color='g', linewidth=3)
+    plt.plot(x_plot,
+            drow_y_log_model_exp,
+            label='Log-y-transformerad regression i original domän',
+            color='g',
+            linewidth=3
+            )
 
     # t-värde för 95% interval
     t_critical = sci.t.ppf(0.975, df=n - 2)
     a_error = t_critical * se_a
     b_error = t_critical * se_b
-    plot_text = (f'y = exp({a_Y_log:.2f} + {b_Y_log:.2f} * X)\n'
+    plot_text = ((f'y = exp({a_Y_log:.2f} + {b_Y_log:.2f} * X)\n'
             f'Shapiro-Wilk test, p = {p_log_y:.2}\n'
-            f'95% konfidencsinterval för a: {(a_Y_log - a_error):.2f} < a < {(a_Y_log + a_error):.2f}\n'
-            f'95% konfidens interval för b: {(b_Y_log - b_error):.2f} < b < {(b_Y_log + b_error):.2f}')
+            f'95% konfidencsinterval för a: '
+            f'{(a_Y_log - a_error):.2f} < a < '
+            f'{(a_Y_log + a_error):.2f}\n'
+            f'95% konfidens interval för b: '
+            f'{(b_Y_log - b_error):.2f} < b < '
+            f'{(b_Y_log + b_error):.2f}')
+            )
     plt.legend(fontsize=8)
     plt.text(-12.5, 81, plot_text, fontsize=8, color='red')
-    plt.title("Prognos av relativt luftfuktighet\nmodel är skapad med logtransformerad y och transformerad tillbacka")
+    plt.title((f'Prognos av relativt luftfuktighet\n'
+            f'model är skapad med logtransformerad y och transformerad tillbacka'))
     plt.xlabel("temperatur, °C")
     plt.ylabel("relativt luftfuktighet [%]")
     plt.savefig('img/regression/back_new_log_transform_FUKT_Umeå_All.png')
@@ -720,12 +832,19 @@ För att jamföra modeller skappar jag en plot som visar båda modeller:
 ```python
     plt.scatter(X_train, y_train, label='Träningsdata')
     plt.scatter(X_test, y_test, label='Test data')
-    plt.plot(x_plot, drow_y_log_model_exp, label='Linjär regression exponentiell i log(y)', color='green', linewidth=3)
-    plt.plot(x_plot, draw_plot, label='Linjär regression originela data', color="red", linewidth=3)
-    #plt.plot(np.exp(x_log) - shift_value, draw_x_log_model, label='Linjär regression, exponentiell i x', color='c', linewidth=3)
+    plt.plot(x_plot,
+            drow_y_log_model_exp,
+            label='Linjär regression exponentiell i log(y)',
+            color='green',
+            linewidth=3)
+    plt.plot(x_plot,
+            draw_plot,
+            label='Linjär regression originela data',
+            color="red",
+            linewidth=3)
     plt.legend()
-    plot_text= (f"MSE liniarregressoin, original dataset: {mse:.2f}\n"
-                f"MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.2f}")
+    plot_text= ((f'MSE liniarregressoin, original dataset: {mse:.2f}\n'
+                f'MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.2f}'))
     plt.title("Två modeller i en plot", fontsize=10)
     plt.xlabel("temperatur, °C", fontsize=8)
     plt.ylabel("relativt luftfuktighet, %", fontsize=8)
@@ -802,7 +921,9 @@ Koden som jag användade:
     X_to_remove = X_combined_sotred[:2].tolist() + X_combined_sotred[-2:].tolist()
     X_to_remove = set(X_to_remove)
     # fined what rows should be removed
-    rows_to_remove = combined_data[column_name1].apply(lambda x: any(np.isclose(x, value) for value in X_to_remove))
+    rows_to_remove = combined_data[column_name1].apply(
+        lambda x: any(np.isclose(x, value) for value in X_to_remove)
+        )
     # Filter this rows away
     filtered_data = combined_data.loc[~rows_to_remove]
     train_filt = filtered_data.sample(frac=fraktion, random_state=1)
@@ -813,13 +934,14 @@ Koden som jag användade:
     y_train_f = train_filt[column_name2].values
     X_test_f = test_filt[column_name1].values.reshape(-1, 1)
     y_test_f = test_filt[column_name2].values
+    title_n = ("Data utan två tidspunkter med de högsta och\ntva" + 
+                "tidpunkter med de lägsta temperaturvärde")
     X_train_f_log, X_test_f_log = log_stat_plot(X_train_f,
                                                 X_test_f,
                                                 y_train_f,
                                                 y_test_f,
                                                 'residuals_log_data_filtered',
-                                                title="Data utan två tidspunkter med de högsta och\ntva" + 
-                                                    "tidpunkter med de lägsta temperaturvärde"
+                                                title=title_n
                                                 )
 
     # Use filtered data to create the regression with log tempture
@@ -847,10 +969,21 @@ Koden som jag användade:
     # Show prediktions
     plt.scatter(X_train_f_log, y_train_f, label='Träningsdata')
     plt.scatter(X_test_f_log, y_test_f, label='Test data')
-    plt.plot(x_log, draw_x_log_model, label='Linjär regression, log transformerad i x', color='c', linewidth=3)
-    plt.text(-0.7, 90.0, f"y = {log_a:.2f} + {log_b:.2f}*log(x)", fontsize=8, color="r")
+    plt.plot(x_log,
+            draw_x_log_model,
+            label='Linjär regression,
+            log transformerad i x',
+            color='c',
+            linewidth=3)
+    plt.text(-0.7,
+             90.0,
+             f'y = {log_a:.2f} + {log_b:.2f}*log(x)',
+             fontsize=8,
+             color="r")
     plt.legend()
-    plt.title("Prognos av relativt luftfuktighet med logaritmisk model (x är log transformerad)", fontsize=10)
+    plt.title((f'Prognos av relativt luftfuktighet med logaritmisk model '
+                f'(x är log transformerad)'),
+                fontsize=10)
     plt.xlabel("log(temperatur - min(temperatur) + 0.00001, °C)", fontsize=8)
     plt.ylabel("Relativt luftfuktighet, %", fontsize=8)
     plt.savefig('img/regression/prediction_log_data.png')
@@ -875,7 +1008,8 @@ Koden som jag användade:
 
     # Show histogram of the residuals of the test data
     plt.hist(residual, bins=10)
-    plt.title("Residualernas histogram för logoritmisk model av luftfuktighet vid Umeå", fontsize=10)
+    plt.title("Residualernas histogram för logoritmisk model av luftfuktighet vid Umeå",
+                fontsize=10)
     plt.xlabel("Residualer av luftfuktighet, %")
     plt.ylabel("Frekvens")
     plt.savefig('img/regression/residuals_filtrerad_hist_LOGtemp_fukt_UME.png')
@@ -895,12 +1029,25 @@ Koden som jag användade:
 
     plt.scatter(X_train, y_train, label='Träningsdata')
     plt.scatter(X_test, y_test, label='Test data')
-    plt.plot(x_plot, drow_y_log_model_exp, label='Linjär regression exponentiell i log(y)', color='green', linewidth=3)
-    plt.plot(x_plot, draw_plot, label='Linjär regression originela data', color="red", linewidth=3)
-    #plt.plot(np.exp(x_log) - shift_value, draw_x_log_model, label='Linjär regression, exponentiell i x', color='c', linewidth=3)
+    plt.plot(x_plot,
+             drow_y_log_model_exp,
+             label='Linjär regression exponentiell i log(y)',
+             color='green',
+             linewidth=3)
+    plt.plot(x_plot,
+             draw_plot,
+             label='Linjär regression originela data',
+             color="red",
+             linewidth=3)
+    #plt.plot(np.exp(x_log) - shift_value,
+             draw_x_log_model,
+             label='Linjär regression,
+             exponentiell i x',
+             color='c',
+             linewidth=3)
     plt.legend()
-    plot_text= (f"MSE liniarregressoin, original dataset: {mse:.2f}\n"
-                f"MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.2f}")
+    plot_text= (f'MSE liniarregressoin, original dataset: {mse:.2f}\n'
+            f'MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.2f}')
     plt.title("Två modeller i en plot", fontsize=10)
     plt.xlabel("temperatur, °C", fontsize=8)
     plt.ylabel("relativt luftfuktighet, %", fontsize=8)
@@ -935,17 +1082,25 @@ Koden som jag användade:
 
     # Calculate MSE
     mse_log_y = np.mean((np.exp(pred_log_y) - y_test_f)**2)
-    plot_text= (f"MSE liniarregressoin, original dataset: {mse:.2f}\n"
-                f"MSE liniarregressoin, dataset utan avvikande värde: {mse_lin_f:.2f}\n"
-                f"MSE logtransformerad x, dataset utan avvikande värde: {mse_log:.2f}\n"
-                f"MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.5f}")
+    plot_text= (f'MSE liniarregressoin, original dataset: {mse:.2f}\n'
+                f'MSE liniarregressoin, dataset utan avvikande värde: {mse_lin_f:.2f}\n'
+                f'MSE logtransformerad x, dataset utan avvikande värde: {mse_log:.2f}\n'
+                f'MSE logtransformerad y, dataset utan avvikande värde: {mse_log_y:.5f}')
 
 
     plt.scatter(X_train_f, y_train_log, label='Träningsdata')
     plt.scatter(X_test_f, y_test_log, label='Test data')
-    plt.plot(x_plot, drow_y_log_model, label='Linjär regression log domän', color='g', linewidth=3)
+    plt.plot(x_plot,
+             drow_y_log_model,
+             label='Linjär regression log domän',
+             color='g',
+             linewidth=3)
     plt.legend()
-    plt.text(-18.5, 4.51, f"log(Y) = {a_Y_log:.2f} + {b_Y_log:.2f} * X", fontsize=8, color="red")
+    plt.text(-18.5,
+             4.51,
+             f'log(Y) = {a_Y_log:.2f} + {b_Y_log:.2f} * X',
+             fontsize=8,
+             color="red")
     plt.title("Prognos av relativt luftfuktighet (log transformerad y, %)")
     plt.xlabel("temperatur, °C")
     plt.ylabel("relativt luftfuktighet [log %]")
@@ -966,11 +1121,20 @@ Koden som jag användade:
     # Plotting
     plt.scatter(X_train_f, y_train_f, label='Träningsdata (original scale)')
     plt.scatter(X_test_f, y_test_f, label='Test data (original scale)')
-    plt.plot(x_plot, drow_y_log_model_exp, label='Log-y-transformerad regression i original domän', color='g', linewidth=3)
+    plt.plot(x_plot,
+             drow_y_log_model_exp,
+             label='Log-y-transformerad regression i original domän',
+             color='g',
+             linewidth=3)
 
     plt.legend(fontsize=8)
-    plt.text(-20, 92, f"y = exp({a_Y_log:.2f} + {b_Y_log:.2f} * X)", fontsize=8, color="red")
-    plt.title("Prognos av relativt luftfuktighet\nmodel är skapad med logtransformerad y och transformerad tillbacka")
+    plt.text(-20,
+             92,
+             f'y = exp({a_Y_log:.2f} + {b_Y_log:.2f} * X)',
+             fontsize=8,
+             color="red")
+    plt.title(f'Prognos av relativt luftfuktighet\n'
+              f'model är skapad med logtransformerad y och transformerad tillbacka')
     plt.xlabel("temperatur, °C")
     plt.ylabel("relativt luftfuktighet [%]")
     plt.savefig('img/regression/back_log_transform_FUKT_Umeå.png')
@@ -980,9 +1144,22 @@ Koden som jag användade:
     #TREE MODELS ON ONE PLOT
     plt.scatter(X_train, y_train, label='Träningsdata')
     plt.scatter(X_test, y_test, label='Test data')
-    plt.plot(x_plot, drow_y_log_model_exp, label='Linjär regression exponentiell i y', color='orange', linewidth=3)
-    plt.plot(np.exp(x_log) - shift_value, draw_x_log_model, label='Linjär regression, exponentiell i x', color='red', linewidth=3)
-    plt.plot(x_plot, draw_plot, color='green', label='Test Data Prediction', linewidth=2)
+    plt.plot(x_plot,
+             drow_y_log_model_exp,
+             label='Linjär regression exponentiell i y',
+             color='orange',
+             linewidth=3)
+    plt.plot(np.exp(x_log) - shift_value,
+             draw_x_log_model,
+             label='Linjär regression,
+             exponentiell i x',
+             color='red',
+             linewidth=3)
+    plt.plot(x_plot,
+             draw_plot,
+             color='green',
+             label='Test Data Prediction',
+             linewidth=2)
     plt.text(-20, 94, plot_text, fontsize=8, color="red")
     plt.title("Prognos av relativt luftfuktighet med alla modeller")
     plt.ylabel("Relativt lutfuktighet %")
