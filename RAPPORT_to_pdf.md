@@ -3,22 +3,20 @@
 
 ## Introduction
 
-I projektet förväntas vi att plocka data från en open API, beskriva hämtade data och berbeta de med olika statistiska metoder.
-Datamängder för projektet hämtas från SMHI [Open Data API Docs - Meteorological Observations](https://opendata.smhi.se/apidocs/metobs/index.html). Detta API tillhandahåller meteorologiska data som beskriver väderförändringar på olika platser i Sverige. API:et erbjuder flera olika typer av mätningar, inklusive temperatur (parameter 1) och relativ luftfuktighet (parameter 6). Dessa parametrar kan användas för att, till exempel, förstå klimatförhållanden och variationer över tid.
+I projektet förväntas vi att plocka data från en open API, göra statistisk beskrivning av hämtade data och berbeta data med olika statistiska metoder.
 
-För projektet ville jag hämta begränsad mängd av data. Eftersom temperaturs och relativt luftfuktighet mäts varje timme, data från sista tre dygn ska innehålla 72 mätningar. Det mängd av data är oversiktligt och tillräckligt stor för vlera statistiska metoder. Därför välde jag dessa parametrar för analys. I arbete används data från tre meteorologiska stationer: Halmstad flygplats, Uppsala Flygplats och Umeå Flygplats. Stationer välds eftersom båda välda parametrar finns att hämta i API. Flera andra stationer hade inte data för dessa parametrar.
+Datamängder för projektet hämtas från SMHI [Open Data API Docs - Meteorological Observations](https://opendata.smhi.se/apidocs/metobs/index.html). Detta API tillhandahåller meteorologiska data som beskriver väderförändringar på olika platser i Sverige. API:et erbjuder flera olika typer av mätningar, inklusive temperatur (parameter 1) och relativ luftfuktighet (parameter 6). Temperaturen mäts i grader Celsius (°C), medan relativ luftfuktighet anges i procent (%).
 
-Temperaturen mäts i grader Celsius (°C), medan relativ luftfuktighet anges i procent (%). Genom att använda dessa data kan jag utföra olika typer av statistiska analyser, inklusive visualiseringar av frekvensfördelningar, beräkningar av medelvärden och standardavvikelser, samt jämförelser mellan stationer och parametrar. Detta arbete syftar till att demonstrera hur statistiska metoder kan användas för att bearbeta och tolka meteorologiska data.
-
+I arbete används data från tre meteorologiska stationer: Halmstad flygplats, Uppsala Flygplats och Umeå Flygplats. Stationer välds eftersom båda välda parametrar finns att hämta i API. Datamängs begränsad med tre dygn. Både temperaturs och relativt luftfuktighet mäts varje timme, data från tre dygn innehåller 72 mätningar. Sådant mängd är oversiktligt och tillräckligt stor för olika statistiska metoder. 
 
 ## Uppgift 1. Databeskrivning
-All kod som jag använder för att hämta och bearbeta data finns i [GitHub](https://github.com/OlganeOlga/MathMod/tree/master/get_dynam_data). För att hämta en ny dataset, skaffa alla tabeller och figurer tillräckligt att använda fill [´ALL_CODE.py´](ALL_CODE.py)
+All kod som jag använder för att hämta och bearbeta data finns i [GitHub](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/get_dynam_data). En ny dataset kan hämtas och berabetas på liknande sätt med hjälp av fill [´ALL_CODE.py´](ALL_CODE.py)
+
 Datamängder plockas med följande kod:
 
 ```python
     import json
 
-    # This part i inactivated because i am working with downloaded data
     # Dowloads data from three stations and for two parameters
     for key in PARAMS.keys():
         for station, id in STATIONS.items():
@@ -60,34 +58,36 @@ Som resultat genereras en JSON-fil för varje kombination av station och paramet
     for param_id, parameter in PARAMS.items():
         three_d_station = {}
         for name, station_id in STATIONS.items():
-            file_path = f'data/{station_id}_{param_id}.json'
+            file_path = f"data/{station_id}_{param_id}.json"
             with open(file_path, 'r') as file:
                 data = json.load(file)
 
             # Sort data by timestamp and select the last N points
             sorted_data = sorted(
                 data.get("value", []),
-                key=lambda x: datetime.fromtimestamp(x["date"] / 1000,
-                tz=pytz.timezone("Europe/Stockholm"))
+                key=lambda x: datetime.fromtimestamp(x["date"] / 1000, tz=pytz.timezone("Europe/Stockholm"))
             )[-measured_points:]
 
             # Prepare station data and append rows for further processing
             stat_set = {}
             for item in sorted_data:
-                check = item['quality'] in ['G', 'Y']
-                new_value = float(item['value']) if check else np.nan
+                new_value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
                 stat_set[item['date']] = new_value
                 data_rows.append({
-                    'time': datetime.fromtimestamp(item['date'] / 1000,     
-                            tz=pytz.timezone("Europe/Stockholm")),
+                    'time': datetime.fromtimestamp(item['date'] / 1000, tz=pytz.timezone("Europe/Stockholm")),
                     'station_name': name,
                     'parameter': PARAMS[param_id][0],
                     'value': new_value
                 })
             three_d_station[name] = stat_set
         three_days[param_id] = three_d_station
+
+    # Convert the list of dictionaries into a pandas DataFrame object
+    df_three = pd.DataFrame(data_rows)
+    df_three.columns.str.replace(' ', '\n')
+
 ```
-Det skaffas två objekt med samma innhåll:
+Som resultat skaffas två objekt med som innehpller samma data:
 1. ´tree-days´ - En nästlad ordbok (dictionary) som innehåller filtrerad och sorterad data för de senaste 72 timmarna för varje parameter och station. Strukturen ser ut så här:
 ```python
     {
@@ -102,7 +102,8 @@ Det skaffas två objekt med samma innhåll:
     }
 ```
 Nycklar: param_id (parameter-ID) och station_name (stationens namn).
-Värden: För varje station skapas en ordbok där nyckeln är en tidsstämpel och värdet är ett numeriskt mätvärde (eller numpy.nan om kvaliteten inte är godkänd). Det objekt används i flesta fall.
+Värden: För varje station skapas en ordbok där nyckeln är en tidsstämpel och värdet är ett numeriskt mätvärde (eller numpy.nan om kvaliteten inte är godkänd). Objektet används bara för att skaffa correlation matris.
+
 2. ´data_rows` - En lista med rader där varje rad är en ordbok med information om en specifik mätpunkt. Strukturen ser ut så här:
 [
     {
@@ -113,7 +114,7 @@ Värden: För varje station skapas en ordbok där nyckeln är en tidsstämpel oc
     },
     ...
 ]
-Sista objektet är lättare att omvandla till pandas <DataFtame> objekt. För att lättare operera med data jag skaffar också kombinerad <DataFrame> objekt ´df_three´.
+Sista objektet är lättare att omvandla till pandas <DataFtame> objekt med namn´df_three´. Detta objekt använer jag för de flesta operationer.
 
 ```
     import utils # some funktionalitet
@@ -272,12 +273,12 @@ Följande kode skaffar ladogrammer för varje station ohc parameter. Jag välde 
     # Adjust layout to make space for the title
     plt.tight_layout(rect=[0, 0, 1, 0.95]) 
 
-    plt.savefig('img/box_plot/all.png')
+    plt.savefig('https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/box_plot/all.png')
     plt.show()
 
 ```
 
-#### Figur 1. ![Ladogrammar](img/box_plot/all.png)
+#### Figur 1. ![Ladogrammar](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/box_plot/all.png)
 ##### Förklaring till Figur 2.
 Figuren visar boxplottar för olika stationer och parametrar. De parametrar som visas och respectiva stationer skriven under varje subplot. Motsvarande enheter anges med etiketter till y-axes. Boxplottarna visar fördelningen av värden för varje station, där den horisontal linjen representerar medianen, boxarna visar det interkvartila intervallet (IQR) och morrhåren sträcker sig till minimi- och maximivärdena inom 1,5 * IQR. Små sirklar visar avvikande värde.
 För varje boxplott anges ett resultat från Shapiro-Wilk-testetm, den hjälper att bedöma om data följer en normalfördelning. Ett p-värde under 0,05 indikerar att data inte följer en normalfördelning, och detta markeras med rött i diagrammet.
@@ -381,7 +382,7 @@ Fördelning av data i urvalet kan visualiseras även med stapeldiagram. Figur me
 
 Grafiska fördelningar visas i Figur 2.
 
-#### ![Figur 2](img/frekvenser/alla.png)
+#### ![Figur 2](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/frekvenser/alla.png)
 
 ##### Förklaring till Figur 2.
 Den här figuren visualiserar frekvensfördelningen av temperatur- och relativ luftfuktighetsdata från flera stationer i Sverige, inklusive Halmstad Flygplats, Uppsala Flygplats och Umeå Flygplats. Fördelningen visas som histogram med Kernel Density Estimation (KDE), och varje subplot motsvarar en kombination av station och parameter.De blå staplarna representerar frekvensfördelningen av mätningarna, där varje stapel representerar ett specifikt värdeintervall. Blå linjän visar Kernel density estimation, eller den uppskattade sannolikhetsdensiteten för mätvärdena. Normalfördelningskurvan är en orange linje. Denna kurva beräknas med hjälp av medelvärdet och standardavvikelsen för värdena i datasetet för varje station och parameter. Normalfördelningen läggs till för att visuellt jämföra hur den faktiska datadistributionen överensstämmer med den teoretiska normalfördelningen.
@@ -413,14 +414,14 @@ Det finns ett annat sät att visualisera avvikelse från eller liknande till nor
             ax.set_title(f"Q-Q plot: {station} - {parameter}", fontsize=8)
             ax.get_lines()[1].set_color('red')  # Give lene for the 
     plt.tight_layout()
-    plt.savefig('img/q_q_plot/all.png')
+    plt.savefig('https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/q_q_plot/all.png')
     plt.close()
 
 ```
 
 REsultat visas på Figur 3.
 
-#### Figur 3. ![Kvanti_kventil plottar ](img/q_q_plot/all.png)
+#### Figur 3. ![Kvanti_kventil plottar ](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/q_q_plot/all.png)
 ##### Förklaring av Quantile-Quantile fördelning plottar
 
  På plottar jämförs dataset från olika stationer och parametrar mot den teoretiska normalfördelningen. En Q-Q plot (Quantile-Quantile plot) jämför de empiriska kvantilerna från den faktiska datan med de teoretiska kvantilerna från en normalfördelning. Syftet med denna figur är att visuellt bedöma hur väl datan följer en normalfördelning. Varje plot visar fördelningen av en dataset. I På X-axeln visas normafördelnings kvantiler, på Y-axeln visas kvantiler från respektiv datamängd (Tabel 3[a](### Tabel 3a)[b][### Tabel 3b])
@@ -492,7 +493,7 @@ Här är exampel kod:
     plt.suptitle(plot_title, fontsize=12)
     plt.tight_layout()
     cleaned_name = re.sub("(?i)" + re.escape("flygplats"), "", name)
-    dirs = 'img/q_q_plot/'
+    dirs = 'https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/q_q_plot/'
     l_changed = changed_by.lower()
     file_name = f'{dirs}/{cleaned_name}_{l_changed}_min_{to_remove}_outliers.png'
     plt.savefig(file_name)
@@ -501,7 +502,7 @@ Här är exampel kod:
 ```
 I Figur 3a visas resultat.
 #### Figur 3a. 
-![All plases](img/q_q_plot/all.png)
+![All plases](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/q_q_plot/all.png)
 
 Figur 3a visar om extrema värde tas bort, då närmar dataset sig normalfördelningen. Jag tycker dock att fördelninen förändras inte tillräckligt mycket. Därför fortätter jag analysera öförändrade dataset.
 
@@ -509,7 +510,7 @@ Figur 3a visar om extrema värde tas bort, då närmar dataset sig normalfördel
 
 För att ser med vilka data ska jag arbeta vill jag först titta på hur data korrelerrar med varandra. Därför skaffar jag några plottar, som visas på Figur 4.
 
-#### Figur 4a. ![Parvisa relationer mellan relativt luftfuktighet och temperatur](img/correlations/param_param.png)
+#### Figur 4a. ![Parvisa relationer mellan relativt luftfuktighet och temperatur](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/correlations/param_param.png)
 
 Figuren visar att temperatur och luftfuktighet i Umeå flugplats korrelerar, men det kan inte sägas att luftfuktighet och temperatur korrelerar i två andra stationer. Plot var skaffat med förljande kod:
 
@@ -569,12 +570,12 @@ Jag skaffar även ett annat plot, som visar mera detaljer:
         y=0.99,
         fontsize=16)
     plt.subplots_adjust(hspace=0.2, wspace=0.2, top=0.9)
-    plt.savefig('img/correlation/all_pairwise_relationships.png')
+    plt.savefig('https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/correlation/all_pairwise_relationships.png')
     plt.show()
     plt.close()
 ```
 
-#### Figur 4b. ![Alla mojliga parade relationer mellan stationer och parametrar](img/correlations/all_pairwise_relationships.png)
+#### Figur 4b. ![Alla mojliga parade relationer mellan stationer och parametrar](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/correlations/all_pairwise_relationships.png)
 
 Detta plot visar igen, att det kan finnas direkt samband mellan relativt luftfuktighet och temperatur i Umeå.
 Jag skapar också matris som visar hur korrelerrar en parameter från en station med alla andra parameter-station kombinationer.
@@ -596,12 +597,12 @@ Jag skapar också matris som visar hur korrelerrar en parameter från en station
     ax.tick_params(axis='y', labelsize=8)
     plt.title("Korrelationsmatris för alla parametrar och stationer", fontsize=14)
     plt.tight_layout()
-    plt.savefig('img/correlations/all_correlations.png')
+    plt.savefig('https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/correlations/all_correlations.png')
     plt.show()
     plt.close()
 
 ```
-#### Figur 4c. ![Korrelation matris](img/correlations/all_correlations.png)
+#### Figur 4c. ![Korrelation matris](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/correlations/all_correlations.png)
 ##### Förklaring till Figur 4c.
 I figur visas korrelations koeffitienter mellan olika dataset. På axlar visas olika parameter-station kombiantioner. Samma kombinatiner visas på båda axlarna. Korrelationskoefitientar mellan parar visas med text i färgade kvadrater. Färgskala visas till höger. Färgskalan hjälper till visuelt bedömningen.
 
@@ -683,12 +684,12 @@ Jag skaffar regressions modell med hjälp av maskinlearning. 50% av data använd
     plt.xlabel("Temperatur, °C")
     plt.ylabel("Relativt Luftfuktighet, %")
     plt.legend(loc='best', fontsize=8)
-    plt.savefig('img/regression/Conf_int_regr_prediction_Umea_temp_luft.png')
+    plt.savefig('https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/Conf_int_regr_prediction_Umea_temp_luft.png')
     #plt.show()
     plt.close()
  
 ```
-#### Figur 5a. ![Linjäreggresion för relativt luftfuktighet i Umeå flygplats](img/regression/Conf_int_regr_prediction_Umea_temp_luft.png)
+#### Figur 5a. ![Linjäreggresion för relativt luftfuktighet i Umeå flygplats](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/Conf_int_regr_prediction_Umea_temp_luft.png)
 ##### Förklaring till figuren 5a. 
 Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfuktighet på Umeå flygplats på grund av temperatur. X-axeln visar temperatur i Celciumgrader, Y-axeln visar relativ luftfuktighet i procent. Orange punkter visar data som använts för att ta fram prediktionsmodellen, blå punkter visar data som använts för att testa prediktionsmodellen. Röd linje representerar prediktionsmodellen och grön linje representerar den modell som skulle erhållas med testdataset. Ekvationen för prediktionsmodellen visas i röd text. 
 Figuren visar den linjära regressionsmodellen som förutsäger relativ luftfuktighet på Umeå flygplats på grund av temperatur. x-axeln visar temperatur i Celciumgrader, y-axeln visar relativ luftfuktighet i procent. Orange punkter visar data som använts för att ta fram prediktionsmodellen, blå punkter visar data som använts för att testa prediktionsmodellen. Röd linje representerar prediktionsmodellen och grön linje representerar den modell som skulle erhållas med testdataset. Ekvationen för prediktionsmodellen, 95% konfedencsintervaler för linjär slop och den fria element, samnt resultat av Shapiro-Wilk test för normalsprinding av residualerna, visas i röd text. Grön linja visar korrelation model som skulle skappas om test dataset skulle användas i stället av trainings dataset.
@@ -749,7 +750,7 @@ För att se om logmodifiering av relativt luftfuktighet kan hjälpa att skappa b
     plt.title("Prognos av relativt luftfuktighet (log transformerad y, %)")
     plt.xlabel("temperatur, °C")
     plt.ylabel("relativt luftfuktighet [log %]")
-    plt.savefig('img/regression/log_new_transform_FUKT_Umeå_all.png')
+    plt.savefig('https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/log_new_transform_FUKT_Umeå_all.png')
     plt.show()
     plt.close()
 
@@ -811,16 +812,16 @@ För att se om logmodifiering av relativt luftfuktighet kan hjälpa att skappa b
             f'model är skapad med logtransformerad y och transformerad tillbacka'))
     plt.xlabel("temperatur, °C")
     plt.ylabel("relativt luftfuktighet [%]")
-    plt.savefig('img/regression/back_new_log_transform_FUKT_Umeå_All.png')
+    plt.savefig('https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/back_new_log_transform_FUKT_Umeå_All.png')
     plt.show()
     plt.close()
 
 ```
-#### Figur 6a. ![Här visas model prediktion med transformerade y-värde:](img/regression/log_new_transform_FUKT_Umeå_all.png)
+#### Figur 6a. ![Här visas model prediktion med transformerade y-värde:](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/log_new_transform_FUKT_Umeå_all.png)
 ##### Förklaring för Figuren 6a.
 Figuren visar liniarregression som predikterar logoritm av relativtluftfuktighet på grund av temperatur. X-axel visar temperatur, Y-axel visar logoritmerad relativt luftfuktighet. Ekvationen visas med röd text på plotten
 
-#### Figur 6b.![Rrediktion relativt-lyftfuktighets med originala fultighet värde leg-model](img/regression/back_new_log_transform_FUKT_Umeå_All.png)
+#### Figur 6b.![Rrediktion relativt-lyftfuktighets med originala fultighet värde leg-model](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/back_new_log_transform_FUKT_Umeå_All.png)
 ##### Förklaring för Figuren 6b.
 Figuren visar liniarregression som predikterar logoritm av relativtluftfuktighet på grund av temperatur. X-axel visar temperatur, Y-axel relativt luftfuktighet. Ekvationen visas med röd text på plotten. Det visas också 95% gränser för a och b koefitientar.
 
@@ -846,10 +847,10 @@ För att jamföra modeller skappar jag en plot som visar båda modeller:
     plt.xlabel("temperatur, °C", fontsize=8)
     plt.ylabel("relativt luftfuktighet, %", fontsize=8)
     plt.text(-15.0, 80.8, plot_text, color="red", fontsize=8)
-    plt.savefig('img/regression/tva_modeller.png')
+    plt.savefig('https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/tva_modeller.png')
     plt.show()
 ```
-#### Fig 7. ![Alla modeller](img/regression/tva_modeller.png)
+#### Fig 7. ![Alla modeller](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/tva_modeller.png)
 ##### Förklaring för Figur 7.
 Figuren visar båda modeller: liniarregression och återtransformerad log-model. Det visas också MSE för båda modeller med röd text.
 
@@ -897,7 +898,7 @@ Koden som jag användade:
         plt.ylabel("Relativt luftfuktighet; %", fontsize=8)
         plt.title("Skatterplot med log-transformerade x-värde", fontsize=10)
         plt.suptitle(title, fontsize=12)
-        plt.savefig(f'img/regression/{name}.png')
+        plt.savefig(f'https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/{name}.png')
         #plt.show()
         plt.close()
         return X_train_log, X_test_log
@@ -983,7 +984,7 @@ Koden som jag användade:
                 fontsize=10)
     plt.xlabel("log(temperatur - min(temperatur) + 0.00001, °C)", fontsize=8)
     plt.ylabel("Relativt luftfuktighet, %", fontsize=8)
-    plt.savefig('img/regression/prediction_log_data.png')
+    plt.savefig('https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/prediction_log_data.png')
     #plt.show()
     plt.close()
 
@@ -999,7 +1000,7 @@ Koden som jag användade:
     plt.title("Logmodel predictions residulaer av luftfuktighet vid Umeå flygplats")
     plt.xlabel("trelativt luftfuktighet,  %")
     plt.ylabel("Residualer, %")
-    plt.savefig('img/regression/residuals_filtrerad_LOGtemp_fukt_UME.png')
+    plt.savefig('https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/residuals_filtrerad_LOGtemp_fukt_UME.png')
     #plt.show()
     plt.close()
 
@@ -1009,7 +1010,7 @@ Koden som jag användade:
                 fontsize=10)
     plt.xlabel("Residualer av luftfuktighet, %")
     plt.ylabel("Frekvens")
-    plt.savefig('img/regression/residuals_filtrerad_hist_LOGtemp_fukt_UME.png')
+    plt.savefig(''regression/residuals_filtrerad_hist_LOGtemp_fukt_UME.png')
     #plt.show()
     plt.close() 
 
@@ -1049,7 +1050,7 @@ Koden som jag användade:
     plt.xlabel("temperatur, °C", fontsize=8)
     plt.ylabel("relativt luftfuktighet, %", fontsize=8)
     plt.text(-15.0, 80.8, plot_text, color="red", fontsize=8)
-    plt.savefig('img/regression/tva_modeller.png')
+    plt.savefig(''regression/tva_modeller.png')
     plt.show()
     plt.close()
 
@@ -1101,7 +1102,7 @@ Koden som jag användade:
     plt.title("Prognos av relativt luftfuktighet (log transformerad y, %)")
     plt.xlabel("temperatur, °C")
     plt.ylabel("relativt luftfuktighet [log %]")
-    plt.savefig('img/regression/log_transform_FUKT_Umeå.png')
+    plt.savefig(''regression/log_transform_FUKT_Umeå.png')
     plt.show()
     plt.close()
 
@@ -1134,7 +1135,7 @@ Koden som jag användade:
               f'model är skapad med logtransformerad y och transformerad tillbacka')
     plt.xlabel("temperatur, °C")
     plt.ylabel("relativt luftfuktighet [%]")
-    plt.savefig('img/regression/back_log_transform_FUKT_Umeå.png')
+    plt.savefig(''regression/back_log_transform_FUKT_Umeå.png')
     plt.show()
     plt.close()
 
@@ -1163,13 +1164,13 @@ Koden som jag användade:
     plt.xlabel("Temperatur, °C")
     plt.legend(loc='best', frameon=True, fontsize=8)
     plt.tight_layout()
-    plt.savefig('img/regression/alla_modeller_Umeå.png')
+    plt.savefig(''regression/alla_modeller_Umeå.png')
     plt.show()
     plt.close()
 
 ```
 Sammanfattande esultat av transformationer visas på följande plot:
-#### Figur 8 [Tre modeller med transformerade data utan data som innehåller två högsta och två lägsta temperaturvärde](img/regression/alla_modeller_Umeå.png)
+#### Figur 8 [Tre modeller med transformerade data utan data som innehåller två högsta och två lägsta temperaturvärde](https://raw.githubusercontent.com/OlganeOlga/MathMod/master/img/regression/alla_modeller_Umeå.png)
 ##### Förklaring till Figur 8.
 Figur visar tre modeller som predikterar relativt luftfuktighet med temperatur i Umeå Flugplats.
 För alla tre modeller använddes 68 mätpunkter (data utan två högsta temperaturvärde och två lägsta temperatur vrde).

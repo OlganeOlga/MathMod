@@ -53,44 +53,6 @@ measured_points = 72  # Number of points to include
 three_days = {}
 data_rows = []
 
-# # Create dictionary for three days data form each station in accending order
-# for param_id, parameter in PARAMS.items():
-#     three_d_station = {}
-#     for name, station_id in STATIONS.items():
-#         file_path = 'data/' + f'{station_id}_{param_id}.json'
-#         with open(file_path, 'r') as file:
-#             data = json.load(file)
-
-#             # Extract the "value" list and sort it by timestamp
-#             sorted_data = sorted(
-#                 data.get("value", []),
-#                 key=lambda x: datetime.fromtimestamp(x["date"] / 1000, tz=pytz.timezone("Europe/Stockholm"))
-#             )
-#             # Get the last N points
-#             last_points = sorted_data[- mesured_points:]
-#             """
-#             change it to pivot tabel
-#             """
-#         """the arrays' item are dict with keys: date, value and quality. 
-#         I want remove quality but replace value to nympy.nan if quality is not G or Y
-#         """
-#         stat_set = {}
-#         for item in last_points:
-#             new_value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
-#             stat_set[item['date']] = new_value  # Add date-value pair to value_set
-#             time = datetime.fromtimestamp(item['date'] / 1000, tz=pytz.timezone("Europe/Stockholm"))
-#             value = float(item['value']) if item['quality'] in ['G', 'Y'] else np.nan
-
-#             data_rows.append({
-#                 'time': time,
-#                 'station_name': name,
-#                 'parameter': PARAMS[param_id][0],
-#                 'value': value
-#             })
-#         three_d_station[name] = stat_set
-
-#         three_days[param_id] = three_d_station
-
 
 # Process data for each parameter and station
 for param_id, parameter in PARAMS.items():
@@ -340,7 +302,7 @@ def skip():
     """
     CORRELATION BETWEEN TEMP AND HUMIDITY FOR ALL DATA
     """
-    # Pivote three_days
+    # Pivote df_trree
     pivote_df = df_three.pivot_table(index=['time', 'station_name'], columns='parameter', values='value').reset_index()
 
 
