@@ -85,7 +85,28 @@ for param_id, parameter in PARAMS.items():
 # Convert the list of dictionaries into a pandas DataFrame object
 df_three = pd.DataFrame(data_rows)
 df_three.columns.str.replace(' ', '\n')
+def botstrapping(station_name, parameter):
+    filtered_data = df_three[(df_three["station_name"] == station_name) & (df_three["parameter"] == parameter)]
+    f_data = filtered_data['value'].tolist()
+    f_mean = sum(f_data)/len(f_data)
+    print(f"standart mean: {f_mean}")
+    # För att lagra medelvärden för varje bootstrap-prov
+    bootstrap_means = []
+    # Antal bootstrap-prover
+    n_iterations = 10000
+    # Slumpmässiga stickprov med återläggning
+    for _ in range(n_iterations):
+        # Skapa ett stickprov med återläggning
+        sample = np.random.choice(f_data, size=len(f_data), replace=True)
+        # Beräkna medelvärdet för detta stickprov och spara det
+        bootstrap_means.append(np.mean(sample))
 
+    # Beräkna det genomsnittliga medelvärdet från alla stickprov
+    estimated_mean = np.mean(bootstrap_means)
+
+    # Visa resultatet
+    print(f"Uppskattat väntevärde (med bootstrapping): {estimated_mean}")
+    exit()
 # get stations and parameters from the DataFrame object
 stations = df_three['station_name'].unique()
 parameters = df_three['parameter'].unique()
